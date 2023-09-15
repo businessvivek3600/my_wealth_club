@@ -1,0 +1,305 @@
+import 'dart:async';
+import 'dart:io';
+
+// import 'package:app_updater/app_updater.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
+import 'package:in_app_update/in_app_update.dart';
+import 'package:local_auth/local_auth.dart';
+import '/constants/assets_constants.dart';
+import '/database/repositories/auth_repo.dart';
+import '/database/repositories/settings_repo.dart';
+import '/providers/auth_provider.dart';
+import '/providers/dashboard_provider.dart';
+import '/screens/app_maintaing_page.dart';
+import '/screens/auth/login_screen.dart';
+import '/screens/auth/sign_up_screen.dart';
+import '/screens/dashboard/main_page.dart';
+import '/screens/update_app_page.dart';
+import '/sl_container.dart';
+import '/utils/color.dart';
+import '/utils/default_logger.dart';
+import '/utils/network_info.dart';
+import '/utils/no_internet_widget.dart';
+import '/utils/text.dart';
+import 'package:video_player/video_player.dart';
+import '../../database/functions.dart';
+import '../../main.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen(this.controller, {Key? key}) : super(key: key);
+  static const String routeName = '/SplashScreen';
+  final VideoPlayerController controller;
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  StreamSubscription<Map>? streamSubscription;
+  StreamController<String> controllerData = StreamController<String>();
+  Future<void> listenDynamicLinks() async {
+    streamSubscription = FlutterBranchSdk.initSession().listen((data) {
+      try {
+        print('----------- branch io data is ${data} -------------');
+        print('referring link is --> ' + (data['~referring_link'] ?? ''));
+        print('referring link is --> ' + (data['+non_branch_link'] ?? ""));
+        if (data['~referring_link'] != null ||
+            data['+non_branch_link'] != null) {
+          Uri uri =
+              Uri.parse(data['~referring_link'] ?? data['+non_branch_link']);
+          print(uri.queryParameters);
+          var queryParams = uri.queryParameters;
+          if (queryParams.entries.isNotEmpty) {
+            String? sponsor;
+            String? placement;
+            queryParams.entries.forEach((element) {
+              switch (element.key) {
+                case 'sponsor':
+                  print('found sponsor : ${element.value}');
+                  sponsor = element.value;
+                  break;
+                case 'placement':
+                  print('found placement : ${element.value}');
+                  placement = element.value;
+                  break;
+                default:
+                  print('queryParams : ${element}');
+                  break;
+              }
+            });
+            if (sponsor != null || placement != null) {
+              print(
+                  '****** going to sign up page-with data sponsor $sponsor   and  placement $placement  *******');
+              Get.to(SignUpScreen(sponsor: sponsor, placement: placement));
+            }
+          }
+        }
+/*        print('listenDynamicLinks - DeepLink Data: $data');
+        controllerData.sink.add((data.toString()));
+        if ((data.containsKey('+clicked_branch_link') &&
+            data['+clicked_branch_link'] == true)) {
+          print(
+              '------------------------------------Link clicked----------------------------------------------');
+          print('Custom string: ${data['custom_string']}');
+          print('Custom number: ${data['custom_number']}');
+          print('Custom bool: ${data['custom_bool']}');
+          print('Custom list number: ${data['custom_list_number']}');
+          print(
+              '------------------------------------------------------------------------------------------------');
+          Get.to(SignUpScreen());
+
+          // data['+non_branch_link']
+        }*/
+      } catch (e) {
+        print(
+            '------------------------------------------------------ branch error  $e');
+      }
+    }, onError: (error) {
+      print('Init Session error: ${error.toString()}');
+    });
+  }
+
+  AppUpdateInfo? _updateInfo;
+
+  Future<void> checkLogin() async {
+    await checkFBForAppUpdate().first.then((value) async {
+      bool canRunApp = sl.get<AuthRepo>().getCanRunApp();
+      await checkForUpdate().then((value) async {
+        bool canUpdate = sl.get<AuthRepo>().getAppCanUpdate();
+        print('SplashScreen app can run $canRunApp &&& has Update $canUpdate');
+
+        if (!canRunApp && isOnline) {
+          Get.offAll(AppUnderMaintenancePage());
+        } else if (!canRunApp && !isOnline) {
+          Get.offAll(NoInternetWidget(
+            btnText: 'Restart',
+            callback: () => exitTheApp(),
+          ));
+        } else {
+          if (canUpdate) {
+            Get.offAll(
+                // Platform.isIOS ?
+                // UpdateAppPage() :
+                UpdatePage(required: true));
+            // updateApp();
+          } else {
+            bool isLogin = sl.get<AuthRepo>().isLoggedIn();
+            if (isLogin) {
+              await sl.get<AuthProvider>().userInfo().then((value) async {
+                if (value != null) {
+                  errorLog('time5 $time', 'timer---');
+
+                  await _checkBiometrics().then((value) async {
+                    print(
+                        '_checkBiometrics $_canCheckBiometrics  ${await auth.canCheckBiometrics}');
+                    if (_canCheckBiometrics &&
+                        sl.get<SettingsRepo>().getBiometric()) {
+                      await _authenticateWithBiometrics().then((value) {
+                        if (value) {
+                          sl.get<DashBoardProvider>().getCustomerDashboard();
+                          Get.offAll(MainPage());
+                        } else {
+                          exitTheApp();
+                        }
+                      });
+                    } else {
+                      Get.offAll(MainPage());
+                    }
+                  });
+                } else {
+                  Get.offAll(LoginScreen());
+                }
+              });
+            } else {
+              Get.offAll(LoginScreen());
+              listenDynamicLinks();
+            }
+          }
+        }
+      });
+    });
+  }
+
+  Future<AppUpdateInfo?> checkForUpdate() async {
+    AppUpdateInfo? updateInfo;
+    if (Platform.isAndroid) {
+      InAppUpdate.checkForUpdate().then((info) {
+        setState(() {
+          _updateInfo = info;
+          updateInfo = info;
+        });
+        if (_updateInfo != null) {
+          sl.get<AuthRepo>().setAppCanUpdate(_updateInfo!.updateAvailability ==
+              UpdateAvailability.updateAvailable);
+          successLog(_updateInfo!.toString());
+        }
+      }).catchError((e) {
+        errorLog(e.toString());
+      });
+    }
+    return updateInfo;
+  }
+
+  int duration = 0;
+  int position = 0;
+  bool checked = false;
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    errorLog('time4 $time', 'timer---');
+    super.initState();
+    sl.get<NetworkInfo>().checkConnectivity(context);
+    sl.get<AuthProvider>().getSignUpInitialData();
+    super.initState();
+    _controller = widget.controller;
+    duration = _controller.value.duration.inMicroseconds;
+    _controller.play();
+    _controller.setVolume(0.0);
+    _controller
+      ..addListener(() {
+        position = _controller.value.position.inMicroseconds;
+        setState(() {});
+        if (position == duration) {
+          errorLog('time v $time', 'timer---');
+          checkLogin().then((value) => _controller.dispose());
+        }
+        print(' i got position: $position   ----   duration: $duration');
+      });
+    // getPPTDownloadFilePath("my_ppt");
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    // _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          Container(
+            height: double.maxFinite,
+            width: double.maxFinite,
+            color: mainColor,
+            child: _controller.value.isInitialized
+                ? AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller))
+                : Container(),
+          ),
+          /*if (position == duration)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: 100,
+                width: double.maxFinite,
+                child: Center(
+                  child: CircularProgressIndicator.adaptive(
+                      backgroundColor: Colors.white, strokeWidth: 2),
+                ),
+              ),
+            ),*/
+          /*      Align(
+            alignment: Alignment.bottomCenter,
+            child: FilledButton(
+                onPressed: _updateInfo?.updateAvailability ==
+                        UpdateAvailability.updateAvailable
+                    ? () {
+                        infoLog('performing immediateUpdateAllowed ');
+                        InAppUpdate.performImmediateUpdate().catchError((e) {
+                          Fluttertoast.showToast(msg: e.toString());
+                          return AppUpdateResult.inAppUpdateFailed;
+                        });
+                      }
+                    : () {},
+                child: titleLargeText('Update', context)),
+          )*/
+        ],
+      ),
+    );
+  }
+
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _canCheckBiometrics = false;
+
+  Future<void> _checkBiometrics() async {
+    late bool canCheckBiometrics;
+    try {
+      canCheckBiometrics = await auth.canCheckBiometrics;
+    } on PlatformException catch (e) {
+      canCheckBiometrics = false;
+      print(e);
+    }
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      _canCheckBiometrics = canCheckBiometrics;
+    });
+  }
+
+  Future<bool> _authenticateWithBiometrics() async {
+    bool authenticated = false;
+
+    authenticated = await auth.authenticate(
+      localizedReason:
+          'Scan your fingerprint (or face or whatever) to authenticate',
+      options: const AuthenticationOptions(
+        stickyAuth: true,
+        biometricOnly: false,
+      ),
+    );
+    final String message = authenticated ? 'Authorized' : 'Not Authorized';
+    print(' message = authenticated ? $message');
+    return authenticated;
+  }
+}

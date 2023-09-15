@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "297768788146",
+    "project_id": "my-wealth-club",
+    "storage_bucket": "my-wealth-club.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:297768788146:android:d34fc6932a3c7954cfe9ab",
+        "android_client_info": {
+          "package_name": "com.mywealthclub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgWYZD32oJ1H4sZrXLKWc-4CGooWCKm5s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

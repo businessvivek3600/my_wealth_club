@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.mycarclub",
+    "sha256_cert_fingerprints":
+    ["C3:C1:23:04:EB:A3:43:B0:20:56:8F:BB:9A:23:78:CD:48:A4:1E:62:96:E0:2F:78:AD:35:58:1D:CD:CF:35:72"]
+  }
+}]
