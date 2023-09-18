@@ -1,11 +1,16 @@
 class Assets {
-  //svg
+  ///svgs
   static const squareMenu = 'square-4-grid-svgrepo-com.svg';
   static const popupButton0 = 'popup-svgrepo-com.svg';
   static const creditCard = 'credit-card-svgrepo-com.svg';
   static const inbox = 'mail-svgrepo-com.svg';
+  static const downline = 'team-svgrepo-com.svg';
   static const teamView = 'people-svgrepo-com.svg';
   static const teamMember = 'people-svgrepo-com_team_member.svg';
+  static const layer = 'layers-svgrepo-com.svg';
+
+  static const analyzer = 'graph2-svgrepo-com.svg';
+  static const subscription = 'subscriptions-svgrepo-com.svg';
   static const gift = 'gift-14-svgrepo-com.svg';
   static const voucher = 'price-voucher-discount-offer-svgrepo-com.svg';
   static const eventTicket = 'tickets-ticket-svgrepo-com.svg';
@@ -13,6 +18,8 @@ class Assets {
   static const commissionWallet = 'wallet-add-2-svgrepo-com.svg';
   static const download = 'download-svgrepo-com.svg';
   static const gallery = 'gallery-svgrepo-com.svg';
+
+  static const personalInfo = 'info-square-svgrepo-com.svg';
   static const profile = 'profile-svgrepo-com.svg';
   static const notification = 'notification-svgrepo-com.svg';
   static const settings = 'setting-svgrepo-com.svg';
@@ -25,6 +32,7 @@ class Assets {
   static const arrowIn = 'arrow-left-296-svgrepo-com.svg';
   static const arrowBack = 'arrow-left-md-svgrepo-com.svg';
   static const arrowForwardIos = 'arrow-right-336-svgrepo-com.svg';
+
   static const pdf = 'pdf-document-svgrepo-com.svg';
   static const ppt = 'ppt-document-svgrepo-com.svg';
   static const video = 'video-play-svgrepo-com.svg';
@@ -36,10 +44,14 @@ class Assets {
   static const lock = 'lock-2-svgrepo-com.svg';
   static const delete = 'delete-2-svgrepo-com.svg';
   static const share = 'share-2-svgrepo-com.svg';
+
+  //pages
+  static const pages = 'multiple-pages-svgrepo-com.svg';
   static const returnPolicy = 'return-svgrepo-com.svg';
   static const termsAndCondition = 'legislative-affairs-office-svgrepo-com.svg';
   static const cancellationPolicy = 'align-vertical-center-svgrepo-com.svg';
   static const privacyPolicy = 'shield-user-svgrepo-com.svg';
+  static const aboutUs = 'about-svgrepo-com.svg';
 
   ///images
   static const appUserBgImage = 'car-dashboard-min.jpg';

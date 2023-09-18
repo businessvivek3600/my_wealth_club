@@ -49,22 +49,13 @@ class DashBoardProvider extends ChangeNotifier {
   List<List<dynamic>> drawerComponentsItems = [
     // ['Subscription', Assets.creditCard],
     ['Inbox', Assets.inbox],
-    ['Team View', Assets.teamView],
-    ['Team Member', Assets.teamMember],
     ['Gift Voucher', Assets.gift],
     ['Event Ticket', Assets.eventTicket],
-    ['Cash Wallet', Assets.cashWallet],
-    ['Commission Wallet', Assets.commissionWallet],
   ];
   List<List<dynamic>> drawerUsersItems = [
     ['Notifications', Assets.notification],
     ['Settings', Assets.settings],
     ['Support', Assets.support],
-    ['Privacy Policy', Assets.privacyPolicy],
-    ['Terms & Conditions', Assets.termsAndCondition],
-    ['Cancellation Policy', Assets.cancellationPolicy],
-    ['Return Policy', Assets.returnPolicy],
-    ['About Us', Assets.pdf],
     ['Logout', Assets.logout],
   ];
   setDrawerTile(String val) {

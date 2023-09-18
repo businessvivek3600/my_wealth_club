@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-// import 'package:app_updater/app_updater.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:local_auth/local_auth.dart';
-import '/constants/assets_constants.dart';
 import '/database/repositories/auth_repo.dart';
 import '/database/repositories/settings_repo.dart';
 import '/providers/auth_provider.dart';
@@ -25,7 +21,6 @@ import '/utils/color.dart';
 import '/utils/default_logger.dart';
 import '/utils/network_info.dart';
 import '/utils/no_internet_widget.dart';
-import '/utils/text.dart';
 import 'package:video_player/video_player.dart';
 import '../../database/functions.dart';
 import '../../main.dart';

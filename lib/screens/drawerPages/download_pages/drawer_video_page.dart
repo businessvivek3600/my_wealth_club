@@ -1,7 +1,4 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/providers/dashboard_provider.dart';
@@ -10,7 +7,6 @@ import '/utils/color.dart';
 import '/utils/no_internet_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:ui';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/services.dart';
 

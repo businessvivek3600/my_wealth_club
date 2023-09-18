@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '/database/model/response/additional/signup_country_model.dart';
-import '/database/model/response/states_model.dart';
 import '/database/model/response/states_model.dart';
 import '/providers/auth_provider.dart';
 import '/sl_container.dart';

@@ -5,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
-import '/constants/app_constants.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../database/functions.dart';
 
@@ -94,7 +92,6 @@ class _RatingDialogState extends State<RatingDialog> {
         ],
       );
 }
-
 
 rateApp() async {
   final InAppReview inAppReview = InAppReview.instance;

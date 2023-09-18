@@ -1,13 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '/database/functions.dart';
 import '/screens/dashboard/main_page.dart';
 import '/utils/picture_utils.dart';
 import '/utils/sizedbox_utils.dart';
-import '/utils/text.dart';
-
-import 'color.dart';
 
 dashboardDialog({required String image, required BuildContext context}) {
   print(image);

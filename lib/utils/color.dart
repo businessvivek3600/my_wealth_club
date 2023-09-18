@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_color_utils/flutter_color_utils.dart';
 
 const Color mainColor = Color(0xff0a0d15);
 const Color mainColor100 = Color(0x120a0d0a);
@@ -35,7 +34,7 @@ const Color colorFFFFFD = Color(0xffFFFFFD);
 // const Color defaultBottomSheetColor = Color(0xff083261);
 const Color defaultBottomSheetColor = Color(0xff023c5b);
 
-List<Color>textGradiantColors=[
+List<Color> textGradiantColors = [
   Color(0xffb38728),
   Color(0xffb38728),
   Color(0xffb38728),

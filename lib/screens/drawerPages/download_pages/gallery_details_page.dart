@@ -1,9 +1,4 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/gallery_thumbnail_model.dart';
 import '/providers/GalleryProvider.dart';
@@ -101,7 +96,6 @@ class _GalleryDetailsPageState extends State<GalleryDetailsPage> {
   //   return  decodedImage;
   // }
 }
-
 
 const _defaultColor = Color(0xFF34568B);
 

@@ -1,5 +1,4 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
-import 'package:animated_tree_view/tree_view/tree_node.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -16,8 +15,6 @@ import '/utils/sizedbox_utils.dart';
 import '/utils/skeleton.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
-
-import '../../database/model/response/team_downline_user_model.dart';
 
 class TeamMemberPage extends StatefulWidget {
   const TeamMemberPage({Key? key}) : super(key: key);
@@ -48,7 +45,8 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
     return Scaffold(
       key: globalKey,
       backgroundColor: mainColor,
-      appBar: AppBar(title: titleLargeText('Team Members', context,useGradient: true)),
+      appBar: AppBar(
+          title: titleLargeText('Team Members', context, useGradient: true)),
       body: Container(
         height: double.maxFinite,
         width: double.maxFinite,
@@ -76,7 +74,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            //TODO: teamMembersLottie
+                            ///TODO: teamMembersLottie
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

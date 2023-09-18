@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/constants/assets_constants.dart';
 import '/utils/picture_utils.dart';
-import 'package:rive/rive.dart';
 
 showLoading({bool? userRootNavigator}) async {
   showDialog(

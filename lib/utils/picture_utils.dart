@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -50,6 +49,7 @@ Widget assetImages(String path,
 
 ImageProvider assetImageProvider(String path, {BoxFit? fit}) =>
     AssetImage('assets/images/$path');
+
 ImageProvider userAppBgImageProvider(BuildContext context) {
   var userData = sl.get<AuthProvider>().userData;
   String bgImage = '';
@@ -96,7 +96,7 @@ CachedNetworkImage buildCachedNetworkImage(
         child: Stack(
           children: [
             Container(
-              padding: EdgeInsets.all(10),
+                padding: EdgeInsets.all(10),
                 height: ph ?? 50,
                 width: pw ?? 100,
                 color: errorBgColor,

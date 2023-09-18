@@ -1,5 +1,4 @@
 import 'package:animated_tree_view/animated_tree_view.dart';
-import 'package:animated_tree_view/tree_view/tree_node.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_color_utils/flutter_color_utils.dart';
@@ -52,7 +51,7 @@ class _TeamViewPageState extends State<TeamViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: titleLargeText('Team View', context,useGradient: true),
+          title: titleLargeText('Team View', context, useGradient: true),
           shadowColor: Colors.white),
       body: isOnline
           // ? Consumer<TeamViewProvider>(

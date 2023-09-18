@@ -1,20 +1,15 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
-import 'package:get/get_state_manager/get_state_manager.dart';
 import '../constants/app_constants.dart';
 import '/constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
-import '/providers/dashboard_provider.dart';
 import '/providers/subscription_provider.dart';
-import '/screens/card_form/card_form_widget.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
 import '/utils/picture_utils.dart';
@@ -22,7 +17,6 @@ import '/utils/sizedbox_utils.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
-import 'app_secondry_webView.dart';
 
 class SubscriptionPurchaseDialog extends StatefulWidget {
   const SubscriptionPurchaseDialog({

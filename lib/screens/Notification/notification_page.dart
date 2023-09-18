@@ -10,21 +10,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '/constants/app_constants.dart';
-import '/constants/app_constants.dart';
-import '/constants/app_constants.dart';
-import '/constants/app_constants.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/additional/fcm_notification_model.dart';
-import '/myapp.dart';
-import '/providers/auth_provider.dart';
 import '/providers/notification_provider.dart';
-import '/screens/dashboard/main_page.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
 import '/utils/picture_utils.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/text.dart';
-import 'package:provider/provider.dart';
 
 import '../../database/functions.dart';
 import '../../utils/default_logger.dart';
@@ -508,9 +501,7 @@ class _NotificationPageTileWidgetState
     super.initState();
     setState(() {
       expanded = widget.expanded;
-          () => sl
-          .get<NotificationProvider>()
-          .markRead(widget.notification['id']);
+      () => sl.get<NotificationProvider>().markRead(widget.notification['id']);
     });
   }
 

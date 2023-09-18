@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';

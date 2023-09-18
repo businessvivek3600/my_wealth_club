@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/default_logger.dart';
 import '../constants/app_constants.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
@@ -54,7 +55,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
     return Container(
-      color: mainColor,
+      color: Colors.blueGrey.shade900,
       height: double.maxFinite,
       width: size.width * 0.8,
       child: Consumer<AuthProvider>(
@@ -65,7 +66,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 children: [
                   buildHeader(size, context, authProvider),
                   const Divider(color: Colors.white60, height: 0, thickness: 1),
-                  height10(),
+                  // height10(),
                   Expanded(
                     child: ScrollToTop(
                       scrollController: controller,
@@ -81,78 +82,54 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                 color: Colors.white70,
                                 fontWeight: FontWeight.bold),
                             height10(),
-                            ...dashBoardProvider.drawerComponentsItems
-                                .map((e) => Column(
-                                      children: [
-                                        DrawerTileItem(
-                                          onTap: () {
-                                            Widget page = const Scaffold();
-                                            switch (e[0]) {
-                                              case 'Inbox':
-                                                page = const InboxScreen();
-                                                break;
-                                              case 'Subscription':
-                                                page = const SubscriptionPage();
-                                                break;
-                                              case 'Cash Wallet':
-                                                page = const CashWalletPage();
-                                                break;
-                                              case 'Commission Wallet':
-                                                page =
-                                                    const CommissionWalletPage();
-                                                break;
-                                              case 'Team View':
-                                                // page = const TeamViewPage();
-                                                page = LayeredGraphViewPage();
-                                                break;
-                                              case 'Team Member':
-                                                page = const TeamMemberPage();
-                                                break;
-                                              case 'Gift Voucher':
-                                                page = const VoucherPage();
-                                                break;
-                                              case 'Event Ticket':
-                                                page = const EventTicketsPage();
-                                                break;
-                                              default:
-                                                page = Scaffold(
-                                                    backgroundColor: mainColor,
-                                                    body: Center(
-                                                        child: bodyLargeText(
-                                                            'This is Default Page',
-                                                            context,
-                                                            color:
-                                                                Colors.white)));
-                                                break;
-                                            }
-                                            Get.to(page);
-                                            // dashBoardProvider.dashScaffoldKey.currentState
-                                            //     ?.closeDrawer();
-                                          },
-                                          leading: e[1],
-                                          title: e[0],
-                                          width: size.width * 0.7,
-                                          selected: dashBoardProvider
-                                                  .selectedDrawerTile ==
-                                              e[0],
-                                        ),
-                                        height10(),
-                                      ],
-                                    )),
-                            buildDownloadExpansionTile(size, dashBoardProvider),
+                            ...dashBoardProvider.drawerComponentsItems.map(
+                                (e) => buildComponentsTile(
+                                    e, context, size, dashBoardProvider)),
+                            buildDownlinesExpansionTile(
+                                size, dashBoardProvider),
                             height10(),
                             DrawerTileItem(
                               onTap: () {
-                                // dashBoardProvider.setDrawerTile('Subscription');
+                                dashBoardProvider.setDrawerTile('Subscription');
                                 Widget page = const SubscriptionPage();
                                 Get.to(page);
                               },
                               leading: Assets.creditCard,
+                              title: 'Liquid User',
+                              width: size.width * 0.7,
+                              selected: dashBoardProvider.selectedDrawerTile ==
+                                  'Liquid User',
+                            ),
+                            height10(),
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile('Subscription');
+                                Widget page = const SubscriptionPage();
+                                Get.to(page);
+                              },
+                              leading: Assets.analyzer,
+                              title: 'Matrix Analyzer',
+                              width: size.width * 0.7,
+                              selected: dashBoardProvider.selectedDrawerTile ==
+                                  'Matrix Analyzer',
+                            ),
+                            height10(),
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile('Subscription');
+                                Widget page = const SubscriptionPage();
+                                Get.to(page);
+                              },
+                              leading: Assets.subscription,
                               title: 'Subscription',
                               width: size.width * 0.7,
                               selected: dashBoardProvider.selectedDrawerTile ==
                                   'Subscription',
                             ),
+                            height10(),
+                            buildWalletsExpansionTile(size, dashBoardProvider),
+                            height10(),
+                            buildDownloadExpansionTile(size, dashBoardProvider),
                             height10(),
                             capText('User', context,
                                 color: Colors.white70,
@@ -160,147 +137,874 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             height10(),
                             buildProfileExpansionTile(size, dashBoardProvider),
                             height10(),
+                            capText('Others', context,
+                                color: Colors.white70,
+                                fontWeight: FontWeight.bold),
+                            height10(),
                             ...dashBoardProvider.drawerUsersItems.map((e) =>
-                                Column(
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        DrawerTileItem(
-                                          onTap: () {
-                                            // HapticFeedback.vibrate();
-                                            if (e[0] == 'Logout') {
-                                              AwesomeDialog(
-                                                dialogType: DialogType.question,
-                                                dismissOnBackKeyPress: false,
-                                                dismissOnTouchOutside: false,
-                                                title:
-                                                    'Do you really want to logout?',
-                                                context: context,
-                                                btnCancelText: 'No',
-                                                btnOkText: 'Yes Sure!',
-                                                btnCancelOnPress: () {},
-                                                btnOkOnPress: () async {
-                                                  await logOut().then((value) =>
-                                                      Get.offAll(
-                                                          LoginScreen()));
-                                                },
-                                                reverseBtnOrder: true,
-                                              ).show();
-                                            } else if (e[0] ==
-                                                'Notifications') {
-                                              Get.to(NotificationPage());
-                                            } else if (e[0] == 'Settings') {
-                                              Get.to(SettingsPage());
-                                            } else if (e[0] == 'Support') {
-                                              Get.to(SupportPage());
-                                            } else if (e[0] ==
-                                                    'Privacy Policy' &&
-                                                authProvider
-                                                        .mcc_content.privacy !=
-                                                    null) {
-                                              Get.to(HtmlPreviewPage(
-                                                title: parseHtmlString(
-                                                    authProvider
-                                                            .mcc_content
-                                                            .privacy!
-                                                            .headlines ??
-                                                        ""),
-                                                message: authProvider
-                                                        .mcc_content
-                                                        .privacy!
-                                                        .details ??
-                                                    "",
-                                                file_url: authProvider
-                                                        .mcc_content
-                                                        .privacy!
-                                                        .image ??
-                                                    "",
-                                              ));
-                                            } else if (e[0] ==
-                                                    'Terms & Conditions' &&
-                                                authProvider.mcc_content
-                                                        .termCondition !=
-                                                    null) {
-                                              Get.to(HtmlPreviewPage(
-                                                title: parseHtmlString(
-                                                    authProvider
-                                                            .mcc_content
-                                                            .termCondition!
-                                                            .headlines ??
-                                                        ""),
-                                                message: authProvider
-                                                        .mcc_content
-                                                        .termCondition!
-                                                        .details ??
-                                                    "",
-                                                file_url: authProvider
-                                                        .mcc_content
-                                                        .termCondition!
-                                                        .image ??
-                                                    "",
-                                              ));
-                                            } else if (e[0] ==
-                                                    'Cancellation Policy' &&
-                                                authProvider.mcc_content
-                                                        .cancellation !=
-                                                    null) {
-                                              Get.to(HtmlPreviewPage(
-                                                title: parseHtmlString(
-                                                    authProvider
-                                                            .mcc_content
-                                                            .cancellation!
-                                                            .headlines ??
-                                                        ""),
-                                                message: authProvider
-                                                        .mcc_content
-                                                        .cancellation!
-                                                        .details ??
-                                                    "",
-                                                file_url: authProvider
-                                                        .mcc_content
-                                                        .cancellation!
-                                                        .image ??
-                                                    "",
-                                              ));
-                                            } else if (e[0] ==
-                                                    'Return Policy' &&
-                                                authProvider.mcc_content
-                                                        .returnPolicy !=
-                                                    null) {
-                                              Get.to(HtmlPreviewPage(
-                                                  title: parseHtmlString(
-                                                      authProvider
-                                                              .mcc_content
-                                                              .returnPolicy!
-                                                              .headlines ??
-                                                          ""),
-                                                  message: authProvider
-                                                          .mcc_content
-                                                          .returnPolicy!
-                                                          .details ??
-                                                      "",
-                                                  file_url: authProvider
-                                                          .mcc_content
-                                                          .returnPolicy!
-                                                          .image ??
-                                                      ''));
-                                            } else if (e[0] == 'About Us' &&
-                                                authProvider.mcc_content
-                                                        .returnPolicy !=
-                                                    null) {
-                                              Get.to(HtmlPreviewPage(
-                                                  title: parseHtmlString(
-                                                      authProvider
-                                                              .mcc_content
-                                                              .returnPolicy!
-                                                              .headlines ??
-                                                          ""),
-                                                  /*     message: authProvider
-                                                          .mcc_content
-                                                          .returnPolicy!
-                                                          .details ??
-                                                      "",*/
-                                                  message: (r'''
+                                buildOthersTile(e, context, authProvider, size,
+                                    dashBoardProvider)),
+                            buildAppPagesExpansionTile(
+                                size, dashBoardProvider, authProvider),
+                            height10(),
+                            buildFooter(size, context, dashBoardProvider),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  Column buildOthersTile(
+      List<dynamic> e,
+      BuildContext context,
+      AuthProvider authProvider,
+      Size size,
+      DashBoardProvider dashBoardProvider) {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            DrawerTileItem(
+              onTap: () {
+                // HapticFeedback.vibrate();
+                if (e[0] == 'Logout') {
+                  AwesomeDialog(
+                    dialogType: DialogType.question,
+                    dismissOnBackKeyPress: false,
+                    dismissOnTouchOutside: false,
+                    title: 'Do you really want to logout?',
+                    context: context,
+                    btnCancelText: 'No',
+                    btnOkText: 'Yes Sure!',
+                    btnCancelOnPress: () {},
+                    btnOkOnPress: () async {
+                      await logOut().then((value) => Get.offAll(LoginScreen()));
+                    },
+                    reverseBtnOrder: true,
+                  ).show();
+                } else if (e[0] == 'Notifications') {
+                  Get.to(NotificationPage());
+                } else if (e[0] == 'Settings') {
+                  Get.to(SettingsPage());
+                } else if (e[0] == 'Support') {
+                  Get.to(SupportPage());
+                }
+              },
+              leading: e[1],
+              title: e[0],
+              width: size.width * 0.7,
+              selected: dashBoardProvider.selectedDrawerTile == e[0],
+            ),
+            if (e[0] == 'Notifications' &&
+                Provider.of<NotificationProvider>(context, listen: true)
+                        .totalUnread >
+                    0)
+              Positioned(
+                right: 10,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    child: capText(
+                      '${Provider.of<NotificationProvider>(context, listen: true).totalUnread}',
+                      context,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        height10(),
+      ],
+    );
+  }
+
+  Column buildComponentsTile(List<dynamic> e, BuildContext context, Size size,
+      DashBoardProvider dashBoardProvider) {
+    return Column(
+      children: [
+        DrawerTileItem(
+          onTap: () {
+            Widget page = const Scaffold();
+            switch (e[0]) {
+              case 'Inbox':
+                page = const InboxScreen();
+                break;
+
+              case 'Gift Voucher':
+                page = const VoucherPage();
+                break;
+              case 'Event Ticket':
+                page = const EventTicketsPage();
+                break;
+              default:
+                page = Scaffold(
+                    backgroundColor: mainColor,
+                    body: Center(
+                        child: bodyLargeText('This is Default Page', context,
+                            color: Colors.white)));
+                break;
+            }
+            Get.to(page);
+          },
+          leading: e[1],
+          title: e[0],
+          width: size.width * 0.7,
+          selected: dashBoardProvider.selectedDrawerTile == e[0],
+        ),
+        height10(),
+      ],
+    );
+  }
+
+  Widget buildDownlinesExpansionTile(
+      Size size, DashBoardProvider dashBoardProvider) {
+    const String teamMemeber = 'Team Member';
+    const String teamView = 'Team View';
+    const String myTreeView = 'My Tree View';
+    const String generationLayer = 'Generation Layer';
+    const String inactiveAnalyzer = 'Inactive Analyzer';
+
+    return expansionTile(
+      title: 'My Downlines',
+      headerAsset: Assets.downline,
+      initiallyExpanded: dashBoardProvider.selectedDrawerTile == teamMemeber ||
+          dashBoardProvider.selectedDrawerTile == teamView ||
+          dashBoardProvider.selectedDrawerTile == myTreeView ||
+          dashBoardProvider.selectedDrawerTile == generationLayer ||
+          dashBoardProvider.selectedDrawerTile == inactiveAnalyzer,
+      children: [
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(10),
+                  bottomRight: Radius.circular(10))),
+          child: Column(
+            children: [
+              ...[
+                teamMemeber,
+                teamView,
+                myTreeView,
+                generationLayer,
+                inactiveAnalyzer
+              ].map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: DrawerTileItem(
+                    onTap: () {
+                      Widget page = const Scaffold(backgroundColor: mainColor);
+                      switch (e) {
+                        case teamMemeber:
+                          page = const TeamMemberPage();
+                          break;
+                        case teamView:
+                          page = LayeredGraphViewPage();
+                          break;
+                        case myTreeView:
+
+                        case generationLayer:
+
+                        case inactiveAnalyzer:
+
+                        default:
+                          page = buildDefaultPage();
+                          break;
+                      }
+                      // Get.back();
+                      Get.to(page);
+                    },
+                    leading: e == teamMemeber
+                        ? Assets.teamMember
+                        : e == teamView
+                            ? Assets.teamView
+                            : e == myTreeView
+                                ? Assets.downline
+                                : e == generationLayer
+                                    ? Assets.layer
+                                    : Assets.analyzer,
+                    title: e,
+                    width: size.width * 0.7,
+                    selected: dashBoardProvider.selectedDrawerTile == e,
+                    opacity: 0.7,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildWalletsExpansionTile(
+      Size size, DashBoardProvider dashBoardProvider) {
+    const String cashWallet = 'Cash Wallet';
+    const String commissionWallet = 'Commission Wallet';
+    const String withdrawals = 'Withdrawals';
+    return expansionTile(
+      title: 'Wallets',
+      headerAsset: Assets.cashWallet,
+      initiallyExpanded: dashBoardProvider.selectedDrawerTile == cashWallet ||
+          dashBoardProvider.selectedDrawerTile == commissionWallet ||
+          dashBoardProvider.selectedDrawerTile == withdrawals,
+      children: [
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10)),
+          ),
+          child: Column(
+            children: [
+              ...[cashWallet, commissionWallet, withdrawals].map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: DrawerTileItem(
+                    onTap: () {
+                      Widget page = buildDefaultPage();
+                      switch (e) {
+                        case cashWallet:
+                          page = CashWalletPage();
+                          break;
+                        case commissionWallet:
+                          page = CommissionWalletPage();
+                          break;
+                        case withdrawals:
+                          // page = const WithdrawalsPage();
+                          break;
+
+                        default:
+                          page = Scaffold(
+                            backgroundColor: mainColor,
+                            body: Center(
+                              child: bodyLargeText(
+                                  'This is Default Page', context,
+                                  color: Colors.white),
+                            ),
+                          );
+                          break;
+                      }
+                      // Get.back();
+                      Get.to(page);
+                    },
+                    leading: e == cashWallet
+                        ? Assets.cashWallet
+                        : e == commissionWallet
+                            ? Assets.commissionWallet
+                            : Assets.withdraw,
+                    title: e,
+                    width: size.width * 0.7,
+                    selected: dashBoardProvider.selectedDrawerTile == e,
+                    opacity: 0.7,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildProfileExpansionTile(
+      Size size, DashBoardProvider dashBoardProvider) {
+    const String profile = 'Profile';
+    const String paymentMethods = 'Payment Methods';
+
+    return expansionTile(
+      headerAsset: Assets.personalInfo,
+      title: 'Personal Information',
+      initiallyExpanded: dashBoardProvider.selectedDrawerTile == profile ||
+          dashBoardProvider.selectedDrawerTile == paymentMethods,
+      children: [
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            // color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+          ),
+          child: Column(
+            children: [
+              ...[profile, paymentMethods].map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: DrawerTileItem(
+                    onTap: () {
+                      Widget page = const Scaffold(backgroundColor: mainColor);
+                      switch (e) {
+                        case profile:
+                          page = ProfileScreen();
+                          break;
+                        case paymentMethods:
+                          page = PaymentMethodsPage();
+                          break;
+
+                        default:
+                          page = buildDefaultPage();
+                          break;
+                      }
+                      Get.to(page);
+                    },
+                    leading: e == profile ? Assets.profile : Assets.bank,
+                    title: e,
+                    width: size.width * 0.7,
+                    selected: dashBoardProvider.selectedDrawerTile == e,
+                    opacity: 0.7,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildAppPagesExpansionTile(Size size,
+      DashBoardProvider dashBoardProvider, AuthProvider authProvider) {
+    const String privacyPolicy = 'Privacy Policy';
+    const String termsAndConditions = 'Terms & Conditions';
+    const String cancellationPolicy = 'Cancellation Policy';
+    const String returnPolicy = 'Return Policy';
+    const String aboutUs = 'About Us';
+
+    return expansionTile(
+      title: 'App Pages',
+      headerAsset: Assets.pages,
+      initiallyExpanded:
+          dashBoardProvider.selectedDrawerTile == privacyPolicy ||
+              dashBoardProvider.selectedDrawerTile == termsAndConditions ||
+              dashBoardProvider.selectedDrawerTile == cancellationPolicy ||
+              dashBoardProvider.selectedDrawerTile == returnPolicy ||
+              dashBoardProvider.selectedDrawerTile == aboutUs,
+      children: [
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            // color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+          ),
+          child: Column(
+            children: [
+              ...[
+                privacyPolicy,
+                termsAndConditions,
+                cancellationPolicy,
+                returnPolicy,
+                aboutUs
+              ].map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: DrawerTileItem(
+                    onTap: () async {
+                      Widget page = buildDefaultPage();
+                      // await future(1000);
+                      if (e == privacyPolicy &&
+                          authProvider.mcc_content.privacy != null) {
+                        Get.to(HtmlPreviewPage(
+                          title: parseHtmlString(
+                              authProvider.mcc_content.privacy!.headlines ??
+                                  ""),
+                          message:
+                              authProvider.mcc_content.privacy!.details ?? "",
+                          file_url:
+                              authProvider.mcc_content.privacy!.image ?? "",
+                        ));
+                      } else if (e == termsAndConditions &&
+                          authProvider.mcc_content.termCondition != null) {
+                        Get.to(HtmlPreviewPage(
+                          title: parseHtmlString(authProvider
+                                  .mcc_content.termCondition!.headlines ??
+                              ""),
+                          message:
+                              authProvider.mcc_content.termCondition!.details ??
+                                  "",
+                          file_url:
+                              authProvider.mcc_content.termCondition!.image ??
+                                  "",
+                        ));
+                      } else if (e == cancellationPolicy &&
+                          authProvider.mcc_content.cancellation != null) {
+                        Get.to(HtmlPreviewPage(
+                          title: parseHtmlString(authProvider
+                                  .mcc_content.cancellation!.headlines ??
+                              ""),
+                          message:
+                              authProvider.mcc_content.cancellation!.details ??
+                                  "",
+                          file_url:
+                              authProvider.mcc_content.cancellation!.image ??
+                                  "",
+                        ));
+                      } else if (e == returnPolicy &&
+                          authProvider.mcc_content.returnPolicy != null) {
+                        Get.to(HtmlPreviewPage(
+                            title: parseHtmlString(authProvider
+                                    .mcc_content.returnPolicy!.headlines ??
+                                ""),
+                            message: authProvider
+                                    .mcc_content.returnPolicy!.details ??
+                                "",
+                            file_url:
+                                authProvider.mcc_content.returnPolicy!.image ??
+                                    ''));
+                      } else if (e == aboutUs &&
+                          authProvider.mcc_content.returnPolicy != null) {
+                        Get.to(HtmlPreviewPage(
+                            title: parseHtmlString(authProvider
+                                    .mcc_content.returnPolicy!.headlines ??
+                                ""),
+                            message: aboutUsHtml,
+                            file_url:
+                                authProvider.mcc_content.returnPolicy!.image ??
+                                    ''));
+                      }
+                    },
+                    leading: e == privacyPolicy
+                        ? Assets.privacyPolicy
+                        : e == termsAndConditions
+                            ? Assets.termsAndCondition
+                            : e == cancellationPolicy
+                                ? Assets.cancellationPolicy
+                                : e == returnPolicy
+                                    ? Assets.returnPolicy
+                                    : Assets.aboutUs,
+                    title: e,
+                    width: size.width * 0.7,
+                    selected: dashBoardProvider.selectedDrawerTile == e,
+                    opacity: 0.7,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildDownloadExpansionTile(
+      Size size, DashBoardProvider dashBoardProvider) {
+    const String pdf = 'PDF';
+    const String ppt = 'PPT';
+    const String video = 'Promotional Video';
+    const String gallery = 'Gallery';
+    const String videos = 'Academic Videos';
+
+    return expansionTile(
+      title: 'Downloads',
+      headerAsset: Assets.download,
+      initiallyExpanded: dashBoardProvider.selectedDrawerTile == pdf ||
+          dashBoardProvider.selectedDrawerTile == ppt ||
+          dashBoardProvider.selectedDrawerTile == video ||
+          dashBoardProvider.selectedDrawerTile == gallery ||
+          dashBoardProvider.selectedDrawerTile == videos,
+      children: [
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            // color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+          ),
+          child: Column(
+            children: [
+              ...[pdf, ppt, video, gallery, videos].map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: DrawerTileItem(
+                    onTap: () {
+                      Widget page = const Scaffold(backgroundColor: mainColor);
+                      switch (e) {
+                        case pdf:
+                          page = MainPage();
+                          launchTheLink(
+                              sl.get<DashBoardProvider>().pdfLink ?? '');
+                          break;
+                        case ppt:
+                          page = MainPage();
+                          // Get.back();
+                          launchTheLink(
+                              sl.get<DashBoardProvider>().pptLink ?? '');
+                          break;
+                        case video:
+                          page = DrawerVideoScreen();
+                          break;
+                        case gallery:
+                          page = GalleryMainPage();
+                          break;
+                        case videos:
+                          page = VideosMainPage();
+                          break;
+                        default:
+                          page = buildDefaultPage();
+                          break;
+                      }
+                      Get.to(page);
+                    },
+                    leading: e == pdf
+                        ? Assets.pdf
+                        : e == ppt
+                            ? Assets.ppt
+                            : e == video
+                                ? Assets.video
+                                : e == gallery
+                                    ? Assets.gallery
+                                    : Assets.videoGallery,
+                    title: e,
+                    width: size.width * 0.7,
+                    selected: dashBoardProvider.selectedDrawerTile == e,
+                    opacity: 0.9,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Container buildFooter(
+      Size size, BuildContext context, DashBoardProvider dashBoardProvider) {
+    return Container(
+      height: 20 + size.height * 0.13,
+      // color: Colors.white38,
+      width: double.maxFinite,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          /*  Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () =>
+                    launchTheLink(sl.get<AuthProvider>().privacy ?? ""),
+                child: bodyMedText('Privacy Policy', context,
+                    style: TextStyle(
+                      color: Colors.white,
+                      decoration: TextDecoration.underline,
+                    )),
+              ),
+            ],
+          ),
+          height10(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => launchTheLink(sl.get<AuthProvider>().term ?? ""),
+                child: bodyMedText('Terms & Conditions', context,
+                    style: TextStyle(
+                      color: Colors.white,
+                      decoration: TextDecoration.underline,
+                    )),
+              ),
+            ],
+          ),*/
+          Row(
+            children: [
+              Spacer(flex: 1),
+              Expanded(
+                  flex: 3,
+                  child: CachedNetworkImage(
+                    imageUrl: dashBoardProvider.logoUrl ?? '',
+                    placeholder: (context, url) => SizedBox(
+                        height: 70,
+                        width: 50,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                                color: Colors.transparent))),
+                    errorWidget: (context, url, error) => SizedBox(
+                        height: 70, child: assetImages(Assets.appWebLogoWhite)),
+                    cacheManager: CacheManager(Config(
+                        "${AppConstants.appID}_app_dash_logo",
+                        stalePeriod: const Duration(days: 30))),
+                  )),
+              Spacer(flex: 1)
+            ],
+          ),
+          height10(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              bodyMedText(
+                'Version $appVersion',
+                context,
+                style: TextStyle(color: Colors.white, fontSize: 10),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Container buildHeader(
+      Size size, BuildContext context, AuthProvider authProvider) {
+    return Container(
+      height: 20 + size.height * 0.1,
+      // color: CupertinoColors.white,
+
+      width: double.maxFinite,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: titleLargeText(
+                        (authProvider.userData.customerName ?? 'Unknown')
+                            // 'Jury John'
+                            .capitalize!,
+                        context,
+                        color: Colors.white,
+                        textAlign: TextAlign.start,
+                      ),
+                    ),
+                  ],
+                ),
+                height5(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: capText(
+                          '(${authProvider.userData.username ?? 'Unknown'})',
+                          context,
+                          color: Colors.white70,
+                          textAlign: TextAlign.start,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // PopupMenuButton(
+          //   surfaceTintColor: Colors.transparent,
+          //   shape:
+          //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          //   icon: assetSvg(Assets.popupButton0, color: Colors.white),
+          //   onSelected: (val) {
+          //     Get.back();
+          //     Get.to(ProfileScreen());
+          //   },
+          //   itemBuilder: (BuildContext context) {
+          //     return [
+          //       PopupMenuItem(
+          //         child: Text('Profile'),
+          //         value: 'Profile',
+          //       ),
+          //       const PopupMenuItem(
+          //         child: Text('Commission Withdrawal'),
+          //         value: 'Commission Withdrawal',
+          //       ),
+          //     ];
+          //   },
+          // ),
+        ],
+      ),
+    );
+  }
+
+//default components
+
+  Widget expansionTile(
+      {String title = '',
+      required String headerAsset,
+      required List<Widget> children,
+      bool initiallyExpanded = false}) {
+    return Theme(
+        data: Theme.of(context).copyWith(
+            listTileTheme: ListTileTheme.of(context).copyWith(dense: true)),
+        child: ExpansionTile(
+          title: Row(
+            children: [
+              assetSvg(headerAsset, color: Colors.white, width: 15),
+              width10(),
+              Expanded(
+                  child: bodyMedText(
+                title,
+                context,
+                maxLines: 1,
+                color: Colors.white70,
+                fontWeight: FontWeight.bold,
+                useGradient: true,
+              )),
+            ],
+          ),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          collapsedShape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          collapsedBackgroundColor: Colors.white.withOpacity(0.03),
+          backgroundColor: Colors.blueGrey.withOpacity(0.15),
+          iconColor: Colors.white,
+          textColor: Colors.white,
+          collapsedTextColor: Colors.white70,
+          collapsedIconColor: Colors.white,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          initiallyExpanded: initiallyExpanded,
+          children: children,
+        ));
+  }
+
+  Scaffold buildDefaultPage() {
+    return Scaffold(
+      backgroundColor: mainColor,
+      body: Center(
+        child:
+            bodyLargeText('This is Default Page', context, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class DrawerTileItem extends StatefulWidget {
+  const DrawerTileItem({
+    super.key,
+    this.onTap,
+    required this.leading,
+    required this.title,
+    required this.selected,
+    required this.width,
+    this.trailing,
+    this.trailingOnTap,
+    this.opacity = 1,
+  });
+
+  final void Function()? onTap;
+  final String leading;
+  final String title;
+  final bool selected;
+  final double width;
+  final Widget? trailing;
+  final VoidCallback? trailingOnTap;
+  final double opacity;
+  @override
+  State<DrawerTileItem> createState() => _DrawerTileItemState();
+}
+
+class _DrawerTileItemState extends State<DrawerTileItem>
+    with SingleTickerProviderStateMixin {
+  // late AnimationController animationController;
+  // late Animation animation;
+  @override
+  void initState() {
+    // animationController = AnimationController(
+    //     vsync: this, duration: const Duration(milliseconds: 1000));
+    // animation = Tween<double>(begin: 0, end: widget.width).animate(
+    //     CurvedAnimation(
+    //         parent: animationController, curve: Curves.fastLinearToSlowEaseIn));
+
+    // animationController.addListener(() => setState(() {}));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, bound) {
+      infoLog(bound.maxWidth.toString());
+      return InkWell(
+        onTap: () {
+          Provider.of<DashBoardProvider>(context, listen: false)
+              .setDrawerTile(widget.title);
+          // animationController.forward();
+          // setState(() {});
+          widget.trailingOnTap != null
+              ? widget.trailingOnTap!()
+              : widget.onTap != null
+                  ? widget.onTap!()
+                  : null;
+        },
+        splashColor: Colors.red,
+        child: Stack(
+          children: [
+            Container(
+              // height: 35,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.03),
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: Row(
+                children: [
+                  assetSvg(widget.leading, color: Colors.white, width: 15),
+                  width10(),
+                  bodyMedText(
+                    widget.title,
+                    context,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.bold,
+                    useGradient: true,
+                    opacity: widget.selected ? 1 : widget.opacity,
+                  ),
+                  const Spacer(),
+                  if (widget.trailing != null) widget.trailing!
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              padding: const EdgeInsets.all(10),
+              width: widget.selected ? bound.maxWidth : 0,
+              height: 35,
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.fastLinearToSlowEaseIn,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05 * 5),
+                borderRadius: BorderRadius.circular(5),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+const String aboutUsHtml = (r'''
 
 <section class="p-y-5 pb-0">
 <div class="container">
@@ -465,511 +1169,4 @@ We believe that cars aren't just machines, they're a way of life. From muscle ca
 <section class="p-y-5 pb-0">
 
 </section>
-'''),
-                                                  file_url: authProvider
-                                                          .mcc_content
-                                                          .returnPolicy!
-                                                          .image ??
-                                                      ''));
-                                            }
-                                          },
-                                          leading: e[1],
-                                          title: e[0],
-                                          width: size.width * 0.7,
-                                          selected: dashBoardProvider
-                                                  .selectedDrawerTile ==
-                                              e[0],
-                                        ),
-                                        if (e[0] == 'Notifications' &&
-                                            Provider.of<NotificationProvider>(
-                                                        context,
-                                                        listen: true)
-                                                    .totalUnread >
-                                                0)
-                                          Positioned(
-                                            right: 10,
-                                            top: 0,
-                                            bottom: 0,
-                                            child: Center(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.red,
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
-                                                ),
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 9, vertical: 5),
-                                                child: capText(
-                                                  '${Provider.of<NotificationProvider>(context, listen: true).totalUnread}',
-                                                  context,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                    height10(),
-                                  ],
-                                )),
-                            height10(),
-                            buildFooter(size, context, dashBoardProvider),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  ExpansionTile buildProfileExpansionTile(
-      Size size, DashBoardProvider dashBoardProvider) {
-    return ExpansionTile(
-      title: Row(
-        children: [
-          assetSvg(Assets.profile, color: Colors.white, width: 15),
-          width10(),
-          Expanded(
-              child: bodyMedText(
-            'Personal Details',
-            context,
-            maxLines: 1,
-            color: Colors.white70,
-            fontWeight: FontWeight.bold,
-            useGradient: true,
-          )),
-        ],
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      collapsedShape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      collapsedBackgroundColor: Colors.white.withOpacity(0.03),
-      backgroundColor: Colors.white.withOpacity(0.00),
-      iconColor: Colors.white,
-      textColor: Colors.white,
-      collapsedTextColor: Colors.white70,
-      collapsedIconColor: Colors.white,
-      tilePadding: const EdgeInsets.symmetric(horizontal: 10),
-      initiallyExpanded: false,
-      children: [
-        Container(
-          width: double.maxFinite,
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            // color: Colors.white.withOpacity(0.03),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10),
-            ),
-          ),
-          child: Column(
-            children: [
-              ...['Profile', 'Payment Methods'].map(
-                (e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: DrawerTileItem(
-                    onTap: () {
-                      Widget page = const Scaffold(backgroundColor: mainColor);
-                      switch (e) {
-                        case 'Profile':
-                          page = ProfileScreen();
-                          break;
-                        case 'Payment Methods':
-                          page = PaymentMethodsPage();
-                          break;
-
-                        default:
-                          page = Scaffold(
-                            backgroundColor: mainColor,
-                            body: Center(
-                              child: bodyLargeText(
-                                  'This is Default Page', context,
-                                  color: Colors.white),
-                            ),
-                          );
-                          break;
-                      }
-                      Get.to(page);
-                      // dashBoardProvider.dashScaffoldKey.currentState
-                      //     ?.closeDrawer();
-                    },
-                    leading: e == 'Profile' ? Assets.profile : Assets.bank,
-                    title: e,
-                    width: size.width * 0.7,
-                    selected: dashBoardProvider.selectedDrawerTile == e,
-                    opacity: 0.7,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  ExpansionTile buildDownloadExpansionTile(
-      Size size, DashBoardProvider dashBoardProvider) {
-    return ExpansionTile(
-      title: Row(
-        children: [
-          assetSvg(Assets.download, color: Colors.white, width: 15),
-          width10(),
-          Expanded(
-              child: bodyMedText(
-            'Download',
-            context,
-            maxLines: 1,
-            color: Colors.white70,
-            fontWeight: FontWeight.bold,
-            useGradient: true,
-          )),
-        ],
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      collapsedShape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      collapsedBackgroundColor: Colors.white.withOpacity(0.03),
-      backgroundColor: Colors.white.withOpacity(0.00),
-      iconColor: Colors.white,
-      textColor: Colors.white,
-      collapsedTextColor: Colors.white70,
-      collapsedIconColor: Colors.white,
-      tilePadding: const EdgeInsets.symmetric(horizontal: 10),
-      initiallyExpanded: false,
-      children: [
-        Container(
-          width: double.maxFinite,
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            // color: Colors.white.withOpacity(0.03),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10),
-            ),
-          ),
-          child: Column(
-            children: [
-              ...['PDF', "PPT", 'Video', 'Gallery', 'Videos'].map(
-                (e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: DrawerTileItem(
-                    onTap: () {
-                      Widget page = const Scaffold(backgroundColor: mainColor);
-                      switch (e) {
-                        case 'PDF':
-                          page = MainPage();
-                          launchTheLink(
-                              sl.get<DashBoardProvider>().pdfLink ?? '');
-                          break;
-                        case 'PPT':
-                          page = MainPage();
-                          // Get.back();
-                          launchTheLink(
-                              sl.get<DashBoardProvider>().pptLink ?? '');
-                          break;
-                        case 'Video':
-                          page = DrawerVideoScreen();
-                          break;
-                        case 'Gallery':
-                          page = GalleryMainPage();
-                          break;
-                        case 'Videos':
-                          page = VideosMainPage();
-                          break;
-                        default:
-                          page = Scaffold(
-                            backgroundColor: mainColor,
-                            body: Center(
-                              child: bodyLargeText('Under Development', context,
-                                  color: Colors.white),
-                            ),
-                          );
-                          break;
-                      }
-
-                      Get.to(page);
-                      // dashBoardProvider.dashScaffoldKey.currentState
-                      //     ?.closeDrawer();
-                    },
-                    leading: e == 'PDF'
-                        ? Assets.pdf
-                        : e == 'PPT'
-                            ? Assets.ppt
-                            : e == 'Video'
-                                ? Assets.video
-                                : e == 'Gallery'
-                                    ? Assets.gallery
-                                    : Assets.videoGallery,
-                    title: e,
-                    width: size.width * 0.7,
-                    selected: dashBoardProvider.selectedDrawerTile == e,
-                    opacity: 0.7,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Container buildFooter(
-      Size size, BuildContext context, DashBoardProvider dashBoardProvider) {
-    return Container(
-      height: 20 + size.height * 0.13,
-      // color: Colors.white38,
-      width: double.maxFinite,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          /*  Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () =>
-                    launchTheLink(sl.get<AuthProvider>().privacy ?? ""),
-                child: bodyMedText('Privacy Policy', context,
-                    style: TextStyle(
-                      color: Colors.white,
-                      decoration: TextDecoration.underline,
-                    )),
-              ),
-            ],
-          ),
-          height10(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => launchTheLink(sl.get<AuthProvider>().term ?? ""),
-                child: bodyMedText('Terms & Conditions', context,
-                    style: TextStyle(
-                      color: Colors.white,
-                      decoration: TextDecoration.underline,
-                    )),
-              ),
-            ],
-          ),*/
-          Row(
-            children: [
-              Spacer(flex: 1),
-              Expanded(
-                  flex: 3,
-                  child: CachedNetworkImage(
-                    imageUrl: dashBoardProvider.logoUrl ?? '',
-                    placeholder: (context, url) => SizedBox(
-                        height: 70,
-                        width: 50,
-                        child: Center(
-                            child: CircularProgressIndicator(
-                                color: Colors.transparent))),
-                    errorWidget: (context, url, error) => SizedBox(
-                        height: 70, child: assetImages(Assets.appWebLogoWhite)),
-                    cacheManager: CacheManager(Config(
-                        "${AppConstants.appID}_app_dash_logo",
-                        stalePeriod: const Duration(days: 30))),
-                  )),
-              Spacer(flex: 1)
-            ],
-          ),
-          height10(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              bodyMedText(
-                'Version $appVersion',
-                context,
-                style: TextStyle(color: Colors.white, fontSize: 10),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container buildHeader(
-      Size size, BuildContext context, AuthProvider authProvider) {
-    return Container(
-      height: 20 + size.height * 0.1,
-      // color: CupertinoColors.white,
-
-      width: double.maxFinite,
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: titleLargeText(
-                        (authProvider.userData.customerName ?? 'Unknown')
-                            // 'Jury John'
-                            .capitalize!,
-                        context,
-                        color: Colors.white,
-                        textAlign: TextAlign.start,
-                      ),
-                    ),
-                  ],
-                ),
-                height5(),
-                Row(
-                  children: [
-                    Expanded(
-                      child: capText(
-                          '(${authProvider.userData.username ?? 'Unknown'})',
-                          context,
-                          color: Colors.white70,
-                          textAlign: TextAlign.start,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // PopupMenuButton(
-          //   surfaceTintColor: Colors.transparent,
-          //   shape:
-          //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          //   icon: assetSvg(Assets.popupButton0, color: Colors.white),
-          //   onSelected: (val) {
-          //     Get.back();
-          //     Get.to(ProfileScreen());
-          //   },
-          //   itemBuilder: (BuildContext context) {
-          //     return [
-          //       PopupMenuItem(
-          //         child: Text('Profile'),
-          //         value: 'Profile',
-          //       ),
-          //       const PopupMenuItem(
-          //         child: Text('Commission Withdrawal'),
-          //         value: 'Commission Withdrawal',
-          //       ),
-          //     ];
-          //   },
-          // ),
-        ],
-      ),
-    );
-  }
-}
-
-class DrawerTileItem extends StatefulWidget {
-  const DrawerTileItem({
-    super.key,
-    this.onTap,
-    required this.leading,
-    required this.title,
-    required this.selected,
-    required this.width,
-    this.trailing,
-    this.trailingOnTap,
-    this. opacity = 1,
-  });
-
-  final void Function()? onTap;
-  final String leading;
-  final String title;
-  final bool selected;
-  final double width;
-  final Widget? trailing;
-  final VoidCallback? trailingOnTap;
-  final double opacity;
-  @override
-  State<DrawerTileItem> createState() => _DrawerTileItemState();
-}
-
-class _DrawerTileItemState extends State<DrawerTileItem>
-    with SingleTickerProviderStateMixin {
-  late AnimationController animationController;
-  late Animation animation;
-  @override
-  void initState() {
-    animationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 1000));
-    animation = Tween<double>(begin: 0, end: widget.width).animate(
-        CurvedAnimation(
-            parent: animationController, curve: Curves.fastLinearToSlowEaseIn));
-
-    animationController.addListener(() => setState(() {}));
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    animationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Provider.of<DashBoardProvider>(context, listen: false)
-            .setDrawerTile(widget.title);
-        animationController.forward();
-        setState(() {});
-        widget.trailingOnTap != null
-            ? widget.trailingOnTap!()
-            : widget.onTap != null
-                ? widget.onTap!()
-                : null;
-      },
-      splashColor: Colors.red,
-      child: Stack(
-        children: [
-          Container(
-            // height: 35,
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
-              borderRadius: BorderRadius.circular(5),
-            ),
-            child: Row(
-              children: [
-                assetSvg(widget.leading, color: Colors.white, width: 15),
-                width10(),
-                bodyMedText(
-                  widget.title,
-                  context,
-                  color: Colors.white70,
-                  fontWeight: FontWeight.bold,
-                  useGradient: true,
-                  opacity: widget.opacity,
-                ),
-                const Spacer(),
-                if (widget.trailing != null) widget.trailing!
-              ],
-            ),
-          ),
-          /*    Container(
-            padding: const EdgeInsets.all(10),
-            width: widget.selected ? animation.value : 0,
-            height: 35,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05 * 5),
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),*/
-        ],
-      ),
-    );
-  }
-}
+''');

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
@@ -8,14 +7,14 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:in_app_review/in_app_review.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../../constants/app_constants.dart';
+import '../../test_youtube.dart';
 import '../../utils/theme.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/cusomer_rewards_model.dart';
-import '/database/model/response/dashboard_wallet_activity_model.dart';
 import '/database/model/response/get_active_log_model.dart';
 import '/main.dart';
 import '/myapp.dart';
@@ -41,15 +40,12 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../database/functions.dart';
 import '../../database/my_notification_setup.dart';
 import '../../providers/Cash_wallet_provider.dart';
-import '../../utils/dashboard_dialog.dart';
 import '../../utils/picture_utils.dart';
 import '../../utils/skeleton.dart';
-import '../drawerPages/download_pages/videos/data_manager.dart';
 
 class MainPage extends StatefulWidget {
   MainPage({Key? key}) : super(key: key);
@@ -178,11 +174,12 @@ class _MainPageState extends State<MainPage>
                                           // buildQRCodeContainer(
                                           //     dashBoardProvider),
 
-                                          ///platinum member logo
+                                          //platinum member logo
                                           // GestureDetector(
-                                          // onTap: ()=>Get.to(NotificationExample()),
-                                          // child: buildPlatinumMemberLogo(
-                                          //     dashBoardProvider),
+                                          //   onTap: () =>
+                                          //       Get.to(YoutubePlayerDemoApp()),
+                                          //   child: buildPlatinumMemberLogo(
+                                          //       dashBoardProvider),
                                           // ),
                                           buildSubscriptionStatusBar(
                                               context, dashBoardProvider),
@@ -348,8 +345,7 @@ class _MainPageState extends State<MainPage>
               height: 40,
               width: 40,
               decoration: BoxDecoration(
-                  gradient: buildButtonGradient(),
-                  shape: BoxShape.circle),
+                  gradient: buildButtonGradient(), shape: BoxShape.circle),
               child: Center(
                 child: assetSvg(Assets.squareMenu, color: Colors.white),
               ),
@@ -373,7 +369,6 @@ class _MainPageState extends State<MainPage>
     );
   }
 
-
   Positioned buildSQRCodeContainer(DashBoardProvider dashBoardProvider) {
     return Positioned(
       top: kToolbarHeight / 2 + 35,
@@ -393,10 +388,10 @@ class _MainPageState extends State<MainPage>
                       width: 250,
                       height: 250,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white
-                        // color: Color(appLogoColor.value).withOpacity(01),
-                      ),
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white
+                          // color: Color(appLogoColor.value).withOpacity(01),
+                          ),
                       padding: EdgeInsets.all(10),
                       child: Hero(
                         tag: 'qr_code',
@@ -405,7 +400,7 @@ class _MainPageState extends State<MainPage>
                           showLogo: true,
                           dataModuleShape: QrDataModuleShape.circle,
                           size: Size(200, 200),
-                          color:Colors.black,
+                          color: Colors.black,
                         ),
                       ),
                     ),
@@ -788,15 +783,12 @@ class _MainPageState extends State<MainPage>
                                           //     ],
                                           //     begin: Alignment.topLeft,
                                           //     end: Alignment.bottomRight),
-                                          borderRadius:
-                                              BorderRadius.only(
-                                                topLeft: Radius.circular(10),
-                                                topRight: Radius.circular(100),
-                                                bottomLeft: Radius.circular(10),
-                                                bottomRight:
-                                                    Radius.circular(10),
-
-                                              ),
+                                          borderRadius: BorderRadius.only(
+                                            topLeft: Radius.circular(10),
+                                            topRight: Radius.circular(100),
+                                            bottomLeft: Radius.circular(10),
+                                            bottomRight: Radius.circular(10),
+                                          ),
                                           boxShadow: const [
                                             BoxShadow(
                                                 color: Colors.black12,
@@ -1026,7 +1018,8 @@ class _MainPageState extends State<MainPage>
       {Size? size,
       Size? logoS,
       bool showLogo = true,
-      QrDataModuleShape dataModuleShape = QrDataModuleShape.circle, Color? color}) {
+      QrDataModuleShape dataModuleShape = QrDataModuleShape.circle,
+      Color? color}) {
     return Container(
       height: size?.height,
       width: size?.width,
@@ -1041,7 +1034,7 @@ class _MainPageState extends State<MainPage>
               data: dashBoardProvider.promotionString,
               version: QrVersions.auto,
               gapless: false,
-              foregroundColor:color?? Colors.white,
+              foregroundColor: color ?? Colors.white,
               padding: EdgeInsets.zero,
               // embeddedImage:
               //     assetImageProvider(Assets.appLogo_S, fit: BoxFit.contain),

@@ -1,7 +1,7 @@
 class AppConstants {
   static const String authorizationToken = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
   static const String baseUrlTest = 'https://api.mycarclub.com/api/';
-  static const String baseUrl = 'https://mywealthclub.com/api/';
+  static const String baseUrl = 'https://mycarclub.com/api/';
   static const String appName = 'My Wealth Club';
 
   /// app settings
@@ -73,7 +73,7 @@ class AppConstants {
       'myWallet/coinpayment-fund-request';
   static const String coinPaymentSubmit =
       'myWallet/add-coinpayment-fund-request';
-    static const String transferCashToOther =
+  static const String transferCashToOther =
       'myWallet/transfer-cash-to-other-submit';
   static const String getCardPaymentFundRequest = 'myWallet/card-fund-request';
   static const String cashWalletCardPaymentFundRequestSubmit =

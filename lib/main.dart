@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '/database/functions.dart';
 import '/screens/splash/splash_screen.dart';
@@ -31,7 +29,7 @@ var timer = Timer.periodic(Duration(seconds: 1), (timer) {
 
 Future<void> main() async {
   errorLog('time1 $time', 'timer---');
-  timer;
+  // timer;
   WidgetsFlutterBinding.ensureInitialized();
   await initRepos();
   await Firebase.initializeApp();
@@ -43,7 +41,7 @@ Future<void> main() async {
   await initPlatformState();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-   MyNotification().initialize(flutterLocalNotificationsPlugin);
+  MyNotification().initialize(flutterLocalNotificationsPlugin);
   FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
   final NotificationAppLaunchDetails? notificationAppLaunchDetails = !kIsWeb &&
           Platform.isLinux

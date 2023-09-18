@@ -1,7 +1,6 @@
 import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -94,8 +93,7 @@ class _LazyLoadingTreeViewState extends State<LazyLoadingTreeView> {
       onPressed: onPressed,
       icon: Icon(Icons.person),
       openedIcon: Icon(Icons.keyboard_arrow_up_rounded, color: Colors.red),
-      closedIcon:
-          Icon(Icons.keyboard_arrow_down_rounded, color: appLogoColor),
+      closedIcon: Icon(Icons.keyboard_arrow_down_rounded, color: appLogoColor),
     );
   }
 
@@ -220,8 +218,8 @@ class _LazyLoadingTreeViewState extends State<LazyLoadingTreeView> {
                   children: [
                     SizedBox.square(
                       dimension: (entry.node.downline != null &&
-                          entry.node.downline! > 0) ||
-                          entry.node.newLevel == 2
+                                  entry.node.downline! > 0) ||
+                              entry.node.newLevel == 2
                           ? 40
                           : 0,
                       child: (entry.node.downline != null &&
