@@ -6,10 +6,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:mycarclub/test_youtube.dart';
 import 'package:video_player/video_player.dart';
 import '/database/my_notification_setup.dart';
 import '/main.dart';
@@ -99,59 +101,70 @@ class _MyCarClubState extends State<MyCarClub> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-            create: (context) => sl.get<DashBoardProvider>()),
-        ChangeNotifierProvider(create: (context) => sl.get<AuthProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<NotificationProvider>()),
-        ChangeNotifierProvider(create: (context) => sl.get<TeamViewProvider>()),
-        ChangeNotifierProvider(create: (context) => sl.get<VoucherProvider>()),
-        ChangeNotifierProvider(create: (context) => sl.get<InboxProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<EventTicketsProvider>()),
-        ChangeNotifierProvider(create: (context) => sl.get<SupportProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<SubscriptionProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<CashWalletProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<CommissionWalletProvider>()),
-        ChangeNotifierProvider(create: (context) => sl.get<GalleryProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<CardPaymentProvider>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<SettingsController>()),
-        ChangeNotifierProvider(
-            create: (context) => sl.get<SelectedExampleNotifier>()),
-      ],
-      child: Builder(builder: (context) {
-        errorLog('time3 $time','timer---');
+    return Shortcuts(
+      shortcuts: <LogicalKeySet, Intent>{
+        LogicalKeySet(LogicalKeyboardKey.select): const ActivateIntent(),
+        LogicalKeySet(LogicalKeyboardKey.enter): const ActivateIntent(),
+      },
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+              create: (context) => sl.get<DashBoardProvider>()),
+          ChangeNotifierProvider(create: (context) => sl.get<AuthProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<NotificationProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<TeamViewProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<VoucherProvider>()),
+          ChangeNotifierProvider(create: (context) => sl.get<InboxProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<EventTicketsProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<SupportProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<SubscriptionProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<CashWalletProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<CommissionWalletProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<GalleryProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<CardPaymentProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<SettingsController>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<SelectedExampleNotifier>()),
+          ChangeNotifierProvider(create: (context) => sl.get<PlayerProvider>()),
+        ],
+        child: Builder(builder: (context) {
+          errorLog('time3 $time', 'timer---');
 
-        return GetMaterialApp(
-          navigatorKey: MyCarClub.navigatorKey,
-          initialRoute: widget.initialRoute,
-          debugShowCheckedModeBanner: false,
-          theme: lightTheme,
-          darkTheme: lightTheme,
-          // home: SplashScreen.routeName,
-          // home: SignUpScreen(),
-          routes: <String, WidgetBuilder>{
-            SplashScreen.routeName: (_) => SplashScreen(_controller),
-            MainPage.routeName: (_) => MainPage(),
-            LoginScreen.routeName: (_) => LoginScreen(),
-            InboxScreen.routeName: (_) => InboxScreen(),
-            ForgotPasswordScreen.routeName: (_) => ForgotPasswordScreen(),
-            UpdateAppPage.routeName: (_) => UpdateAppPage(),
-            SubscriptionPage.routeName: (_) => SubscriptionPage(),
-            NotificationPage.routeName: (_) => NotificationPage(
-                notificationAppLaunchDetails:
-                    widget.notificationAppLaunchDetails),
-          },
-          navigatorObservers: [routeObserver],
-        );
-      }),
+          return GetMaterialApp(
+            navigatorKey: MyCarClub.navigatorKey,
+            initialRoute: widget.initialRoute,
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme,
+            darkTheme: lightTheme,
+            // home: SplashScreen.routeName,
+            // home: SignUpScreen(),
+            routes: <String, WidgetBuilder>{
+              SplashScreen.routeName: (_) => SplashScreen(_controller),
+              MainPage.routeName: (_) => MainPage(),
+              LoginScreen.routeName: (_) => LoginScreen(),
+              InboxScreen.routeName: (_) => InboxScreen(),
+              ForgotPasswordScreen.routeName: (_) => ForgotPasswordScreen(),
+              UpdateAppPage.routeName: (_) => UpdateAppPage(),
+              SubscriptionPage.routeName: (_) => SubscriptionPage(),
+              NotificationPage.routeName: (_) => NotificationPage(
+                  notificationAppLaunchDetails:
+                      widget.notificationAppLaunchDetails),
+            },
+            navigatorObservers: [routeObserver],
+          );
+        }),
+      ),
     );
   }
 }

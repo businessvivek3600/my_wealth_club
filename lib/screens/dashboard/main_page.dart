@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 import '../../constants/app_constants.dart';
 import '../../test_youtube.dart';
 import '../../utils/theme.dart';
@@ -174,13 +173,13 @@ class _MainPageState extends State<MainPage>
                                           // buildQRCodeContainer(
                                           //     dashBoardProvider),
 
-                                          //platinum member logo
-                                          // GestureDetector(
-                                          //   onTap: () =>
-                                          //       Get.to(YoutubePlayerDemoApp()),
-                                          //   child: buildPlatinumMemberLogo(
-                                          //       dashBoardProvider),
-                                          // ),
+                                          // platinum member logo
+                                          GestureDetector(
+                                            onTap: () =>
+                                                Get.to(YoutubePlayerDemoApp()),
+                                            child: buildPlatinumMemberLogo(
+                                                dashBoardProvider),
+                                          ),
                                           buildSubscriptionStatusBar(
                                               context, dashBoardProvider),
                                           height30(),
@@ -763,95 +762,105 @@ class _MainPageState extends State<MainPage>
                           if (!dashBoardProvider.loadingDash &&
                               dashBoardProvider.hasSubscription)
                             ...dashBoardProvider.subscriptionPacks
-                                .map((pack) => Container(
-                                      width: size.width * 0.4,
-                                      margin: EdgeInsets.only(
-                                          right: pack != 4 ? 10 : 0),
-                                      child: Container(
-                                        width: size.width * 0.5,
+                                .map((pack) => Builder(builder: (context) {
+                                      infoLog(pack.toJson().toString(), 'pack');
+
+                                      return Container(
+                                        margin:
+                                            EdgeInsets.only(right: 10, top: 10),
+                                        child: buildCachedNetworkImage(
+                                            'https://mywealthclub.com/assets/customer-panel/img/product/usd-monthly-pack-1.png'),
+                                      );
+                                      return Container(
+                                        width: size.width * 0.4,
                                         margin: EdgeInsets.only(
-                                            top: size.height * 0.02),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          // gradient: LinearGradient(
-                                          //     colors: [
-                                          //       pack.status == '1'
-                                          //           ? appLogoColor
-                                          //           : Colors.white,
-                                          //       Colors.blue[100]!,
-                                          //       Colors.white.withOpacity(0.5),
-                                          //     ],
-                                          //     begin: Alignment.topLeft,
-                                          //     end: Alignment.bottomRight),
-                                          borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(10),
-                                            topRight: Radius.circular(100),
-                                            bottomLeft: Radius.circular(10),
-                                            bottomRight: Radius.circular(10),
+                                            right: pack != 4 ? 10 : 0),
+                                        child: Container(
+                                          width: size.width * 0.5,
+                                          margin: EdgeInsets.only(
+                                              top: size.height * 0.02),
+                                          decoration: BoxDecoration(
+                                            gradient: LinearGradient(
+                                              colors: [
+                                                //suggest gradient here
+                                                Colors.white,
+                                                Colors.white,
+                                              ],
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                            ),
+                                            borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(10),
+                                              topRight: Radius.circular(100),
+                                              bottomLeft: Radius.circular(10),
+                                              bottomRight: Radius.circular(10),
+                                            ),
+                                            boxShadow: const [
+                                              BoxShadow(
+                                                  color: Colors.black12,
+                                                  spreadRadius: 5,
+                                                  blurRadius: 5)
+                                            ],
                                           ),
-                                          boxShadow: const [
-                                            BoxShadow(
-                                                color: Colors.black12,
-                                                spreadRadius: 5,
-                                                blurRadius: 5)
-                                          ],
-                                        ),
-                                        padding: EdgeInsets.all(10),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              decoration: BoxDecoration(
-                                                color: appLogoColor
-                                                    .withOpacity(0.7),
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                                boxShadow: const [
-                                                  BoxShadow(
-                                                    color: Colors.black12,
-                                                    spreadRadius: 5,
-                                                    blurRadius: 15,
-                                                  )
+                                          padding: EdgeInsets.all(10),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: appLogoColor
+                                                      .withOpacity(0.7),
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  boxShadow: const [
+                                                    BoxShadow(
+                                                      color: Colors.black12,
+                                                      spreadRadius: 5,
+                                                      blurRadius: 15,
+                                                    )
+                                                  ],
+                                                ),
+                                                padding: EdgeInsets.all(10),
+                                                child: titleLargeText(
+                                                    '$currency_icon${pack.payableAmt ?? ''}',
+                                                    context,
+                                                    color: Colors.white,
+                                                    useGradient: false),
+                                              ),
+                                              Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  titleLargeText(
+                                                      pack.packageName ?? '',
+                                                      context,
+                                                      color: Colors.black,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      useGradient: false),
+                                                  height5(),
+                                                  bodyLargeText(
+                                                      pack.paymentType ?? '',
+                                                      context,
+                                                      color: Colors.black,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                      useGradient: false),
                                                 ],
                                               ),
-                                              padding: EdgeInsets.all(10),
-                                              child: titleLargeText(
-                                                  '$currency_icon${pack.payableAmt ?? ''}',
+                                              capText(
+                                                  '${DateFormat().add_yMMMEd().add_jm().format(DateTime.parse(pack.createdAt ?? ''))}',
                                                   context,
-                                                  color: Colors.white,
-                                                  useGradient: false),
-                                            ),
-                                            Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                titleLargeText(
-                                                    pack.packageName ?? '',
-                                                    context,
-                                                    color: Colors.black,
-                                                    textAlign: TextAlign.center,
-                                                    useGradient: false),
-                                                height5(),
-                                                bodyLargeText(
-                                                    pack.paymentType ?? '',
-                                                    context,
-                                                    color: Colors.black,
-                                                    textAlign: TextAlign.center,
-                                                    useGradient: false),
-                                              ],
-                                            ),
-                                            capText(
-                                                '${DateFormat().add_yMMMEd().add_jm().format(DateTime.parse(pack.createdAt ?? ''))}',
-                                                context,
-                                                color: Colors.black,
-                                                textAlign: TextAlign.center),
-                                          ],
+                                                  color: Colors.black,
+                                                  textAlign: TextAlign.center),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ))
+                                      );
+                                    }))
                                 .toList(),
                           if (dashBoardProvider.loadingDash)
                             ...[1, 2, 3, 4].map(
@@ -931,8 +940,8 @@ class _MainPageState extends State<MainPage>
                             Row(
                               children: [
                                 Expanded(
-                                  child: bodyLargeText(
-                                    'Your Monthly package will be expired after ${dashBoardProvider.sub_expire_days} Day, please upgrade subscription',
+                                  child: capText(
+                                    'Your Monthly package will be expired after ${dashBoardProvider.sub_expire_days} Day, Upgrade your subscription to keep trading',
                                     context,
                                   ),
                                 ),
@@ -1093,7 +1102,7 @@ class _MainPageState extends State<MainPage>
         Row(
           children: [
             UiCategoryTitleContainer(
-                child: bodyLargeText('Direct Referral Link', context)),
+                child: bodyLargeText('Share your referral link', context)),
             width5(),
             GestureDetector(
                 onTap: dashBoardProvider.loadingDash
@@ -1451,7 +1460,7 @@ class _MainPagePlacementIdWidgetState extends State<MainPagePlacementIdWidget> {
                   bodyLargeText(
                       provider.editingMode
                           ? 'Change Placement ID'
-                          : 'Placement Link',
+                          : 'Get your placement link',
                       context),
                   width5(),
                   GestureDetector(

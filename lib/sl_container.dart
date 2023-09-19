@@ -1,6 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:mycarclub/test_youtube.dart';
 import '/constants/app_constants.dart';
 import '/database/dio/dio/dio_client.dart';
 import '/database/repositories/auth_repo.dart';
@@ -150,6 +151,9 @@ Future<void> initRepos() async {
   }
   if (!sl.isRegistered<CardPaymentProvider>()) {
     sl.registerLazySingleton(() => CardPaymentProvider(subscriptionRepo: sl()));
+  }
+  if (!sl.isRegistered<PlayerProvider>()) {
+    sl.registerLazySingleton(() => PlayerProvider());
   }
 
   // External
