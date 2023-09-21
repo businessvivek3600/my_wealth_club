@@ -143,17 +143,17 @@ Future<void> configureLocalTimeZone() async {
 Future<String?> getDeviceToken({String? username}) async {
   String? _deviceToken;
   _deviceToken = await FirebaseMessaging.instance.getToken();
-  await FirebaseFirestore.instance
-      .collection('mycarclub')
-      .doc('tokens')
-      .collection('allusers')
-      .doc((username ?? 'unknown ${DateTime.now()}').trim().toLowerCase())
-      .set({'username': username, 'fcm_token': _deviceToken});
+  // await FirebaseFirestore.instance
+  //     .collection('mycarclub')
+  //     .doc('tokens')
+  //     .collection('allusers')
+  //     .doc((username ?? 'unknown ${DateTime.now()}').trim().toLowerCase())
+  //     .set({'username': username, 'fcm_token': _deviceToken});
   // if (Platform.isIOS) {
   //   _deviceToken = await FirebaseMessaging.instance.getAPNSToken();
   // } else {
   // }
-  print('--------Device Token---------- $_deviceToken');
+  warningLog('--------Device Token---------- $_deviceToken');
 
   return _deviceToken;
 }

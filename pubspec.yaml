@@ -101,6 +101,7 @@ dependencies:
   youtube_explode_dart: ^1.12.4
   pod_player: ^0.1.4
   audio_video_progress_bar: ^1.0.1
+  slide_countdown: ^0.6.0
 
 
 

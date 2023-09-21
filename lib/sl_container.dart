@@ -1,7 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mycarclub/test_youtube.dart';
+import '/screens/youtube_video_play_widget.dart';
 import '/constants/app_constants.dart';
 import '/database/dio/dio/dio_client.dart';
 import '/database/repositories/auth_repo.dart';

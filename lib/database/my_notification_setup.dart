@@ -8,18 +8,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart' hide Response;
+import '/screens/dashboard/main_page.dart';
+import '/screens/youtube_video_play_widget.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
-import '/database/model/response/base/user_model.dart';
 import '/database/repositories/auth_repo.dart';
-import '/database/repositories/fcm_subscription_repo.dart';
 import '/main.dart';
 import '/providers/notification_provider.dart';
-import '/screens/dashboard/main_page.dart';
 import '/screens/drawerPages/inbox/inbox_screen.dart';
 import '/sl_container.dart';
 import '/utils/default_logger.dart';
@@ -164,7 +162,7 @@ class MyNotification {
 
     final RemoteMessage? initialMessages = await messaging.getInitialMessage();
     if (initialMessages != null) {
-      ///TODO:handle the initial messages
+      //todo: handle initial message
       warningLog('messaging.getInitialMessage ${initialMessages.data}', tag,
           'initialMessages');
     }
@@ -239,7 +237,6 @@ class MyNotification {
             CupertinoDialogAction(
               isDefaultAction: true,
               onPressed: () async {
-
                 Navigator.of(context, rootNavigator: true).pop();
                 await MyCarClub.navigatorKey.currentState?.pushNamed(
                     NotificationPage.routeName,
@@ -255,8 +252,10 @@ class MyNotification {
 
   static void configureSelectNotificationSubject() {
     selectNotificationStream.stream.listen((String? payload) async {
-      warningLog('notification tapped from _configureSelectNotificationSubject',
-          tag, 'configureSelectNotificationSubject');
+      warningLog(
+          'notification tapped from _configureSelectNotificationSubject {data: $payload}',
+          tag,
+          'configureSelectNotificationSubject');
 
       Map<String, dynamic>? data = payload != null ? jsonDecode(payload) : null;
       String localUser = (await sl.get<AuthRepo>().getUserID()).toLowerCase();
@@ -272,15 +271,45 @@ class MyNotification {
         if (localUser != '') {
           if (_matchType(_type, notificationType.inbox)) {
             routeName = InboxScreen.routeName;
+          } else if (_matchType(_type, notificationType.ytLive)) {
+            routeName = YoutubePlayerPage.routeName;
+            payload = jsonEncode({
+              'videoId': data['videoId'],
+              'isLive': data['isLive'].toString() == true.toString()
+            });
           } else {
             routeName = NotificationPage.routeName;
           }
-          await MyCarClub.navigatorKey.currentState
-              ?.pushNamed(routeName, arguments: payload);
+          // errorLog('notification tapped from  : $routeName', tag,
+          //     'configureSelectNotificationSubject and payload: $payload');
+          if (routeName == YoutubePlayerPage.routeName) {
+            if (data['isLive'] != null &&
+                data['isLive'].toString() == true.toString()) {
+              await MyCarClub.navigatorKey.currentState
+                  ?.pushNamed(routeName, arguments: payload);
+            } else {
+              // await MyCarClub.navigatorKey.currentState
+              //     ?.pushReplacementNamed(MainPage.routeName);
+            }
+          } else if (routeName != YoutubePlayerPage.routeName) {
+            await MyCarClub.navigatorKey.currentState
+                ?.pushNamed(routeName, arguments: payload);
+          }
+
+          // MyCarClub.navigatorKey.currentState
+          //     ?.pushNamed(routeName, arguments: payload);
+          // MyCarClub.navigatorKey.currentState?.pushNamed(
+          // YoutubePlayerPage.routeName,
+          // arguments:
+          // jsonEncode({'videoId': 'ePplpyOQd74', 'isLive': false}));
         }
       }
     });
   }
+}
+
+bool isUserOnSamePage(BuildContext context, String routeName) {
+  return ModalRoute.of(context)?.settings.name == routeName;
 }
 
 Future<void> _handleNotificationData(
@@ -370,7 +399,9 @@ Future<void> _handleNotificationData(
       var user = localUser != '' ? localUser : topic;
       infoLog('this is topic notification : ${topic}, user:$user',
           MyNotification.tag);
-      _saveNotification(_title, user, user, data: message.data);
+      if (!_matchType(type, notificationType.ytLive)) {
+        _saveNotification(_title, user, user, data: message.data);
+      }
       if (!fromBg) {
         showCustomizedNotification(_title, _body, payload, _image, fln);
       }
@@ -416,7 +447,12 @@ Future<void> _clearAppNotificationBadge() async {
 }
 
 bool _matchType(data, notificationType _type) {
-  return data != null && data.toString().toLowerCase() == _type.name;
+  warningLog(
+      'type: $data',
+      'matched with ${notificationType.values.any((type) => type.name == data)}',
+      '_matchType');
+  return data != null &&
+      data.toString().toLowerCase() == _type.name.toLowerCase();
 }
 
 Future<void> showCustomizedNotification(String title, String body,
@@ -608,7 +644,7 @@ Future<void> myBackgroundMessageHandler(RemoteMessage message) async {
       fromBg: true);
 }
 
-enum notificationType { inbox, notification, subscription }
+enum notificationType { inbox, notification, subscription, ytLive, none }
 
 enum topics {
   none,

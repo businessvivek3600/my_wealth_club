@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,8 +11,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import '/database/model/response/ddashboard_subscription_pack_model.dart';
+import '/database/model/response/subscription_package_model.dart';
+import 'package:slide_countdown/slide_countdown.dart';
 import '../../constants/app_constants.dart';
-import '../../test_youtube.dart';
+import '../youtube_video_play_widget.dart';
 import '../../utils/theme.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/cusomer_rewards_model.dart';
@@ -169,17 +174,27 @@ class _MainPageState extends State<MainPage>
                                           height10(),
                                           _buildPlaceholderIdField(
                                               context, dashBoardProvider),
-                                          height20(),
+                                          height10(),
                                           // buildQRCodeContainer(
                                           //     dashBoardProvider),
 
+                                          // Trading view,
+                                          buildTradingViewWidget(
+                                              context, size, dashBoardProvider),
+                                          height10(),
                                           // platinum member logo
-                                          GestureDetector(
-                                            onTap: () =>
-                                                Get.to(YoutubePlayerDemoApp()),
-                                            child: buildPlatinumMemberLogo(
-                                                dashBoardProvider),
-                                          ),
+
+                                          // Upcommin Events,
+                                          buildUpcomingEvents(
+                                              context, size, dashBoardProvider),
+                                          height20(),
+                                          // platinum member logo
+                                          // GestureDetector(
+                                          //   onTap: () =>
+                                          //       Get.to(YoutubePlayerDemoApp()),
+                                          //   child: buildPlatinumMemberLogo(
+                                          //       dashBoardProvider),
+                                          // ),
                                           buildSubscriptionStatusBar(
                                               context, dashBoardProvider),
                                           height30(),
@@ -218,6 +233,61 @@ class _MainPageState extends State<MainPage>
           },
         );
       },
+    );
+  }
+
+  Widget buildTradingViewWidget(
+      BuildContext context, Size size, DashBoardProvider dashBoardProvider) {
+    return GestureDetector(
+      onTap: () {
+        launchTheLink('https://mywealthclub.com/customer/signals');
+      },
+      child: Stack(
+        children: [
+          Row(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: titleLargeText(
+                  'Company Trade Idea',
+                  context,
+                  fontSize: 25,
+                  useGradient: true,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            top: -10,
+            bottom: -10,
+            right: 0,
+            child: Container(
+              // color: Colors.white,
+              child: assetLottie(Assets.tradingSignals),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Column buildUpcomingEvents(
+      BuildContext context, Size size, DashBoardProvider dashBoardProvider) {
+    String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        UiCategoryTitleContainer(
+            child: bodyLargeText('Upcomincg Events', context)),
+        SizedBox(
+          height: 200,
+          child: _BuildUpcomingEventCard(
+              pack: DashboardSubscriptionPack(),
+              loading: dashBoardProvider.loadingDash),
+        )
+      ],
     );
   }
 
@@ -325,7 +395,7 @@ class _MainPageState extends State<MainPage>
                       height: 70, child: assetImages(Assets.appWebLogoWhite)),
                   cacheManager: CacheManager(Config(
                     "${AppConstants.appID}_app_dash_logo",
-                    stalePeriod: const Duration(days: 30),
+                    stalePeriod: const Duration(days: 1),
                   )))),
         ],
       ),
@@ -763,14 +833,12 @@ class _MainPageState extends State<MainPage>
                               dashBoardProvider.hasSubscription)
                             ...dashBoardProvider.subscriptionPacks
                                 .map((pack) => Builder(builder: (context) {
-                                      infoLog(pack.toJson().toString(), 'pack');
-
-                                      return Container(
-                                        margin:
-                                            EdgeInsets.only(right: 10, top: 10),
-                                        child: buildCachedNetworkImage(
-                                            'https://mywealthclub.com/assets/customer-panel/img/product/usd-monthly-pack-1.png'),
-                                      );
+                                      // return Container(
+                                      //   margin:
+                                      //       EdgeInsets.only(right: 10, top: 10),
+                                      //   child: buildCachedNetworkImage(
+                                      //       'https://mywealthclub.com/assets/customer-panel/img/product/usd-monthly-pack-1.png'),
+                                      // );
                                       return Container(
                                         width: size.width * 0.4,
                                         margin: EdgeInsets.only(
@@ -1378,6 +1446,489 @@ class _MainPageState extends State<MainPage>
         ],
       ),
     );
+  }
+}
+
+class _BuildUpcomingEventCard extends StatelessWidget {
+  const _BuildUpcomingEventCard({
+    super.key,
+    required this.pack,
+    required this.loading,
+  });
+  final DashboardSubscriptionPack pack;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    int index = 2;
+    // create shimmer effect fro upcoming event
+
+    return LayoutBuilder(builder: (context, bound) {
+      double width = Get.width;
+      double maxWidth = width > 500 ? 500 : width;
+      double pd = 5;
+      var url =
+          // 'https://www.analyticsinsight.net/wp-content/uploads/2021/10/Top-10-Cheap-Cryptocurrencies-to-Buy-in-October-2021.jpg';
+          // 'https://i.ytimg.com/vi/qI_zuDqcTEI/hqdefault.jpg';
+          // 'https://i.ytimg.com/vi/qI_zuDqcTEI/8sikTX9m7sQ.jpg';
+          'https://img.youtube.com/vi/8sikTX9m7sQ/0.jpg';
+      String title =
+          'CMyCarClub Introduction 1 SHORT - MyCarClub, A Social & Business Club';
+
+      return Padding(
+        padding: const EdgeInsets.all(10),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Stack(
+            children: [
+              Container(
+                constraints:
+                    BoxConstraints(maxWidth: maxWidth, minWidth: maxWidth),
+                padding: EdgeInsets.all(pd),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: appLogoColor.withOpacity(0.9),
+                  boxShadow: [
+                    // if (!loading)
+                    //   BoxShadow(
+                    //     color: appLogoColor.withOpacity(0.9),
+                    //     blurRadius: 15,
+                    //     spreadRadius: 15,
+                    //     offset: Offset(5, 5),
+                    //   ),
+                  ],
+                ),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: loading
+                        ? Skeleton(
+                            animation: SkeletonAnimation.none,
+                            height: bound.maxHeight,
+                            textColor: Colors.white10,
+                          )
+                        : buildCachedNetworkImage(url)),
+              ),
+              Positioned(
+                top: pd,
+                bottom: pd,
+                left: pd,
+                right: pd,
+                child: LayoutBuilder(builder: (context, bound) {
+                  return Container(
+                    // margin: EdgeInsets.all(5),
+                    decoration: loading
+                        ? null
+                        : BoxDecoration(
+                            backgroundBlendMode: BlendMode.darken,
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                    padding: EdgeInsets.all(10),
+
+                    child: Row(
+                      children: [
+                        // ClipRRect(
+                        //   borderRadius: BorderRadius.circular(10),
+                        //   child: Container(
+                        //     width: bound.maxWidth * 0.3,
+                        //     height: bound.maxWidth * 0.3 * (2 / 4),
+                        //     child: loading
+                        //         ? Skeleton(
+                        //             height: bound.maxHeight,
+                        //             textColor: Colors.white54)
+                        //         : buildCachedNetworkImage(url,
+                        //             fit: BoxFit.fill),
+                        //   ),
+                        // ),
+                        // width10(),
+                        Expanded(child: LayoutBuilder(builder: (context, tb) {
+                          //decide text size on the basis of width
+                          double titleS = 12;
+                          if (tb.maxWidth > 300) {
+                            titleS = 16;
+                          } else if (tb.maxWidth > 200) {
+                            titleS = 14;
+                          }
+                          double timeS = 10;
+                          if (tb.maxWidth > 300) {
+                            timeS = 12;
+                          } else if (tb.maxWidth > 200) {
+                            timeS = 10;
+                          }
+                          double capS = 10;
+                          if (tb.maxWidth > 300) {
+                            capS = 12;
+                          } else if (tb.maxWidth > 200) {
+                            capS = 10;
+                          }
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              loading
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Skeleton(
+                                          height: titleS,
+                                          textColor: Colors.white54,
+                                          borderRadius:
+                                              BorderRadius.circular(2),
+                                        ),
+                                        height5(),
+                                        Skeleton(
+                                          height: titleS,
+                                          width: 70,
+                                          textColor: Colors.white54,
+                                          borderRadius:
+                                              BorderRadius.circular(2),
+                                        )
+                                      ],
+                                    )
+                                  : bodyLargeText(
+                                      title,
+                                      context,
+                                      color: Colors.white,
+                                      useGradient: false,
+                                      fontSize: titleS,
+                                      textAlign: TextAlign.start,
+                                    ),
+                              Spacer(),
+                              Row(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today,
+                                        color: Colors.white70,
+                                        size: capS,
+                                      ),
+                                      width5(),
+                                      loading
+                                          ? Skeleton(
+                                              height: timeS,
+                                              width: 70,
+                                              textColor: Colors.white54,
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                            )
+                                          : RichText(
+                                              text: TextSpan(children: [
+                                              TextSpan(
+                                                text: '12/10/2021',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: timeS,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ])),
+                                    ],
+                                  ),
+                                  width10(),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time,
+                                        color: Colors.white70,
+                                        size: capS,
+                                      ),
+                                      width5(),
+                                      loading
+                                          ? Skeleton(
+                                              height: timeS,
+                                              width: 50,
+                                              textColor: Colors.white54,
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                            )
+                                          : RichText(
+                                              text: TextSpan(children: [
+                                              TextSpan(
+                                                text: '12:00 PM',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: timeS,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ])),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              height5(),
+                              loading
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Skeleton(
+                                          height: titleS,
+                                          textColor: Colors.white38,
+                                          borderRadius:
+                                              BorderRadius.circular(2),
+                                        ),
+                                        // height5(),
+                                        // Skeleton(
+                                        //   height: titleS,
+                                        //   width: 70,
+                                        //   textColor: Colors.white38,
+                                        //   borderRadius:
+                                        //       BorderRadius.circular(2),
+                                        // )
+                                      ],
+                                    )
+                                  : bodyLargeText(
+                                      'More Details...',
+                                      context,
+                                      color: Colors.white70,
+                                      useGradient: false,
+                                      fontSize: capS,
+                                    ),
+                              // Spacer(),
+                              // Row(
+                              //   mainAxisAlignment:
+                              //       MainAxisAlignment.spaceBetween,
+                              //   children: [
+                              //     // watch now button
+                              //     /*
+                              //     loading
+                              //         ? Skeleton(
+                              //             height: 25,
+                              //             width: 70,
+                              //             textColor: Colors.white54,
+                              //             borderRadius:
+                              //                 BorderRadius.circular(5),
+                              //           )
+                              //         : index % 2 != 0
+                              //             ? SizedBox.shrink()
+                              //             : InkWell(
+                              //                 splashColor: Colors.white,
+                              //                 onTap: () {
+                              //                   Navigator.pushNamed(context,
+                              //                       YoutubePlayerPage.routeName,
+                              //                       arguments: jsonEncode({
+                              //                         'videoId': 'ePplpyOQd74',
+                              //                         'isLive': false
+                              //                       }));
+                              //                 },
+                              //                 highlightColor: Colors.white,
+                              //                 focusColor: Colors.white,
+                              //                 child: Container(
+                              //                   padding:
+                              //                       EdgeInsets.all(capS / 2),
+                              //                   decoration: BoxDecoration(
+                              //                     gradient: LinearGradient(
+                              //                       colors: [
+                              //                         Color.fromARGB(
+                              //                             255, 169, 4, 246),
+                              //                         appLogoColor
+                              //                             .withOpacity(0.8),
+                              //                       ],
+                              //                       begin: Alignment.topLeft,
+                              //                       end: Alignment.bottomRight,
+                              //                     ),
+                              //                     borderRadius:
+                              //                         BorderRadius.circular(5),
+                              //                   ),
+                              //                   child: bodyMedText(
+                              //                     'Watch Now',
+                              //                     context,
+                              //                     color: Colors.white,
+                              //                     textAlign: TextAlign.center,
+                              //                     maxLines: 1,
+                              //                   ),
+                              //                 ),
+                              //               ),
+
+                              //     */
+                              //     width10(),
+                              //     // add count down
+
+                              //     loading
+                              //         ? Skeleton(
+                              //             height: 25,
+                              //             width: 100,
+                              //             textColor: Colors.white54,
+                              //             borderRadius:
+                              //                 BorderRadius.circular(5),
+                              //           )
+                              //         : index % 2 == 0
+                              //             ?
+                              //             // build live container
+                              //             Container(
+                              //                 padding: EdgeInsets.symmetric(
+                              //                     vertical: capS / 2,
+                              //                     horizontal: capS),
+                              //                 decoration: BoxDecoration(
+                              //                   color: Colors.red,
+                              //                   borderRadius:
+                              //                       BorderRadius.circular(5),
+                              //                 ),
+                              //                 child: bodyMedText(
+                              //                   'Live',
+                              //                   context,
+                              //                   color: Colors.white,
+                              //                   textAlign: TextAlign.center,
+                              //                   maxLines: 1,
+                              //                 ),
+                              //               )
+                              //             : Builder(builder: (context) {
+                              //                 const defaultDuration = Duration(
+                              //                     hours: 2, minutes: 30);
+                              //                 return SlideCountdown(
+                              //                   duration: defaultDuration,
+                              //                   padding:
+                              //                       EdgeInsets.all(capS / 2),
+                              //                   separatorType:
+                              //                       SeparatorType.symbol,
+                              //                   textStyle: TextStyle(
+                              //                       fontSize: capS,
+                              //                       color: Colors.white),
+                              //                   durationTitle:
+                              //                       DurationTitle.id(),
+                              //                   decoration: const BoxDecoration(
+                              //                       color: Colors.red,
+                              //                       borderRadius:
+                              //                           BorderRadius.all(
+                              //                               Radius.circular(
+                              //                                   5))),
+                              //                 );
+                              //               }),
+                              //   ],
+                              // ),
+                            ],
+                          );
+                        }))
+                      ],
+                    ),
+                  );
+                }),
+              ),
+              // play button
+              Positioned.fill(
+                child: Visibility(
+                  visible: !loading,
+                  child: Center(
+                    child: InkWell(
+                      splashColor: Colors.white,
+                      onTap: () {
+                        Navigator.pushNamed(
+                            context, YoutubePlayerPage.routeName,
+                            arguments: jsonEncode(
+                                {'videoId': '8sikTX9m7sQ', 'isLive': false}));
+                      },
+                      child: Container(
+                        width: 57,
+                        height: 57,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(1),
+                          shape: BoxShape.circle,
+                        ),
+                        padding: EdgeInsets.only(left: 6, top: 10, bottom: 10),
+                        child: Center(
+                            child: assetImages(
+                          'playbutton.png',
+                          // fit: BoxFit.cover,
+                        )),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              Positioned.fill(
+                top: pd,
+                bottom: pd + 10,
+                left: pd,
+                right: pd + 10,
+                child: LayoutBuilder(builder: (context, tb) {
+                  double titleS = 12;
+                  if (tb.maxWidth > 300) {
+                    titleS = 16;
+                  } else if (tb.maxWidth > 200) {
+                    titleS = 14;
+                  }
+                  double timeS = 10;
+                  if (tb.maxWidth > 300) {
+                    timeS = 12;
+                  } else if (tb.maxWidth > 200) {
+                    timeS = 10;
+                  }
+                  double capS = 10;
+                  if (tb.maxWidth > 300) {
+                    capS = 12;
+                  } else if (tb.maxWidth > 200) {
+                    capS = 10;
+                  }
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      loading
+                          ? Skeleton(
+                              height: 25,
+                              width: 60,
+                              textColor: Colors.white54,
+                              borderRadius: BorderRadius.circular(5),
+                            )
+                          : index % 2 == 0
+                              ?
+                              // build live container
+                              Container(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: capS / 3, horizontal: capS),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Icon(
+                                      //   Icons.circle,
+                                      //   color: Colors.white,
+                                      //   size: capS * 0.6,
+                                      // ),
+                                      // width5(),
+                                      capText(
+                                        'Live',
+                                        context,
+                                        color: Colors.white,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : Builder(builder: (context) {
+                                  const defaultDuration =
+                                      Duration(hours: 2, minutes: 30);
+                                  return SlideCountdown(
+                                    duration: defaultDuration,
+                                    padding: EdgeInsets.all(capS / 2),
+                                    separatorType: SeparatorType.symbol,
+                                    textStyle: TextStyle(
+                                        fontSize: capS, color: Colors.white),
+                                    durationTitle: DurationTitle.id(),
+                                    decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
+                                  );
+                                }),
+                    ],
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 

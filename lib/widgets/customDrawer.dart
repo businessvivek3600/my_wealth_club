@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 import '../constants/app_constants.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
@@ -889,8 +889,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     return Scaffold(
       backgroundColor: mainColor,
       body: Center(
-        child:
-            bodyLargeText('This is Default Page', context, color: Colors.white),
+        child: bodyLargeText('Comming soon...', context, color: Colors.white),
       ),
     );
   }

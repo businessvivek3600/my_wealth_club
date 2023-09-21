@@ -11,7 +11,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:mycarclub/test_youtube.dart';
+import '/screens/youtube_video_play_widget.dart';
 import 'package:video_player/video_player.dart';
 import '/database/my_notification_setup.dart';
 import '/main.dart';
@@ -149,6 +149,9 @@ class _MyCarClubState extends State<MyCarClub> {
             darkTheme: lightTheme,
             // home: SplashScreen.routeName,
             // home: SignUpScreen(),
+            onGenerateRoute: (settings) {
+              errorLog('settings $settings', 'settings');
+            },
             routes: <String, WidgetBuilder>{
               SplashScreen.routeName: (_) => SplashScreen(_controller),
               MainPage.routeName: (_) => MainPage(),
@@ -157,6 +160,7 @@ class _MyCarClubState extends State<MyCarClub> {
               ForgotPasswordScreen.routeName: (_) => ForgotPasswordScreen(),
               UpdateAppPage.routeName: (_) => UpdateAppPage(),
               SubscriptionPage.routeName: (_) => SubscriptionPage(),
+              YoutubePlayerPage.routeName: (_) => YoutubePlayerPage(),
               NotificationPage.routeName: (_) => NotificationPage(
                   notificationAppLaunchDetails:
                       widget.notificationAppLaunchDetails),

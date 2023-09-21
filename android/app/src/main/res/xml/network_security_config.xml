@@ -1,5 +1,0 @@
-<network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain>etherscan.io</domain>
-    </domain-config>
-</network-security-config>

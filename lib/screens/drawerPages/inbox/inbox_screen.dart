@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '/database/functions.dart';
 import '/database/model/response/inbox_model.dart';
@@ -784,6 +785,14 @@ String removeTableTags(String htmlString) {
 }
 
 class HtmlPreviewPageState extends State<HtmlPreviewPage> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+    //     overlays: [SystemUiOverlay.bottom]);
+  }
+
   @override
   Widget build(BuildContext context) {
     // print(widget.message);

@@ -99,4 +99,5 @@ class Assets {
   static const dataNotFound = '96253-data-not-found.zip';
   static const shiningStars = '38319-shining-stars.zip';
   static const done = '50465-done.zip';
+  static const tradingSignals = 'kaRTgezOn1.json';
 }
