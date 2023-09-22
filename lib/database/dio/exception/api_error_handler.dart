@@ -1,58 +1,96 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
+import '../../../utils/toasts.dart';
 import '../../model/response/base/error_response.dart';
+import '/utils/default_logger.dart';
 
 class ApiErrorHandler {
-  static dynamic getMessage(error) {
+  static String tag = 'ApiErrorHandler';
+  static dynamic getMessage(error, {String? endpoint}) {
     dynamic errorDescription = "";
-    if (error is Exception) {
+    errorLog('getMessage :${error.runtimeType}', tag);
+    if (error is DioException) {
+      errorLog(
+          'getMessage1 : $error   ${error.runtimeType}   ${error.type}', tag);
       try {
-        if (error is DioError) {
+        if (error.response != null) {
+          switch (error.response?.statusCode) {
+            case 404:
+              errorDescription = 'Request not found';
+              break;
+            case 500:
+              errorDescription = 'Internal server error';
+              break;
+            case 503:
+              errorDescription = error.response?.statusMessage;
+              break;
+            default:
+              errorDescription = error.response?.data;
+          }
+          errorDescription = error.response?.data;
+        } else if (DioExceptionType.values.contains(error.type)) {
           switch (error.type) {
-            case DioErrorType.cancel:
-              errorDescription = "Request to API server was cancelled";
+            case DioExceptionType.cancel:
+              errorDescription = "Request was cancelled";
               break;
-            case DioErrorType.connectTimeout:
-              errorDescription = "Connection timeout with API server";
+            case DioExceptionType.connectionTimeout:
+              errorDescription = "Connection timeout";
               break;
-            case DioErrorType.other:
+            case DioExceptionType.unknown:
+              errorDescription = "Connection failed due to internet connection";
+              break;
+            case DioExceptionType.receiveTimeout:
+              errorDescription = "Receive timeout in connection ";
+              break;
+            case DioExceptionType.badCertificate:
               errorDescription =
-                  "Connection to API server failed due to internet connection";
+                  "Error caused by an incorrect certificate as configured by ValidateCertificate";
               break;
-            case DioErrorType.receiveTimeout:
+            case DioExceptionType.sendTimeout:
+              errorDescription = "Send timeout in connection";
+              break;
+            case DioExceptionType.connectionError:
               errorDescription =
-                  "Receive timeout in connection with API server";
+                  "Connection error or socket exception error in connection";
               break;
-            case DioErrorType.response:
+            case DioExceptionType.badResponse:
               switch (error.response?.statusCode) {
                 case 404:
+                  errorDescription = 'Request not found';
+                  break;
                 case 500:
+                  errorDescription = 'Internal server error';
+                  break;
                 case 503:
                   errorDescription = error.response?.statusMessage;
                   break;
                 default:
                   ErrorResponse errorResponse =
                       ErrorResponse.fromJson(error.response?.data);
-                  if (errorResponse.errors != null &&
-                      errorResponse.errors.length > 0)
+                  if (errorResponse.errors.isNotEmpty) {
                     errorDescription = errorResponse;
-                  else
+                  } else {
                     errorDescription =
                         "Failed to load data - status code: ${error.response?.statusCode}";
+                  }
               }
-              break;
-            case DioErrorType.sendTimeout:
-              errorDescription = "Send timeout with server";
               break;
           }
         } else {
-          errorDescription = "Unexpected error occured";
+          errorDescription = "Unexpected error occurred";
         }
       } on FormatException catch (e) {
         errorDescription = e.toString();
       }
     } else {
-      errorDescription = "is not a subtype of exception";
+      errorDescription = "Unexpected error occurred";
     }
+    errorLog('getMessage : $errorDescription', tag);
+    // try {
+    //   Toasts.showErrorNormalToast(errorDescription);
+    // } catch (e) {
+    //   Get.snackbar('Error', errorDescription);
+    // }
     return errorDescription;
   }
 }

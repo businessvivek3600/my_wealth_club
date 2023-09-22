@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:api_cache_manager/utils/cache_manager.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '/database/functions.dart';
@@ -12,9 +11,7 @@ import '/database/model/response/base/user_model.dart';
 import '/database/model/response/team_downline_user_model.dart';
 import '/database/repositories/team_view_repo.dart';
 import '/providers/auth_provider.dart';
-import '/screens/drawerPages/trem_view_page.dart';
 import '/sl_container.dart';
-import '/utils/toasts.dart';
 import '/widgets/MultiStageButton.dart';
 
 import '../constants/app_constants.dart';

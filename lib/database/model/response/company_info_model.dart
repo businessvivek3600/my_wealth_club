@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '/utils/default_logger.dart';
 
 class CompanyInfoModel {
@@ -153,8 +155,7 @@ class CompanyInfoModel {
     try {
       if (json['popup_image'] != null) {
         List<Map<String, dynamic>> popup = [];
-        print(json['popup_image']);
-        json['popup_image'].forEach((e) {
+        jsonDecode(json['popup_image']).forEach((e) {
           infoLog(e.toString());
           popup.add(e);
         });

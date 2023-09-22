@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '/constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
@@ -87,7 +86,18 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(),
-                onPressed: () {},
+                onPressed: () {
+                  var provider = sl.get<AuthProvider>();
+                  provider.updateCommissionWithdrawal(
+                      usdtt_address.text,
+                      usdtb_address.text,
+                      account_holder_name.text,
+                      account_number.text,
+                      ifsc_code.text,
+                      bank.text,
+                      address.text,
+                      emailOTP.text);
+                },
                 child:
                     bodyMedText('Update', context, textAlign: TextAlign.center),
               ),

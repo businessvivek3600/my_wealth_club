@@ -25,7 +25,7 @@ class CashWalletRepo {
     try {
       Response response =
           await dioClient.post(AppConstants.cashWallet, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -37,7 +37,7 @@ class CashWalletRepo {
     try {
       Response response = await dioClient
           .post(AppConstants.getCoinPaymentFundRequest, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -48,7 +48,7 @@ class CashWalletRepo {
     try {
       Response response = await dioClient.post(AppConstants.coinPaymentSubmit,
           token: true, data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -59,7 +59,6 @@ class CashWalletRepo {
     try {
       Response response = await dioClient.post(AppConstants.transferCashToOther,
           token: true, data: data);
-
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -71,17 +70,20 @@ class CashWalletRepo {
     try {
       Response response = await dioClient
           .post(AppConstants.getCardPaymentFundRequest, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
-  Future<ApiResponse> getCardPaymentOrderId(Map<String,dynamic>data) async {
+
+  Future<ApiResponse> getCardPaymentOrderId(Map<String, dynamic> data) async {
     try {
-      Response response = await dioClient
-          .post(AppConstants.cashWalletCardPaymentFundRequestSubmit, token: true,data: data);
-      
+      Response response = await dioClient.post(
+          AppConstants.cashWalletCardPaymentFundRequestSubmit,
+          token: true,
+          data: data);
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -92,7 +94,7 @@ class CashWalletRepo {
     try {
       Response response = await dioClient
           .post(AppConstants.getNGCashWalletFundRequest, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -105,7 +107,7 @@ class CashWalletRepo {
           AppConstants.addFundFromNGCashWalletFundSubmit,
           token: true,
           data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));

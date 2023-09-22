@@ -718,4 +718,7 @@ class AuthProvider with ChangeNotifier {
     address = '';
     loadingCommissionWithdrawal = false;
   }
+
+  void updateCommissionWithdrawal(String text, String text2, String text3,
+      String text4, String text5, String text6, String text7, String text8) {}
 }

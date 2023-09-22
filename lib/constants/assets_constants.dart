@@ -74,6 +74,8 @@ class Assets {
   static const activeUser = 'active_user.png';
   static const nullUser = 'nullUser.png';
   static const noMessage = 'icons8-deleted-message-64.png';
+  static const candleStick = 'icons8-candlestick-chart-48.png';
+  static const emergencyStop = 'icons8-emergency-stop-button-48.png';
   static const doneImg = 'done.png';
   static const failedImg = 'failed.png';
   static const pendingImg = 'pending.png';

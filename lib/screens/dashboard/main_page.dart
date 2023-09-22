@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import '/screens/dashboard/company_trade_ideas_page.dart';
 import '/database/model/response/ddashboard_subscription_pack_model.dart';
 import '/database/model/response/subscription_package_model.dart';
 import 'package:slide_countdown/slide_countdown.dart';
@@ -240,7 +241,7 @@ class _MainPageState extends State<MainPage>
       BuildContext context, Size size, DashBoardProvider dashBoardProvider) {
     return GestureDetector(
       onTap: () {
-        launchTheLink('https://mywealthclub.com/customer/signals');
+        Get.to(CompanyTradeIdeasPage());
       },
       child: Stack(
         children: [
@@ -250,7 +251,7 @@ class _MainPageState extends State<MainPage>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: titleLargeText(
-                  'Company Trade Idea',
+                  'Company Trade Ideas',
                   context,
                   fontSize: 25,
                   useGradient: true,
@@ -2515,7 +2516,7 @@ class MainPageRewardImageCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 image: DecorationImage(
-                    image: assetImageProvider('archived.gif'),
+                    image: assetImageProvider('achieved.gif'),
                     fit: BoxFit.cover),
               ),
               child: Column(
@@ -2536,6 +2537,7 @@ class MainPageRewardImageCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  height10(),
                   if (!dashBoardProvider.loadingDash)
                     Expanded(
                       child: Center(
@@ -2559,6 +2561,7 @@ class MainPageRewardImageCard extends StatelessWidget {
                         // child: Image.network(url),
                       ),
                     ),
+                  height20(),
                 ],
               ),
             ),

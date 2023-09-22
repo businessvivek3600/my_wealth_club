@@ -27,8 +27,8 @@ class DioClient {
     dio = dioC ?? Dio();
     dio
       ..options.baseUrl = baseUrl
-      ..options.connectTimeout = 30000
-      ..options.receiveTimeout = 30000
+      ..options.connectTimeout = Duration(milliseconds: 30000)
+      ..options.receiveTimeout = Duration(milliseconds: 30000)
       ..httpClientAdapter
       ..options.headers = {
         'content-type': 'multipart/form-data',
@@ -111,7 +111,7 @@ class DioClient {
       throw FormatException("Unable to process the data $e");
     } catch (e) {
       errorLog('post cache error $e');
-      throw e.toString();
+      throw e;
     }
   }
 

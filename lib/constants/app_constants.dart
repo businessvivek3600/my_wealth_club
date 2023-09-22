@@ -1,8 +1,8 @@
 class AppConstants {
-  static const String authorizationToken = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
-  // static const String authorizationToken = 'MyWealthClub@741852963';
-  static const String baseUrlTest = 'https://api.mycarclub.com/api/';
-  static const String baseUrl = 'https://mycarclub.com/api/';
+  // static const String authorizationToken = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
+  static const String authorizationToken = 'MyWealthClub@741852963';
+  static const String baseUrlTest = 'https://api.mywealthclub.com/api/';
+  static const String baseUrl = 'https://mywealthclub.com/api/';
   static const String appName = 'My Wealth Club';
 
   /// app settings

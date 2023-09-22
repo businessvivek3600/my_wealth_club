@@ -445,10 +445,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: "7d328c4d898a61efc3cd93655a0955858e29a0aa647f0f9e02d59b3bb275e2e8"
+      sha256: "417e2a6f9d83ab396ec38ff4ea5da6c254da71e4db765ad737a42af6930140b7"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.6"
+    version: "5.3.3"
   dropdown_search:
     dependency: "direct main"
     description:
@@ -614,6 +614,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.1"
+  flutter_custom_clippers:
+    dependency: "direct main"
+    description:
+      name: flutter_custom_clippers
+      sha256: "473e3daf61c2a6cee0ad137393259a25223239d519a131c7ec1cac04d06e5407"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   flutter_fancy_tree_view:
     dependency: "direct main"
     description:
@@ -622,6 +630,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  flutter_flip_card:
+    dependency: "direct main"
+    description:
+      name: flutter_flip_card
+      sha256: d1d9a4f430f1a157b817ce3df0c9feb7f59adbb867cb93a88a6dad05fe6ef184
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
   flutter_html:
     dependency: "direct main"
     description:
@@ -758,6 +774,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.1"
+  flutter_spinkit:
+    dependency: "direct main"
+    description:
+      name: flutter_spinkit
+      sha256: b39c753e909d4796906c5696a14daf33639a76e017136c8d82bf3e620ce5bb8e
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.0"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -1793,10 +1817,10 @@ packages:
     dependency: "direct main"
     description:
       name: vimeo_video_player
-      sha256: b9fe2f12536944c8f98d640002a89d54562f22576d4a7f879435a75752d88d95
+      sha256: "9f11cbc5fea0609fa4bd71735ba09d58fce9735fd03617a364139cdf9a2ee39b"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.6"
+    version: "0.0.10"
   visibility_detector:
     dependency: "direct main"
     description:

@@ -277,6 +277,7 @@ class CashWalletProvider extends ChangeNotifier {
         Toasts.showWarningNormalToast('You are offline');
       }
     } catch (e) {
+      Get.back();
       print('transferCashToOther failed ${e}');
     }
   }

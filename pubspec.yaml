@@ -57,7 +57,7 @@ dependencies:
   #  Backend
   api_cache_manager: ^1.0.2
   get_it: ^7.2.0
-  dio: ^4.0.6
+  # dio: ^4.0.6
   sqflite: ^2.2.6
   shared_preferences: ^2.1.0
   firebase_core: ^2.0.0
@@ -102,6 +102,10 @@ dependencies:
   pod_player: ^0.1.4
   audio_video_progress_bar: ^1.0.1
   slide_countdown: ^0.6.0
+  flutter_flip_card: ^0.0.4
+  flutter_spinkit: ^5.2.0
+  flutter_custom_clippers: ^2.1.0
+  dio: ^5.3.3
 
 
 
