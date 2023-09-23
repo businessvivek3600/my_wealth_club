@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/screens/drawerPages/downlines/geration_member/geration_member_page.dart';
+import '../screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
 import '../constants/app_constants.dart';
 import '/constants/assets_constants.dart';
@@ -13,7 +15,7 @@ import '/providers/notification_provider.dart';
 import '/screens/Notification/notification_page.dart';
 import '/screens/auth/login_screen.dart';
 import '/screens/dashboard/main_page.dart';
-import '/screens/drawerPages/commission_wallet/commission_wallet.dart';
+import '../screens/drawerPages/commission_wallet/commission_wallet_page.dart';
 import '/screens/drawerPages/download_pages/gallery_main_page.dart';
 import '/screens/drawerPages/download_pages/videos/videos_page.dart';
 import '/screens/drawerPages/event_tickets/event_tickets_page.dart';
@@ -21,8 +23,8 @@ import '/screens/drawerPages/inbox/inbox_screen.dart';
 import '/screens/drawerPages/pofile/profile_screen.dart';
 import '/screens/drawerPages/subscription/subscription_page.dart';
 import '/screens/drawerPages/support_pages/support_Page.dart';
-import '/screens/drawerPages/team_view/layerd_graph_team_view.dart';
-import '/screens/drawerPages/trem_member_page.dart';
+import '../screens/drawerPages/downlines/team_view/layerd_graph_team_view.dart';
+import '../screens/drawerPages/downlines/trem_member_page.dart';
 import '/screens/drawerPages/voucher/voucher_page.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
@@ -275,7 +277,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
     const String teamMemeber = 'Team Member';
     const String teamView = 'Team View';
     const String myTreeView = 'My Tree View';
-    const String generationLayer = 'Generation Layer';
+    const String generationAnalyzer = 'Generation Analyzer';
+    const String generationMember = 'Generation Member';
     const String inactiveAnalyzer = 'Inactive Analyzer';
 
     return expansionTile(
@@ -284,7 +287,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
       initiallyExpanded: dashBoardProvider.selectedDrawerTile == teamMemeber ||
           dashBoardProvider.selectedDrawerTile == teamView ||
           dashBoardProvider.selectedDrawerTile == myTreeView ||
-          dashBoardProvider.selectedDrawerTile == generationLayer ||
+          dashBoardProvider.selectedDrawerTile == generationMember ||
+          dashBoardProvider.selectedDrawerTile == generationAnalyzer ||
           dashBoardProvider.selectedDrawerTile == inactiveAnalyzer,
       children: [
         Container(
@@ -300,7 +304,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 teamMemeber,
                 teamView,
                 myTreeView,
-                generationLayer,
+                generationMember,
+                generationAnalyzer,
                 inactiveAnalyzer
               ].map(
                 (e) => Padding(
@@ -317,7 +322,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           break;
                         case myTreeView:
 
-                        case generationLayer:
+                        case generationMember:
+                          page = GenerationMemberPage();
+                          break;
+                        case generationAnalyzer:
+                          page = const GenerationAnalyzerPage();
+                          break;
 
                         case inactiveAnalyzer:
 
@@ -334,9 +344,11 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             ? Assets.teamView
                             : e == myTreeView
                                 ? Assets.downline
-                                : e == generationLayer
+                                : e == generationMember
                                     ? Assets.layer
-                                    : Assets.analyzer,
+                                    : e == generationAnalyzer
+                                        ? Assets.layer
+                                        : Assets.analyzer,
                     title: e,
                     width: size.width * 0.7,
                     selected: dashBoardProvider.selectedDrawerTile == e,
@@ -888,6 +900,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
   Scaffold buildDefaultPage() {
     return Scaffold(
       backgroundColor: mainColor,
+      appBar: AppBar(
+        backgroundColor: mainColor,
+        elevation: 0,
+        title: titleLargeText('My Car Club', context,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            useGradient: true),
+        centerTitle: true,
+      ),
       body: Center(
         child: bodyLargeText('Comming soon...', context, color: Colors.white),
       ),

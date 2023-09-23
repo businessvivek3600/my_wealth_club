@@ -32,7 +32,6 @@ import '/screens/auth/forgot_password.dart';
 import '/screens/auth/login_screen.dart';
 import '/screens/dashboard/main_page.dart';
 import '/screens/drawerPages/subscription/subscription_page.dart';
-import '/screens/drawerPages/team_view/examples.dart';
 import '/screens/splash/splash_screen.dart';
 import '/screens/update_app_page.dart';
 import '/sl_container.dart';
@@ -42,7 +41,6 @@ import 'package:provider/provider.dart';
 
 import 'providers/Cash_wallet_provider.dart';
 import 'screens/drawerPages/inbox/inbox_screen.dart';
-import 'screens/drawerPages/team_view/settings/controller.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
@@ -77,8 +75,6 @@ class _MyCarClubState extends State<MyCarClub> {
     sl.get<CommissionWalletProvider>(),
     sl.get<GalleryProvider>(),
     sl.get<CardPaymentProvider>(),
-    SettingsController(),
-    SelectedExampleNotifier(),
   ];
 
   @override
@@ -132,10 +128,6 @@ class _MyCarClubState extends State<MyCarClub> {
               create: (context) => sl.get<GalleryProvider>()),
           ChangeNotifierProvider(
               create: (context) => sl.get<CardPaymentProvider>()),
-          ChangeNotifierProvider(
-              create: (context) => sl.get<SettingsController>()),
-          ChangeNotifierProvider(
-              create: (context) => sl.get<SelectedExampleNotifier>()),
           ChangeNotifierProvider(create: (context) => sl.get<PlayerProvider>()),
         ],
         child: Builder(builder: (context) {

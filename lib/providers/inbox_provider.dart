@@ -77,7 +77,7 @@ class InboxProvider extends ChangeNotifier {
     try {
       if (map != null) {
         try {
-          totalInbox = int.parse(map['total' ?? '0']);
+          totalInbox = int.parse(map['total'] ?? '0');
         } catch (e) {}
         try {
           if (map["data"] != null &&
@@ -109,8 +109,6 @@ class InboxProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-
-
 
   clear() {
     inbox.clear();

@@ -230,7 +230,7 @@ class CashWalletProvider extends ChangeNotifier {
             Get.back();
             getCoinPaymentFundRequest(false);
             redirectUrl != null
-                ? launchTheLink(redirectUrl ?? '')
+                ? launchTheLink(redirectUrl)
                 : Toasts.showErrorNormalToast('Something went wrong!');
             amountController.clear();
           } else {

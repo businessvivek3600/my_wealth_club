@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 import 'package:mycarclub/constants/assets_constants.dart';
+import 'package:mycarclub/utils/color.dart';
 import '/database/functions.dart';
 import '/utils/default_logger.dart';
 import '/utils/picture_utils.dart';
@@ -58,13 +60,12 @@ class _TradeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color tColor = Colors.black;
-    Color bColor = Color.fromARGB(255, 51, 58, 59).withOpacity(0.9);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Stack(
         children: [
           GestureDetector(
-            onTap: () => flip(),
+            onTap: () => Get.to(() => SignalDetail()),
             // onDoubleTap: () => Get.to(() => SignalDetail()),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(5),
@@ -74,7 +75,7 @@ class _TradeTile extends StatelessWidget {
                 controller: controller,
                 rotateSide: RotateSide.left,
                 // enableController: false,
-                onTapFlipping: true,
+                onTapFlipping: false,
                 frontWidget: frontCard(bColor, context, tColor),
                 backWidget: backCard(bColor, context, tColor),
               ),
@@ -206,8 +207,7 @@ class _TradeTile extends StatelessWidget {
                         ],
                       ),
                       width5(),
-                      titleLargeText('190.000', context,
-                          color: Color.fromARGB(255, 170, 239, 211)),
+                      titleLargeText('190.000', context, color: appLogoColor),
                     ],
                   ),
                   height10(),
@@ -229,7 +229,7 @@ class _TradeTile extends StatelessWidget {
                       width10(),
                       Row(
                         children: [
-                          Icon(Icons.last_page,
+                          Icon(Icons.logout_rounded,
                               color: Color.fromARGB(249, 241, 224, 224),
                               size: 15),
                           width5(),
@@ -338,49 +338,152 @@ class _SignalDetailState extends State<SignalDetail> {
     return Scaffold(
       appBar: AppBar(
         title: titleLargeText(
-          'Signal Detail',
+          'Signal Details',
           context,
           color: Colors.white,
           useGradient: true,
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
+      body: Container(
+        height: double.maxFinite,
+        width: double.maxFinite,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              image: userAppBgImageProvider(context),
+              fit: BoxFit.cover,
+              opacity: 1),
+        ),
+        child: SingleChildScrollView(
+          child: Card(
+            margin: EdgeInsets.all(16.0),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            color: bColor,
+            child: Container(
               padding: EdgeInsets.all(16.0),
-              child: Wrap(
-                // crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 10,
-                runSpacing: 10,
+              child: Stack(
                 children: [
-                  Text('Signal Details - USD/JPY'),
-                  Text('Date: 2023-08-16'),
-                  Text('Time: 05:56:16'),
-                  Text('Direction: Sell'),
-                  Text('Market: USD/JPY'),
-                  Text('Entry: 190'),
-                  Text('Stop Loss: 108.500'),
-                  Text('Take Profit 1 (TP1): 109.100'),
-                  Text('Take Profit 2 (TP2): 109.400'),
-                  Text('Take Profit 3 (TP3): 109.700'),
-                  Text('Take Profit 4 (TP4): 110.000'),
-                  Text('Status: Active'),
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          titleLargeText(' USD/JPY', context,
+                              useGradient: true, fontSize: 23),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          assetImages(Assets.candleStick, width: 15),
+                          width5(),
+                          capText(
+                            formatDate(DateTime.parse('2023-08-05 12:36:67'),
+                                'dd MMM yyyy h:m a'),
+                            context,
+                            color: Color.fromARGB(255, 169, 175, 179),
+                          ),
+                        ],
+                      ),
+                      height20(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('ENTRY:', context, useGradient: false),
+                          bodyLargeText('190.000', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('STOP LOSS:', context,
+                              useGradient: false),
+                          bodyLargeText('108.500', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('TAKE PROFIT 1:', context,
+                              useGradient: false),
+                          bodyLargeText('109.100', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('TAKE PROFIT 2:', context,
+                              useGradient: false),
+                          bodyLargeText('109.400', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('TAKE PROFIT 3:', context,
+                              useGradient: false),
+                          bodyLargeText('109.700', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('TAKE PROFIT 4:', context,
+                              useGradient: false),
+                          bodyLargeText('110.000', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('TAKE PROFIT 5:', context,
+                              useGradient: false),
+                          bodyLargeText('110.000', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height10(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyLargeText('STATUS:', context, useGradient: false),
+                          bodyLargeText('Active', context,
+                              useGradient: false, color: appLogoColor),
+                        ],
+                      ),
+                      height30(),
+                      bodyMedText('Updates', context,
+                          decoration: TextDecoration.underline),
+                      height10(),
+                      capText('New update from market', context,
+                          color: Color.fromARGB(255, 169, 175, 179)),
+                    ],
+                  ),
+
+                  // up down arrow signal
+                  Positioned(
+                    child: assetSvg(Assets.arrowOut,
+                        color: Colors.green, width: 30),
+                    right: 0,
+                    top: 0,
+                  ),
                 ],
               ),
             ),
-            Divider(),
-            Container(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Signal At: 2023-08-16 05:56:16'),
-                  Text('Updates: Initial signal for testing'),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

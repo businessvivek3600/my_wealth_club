@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graphview/GraphView.dart';
+import '../trem_view_page.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/team_downline_user_model.dart';
 import '/database/repositories/team_view_repo.dart';
 import '/providers/auth_provider.dart';
 import '/providers/team_view_provider.dart';
-import '/screens/drawerPages/trem_view_page.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
 import '/utils/no_internet_widget.dart';
@@ -21,8 +21,8 @@ import '/utils/text.dart';
 import '/widgets/Custom_BottomSheetDialog.dart';
 import 'package:provider/provider.dart';
 
-import '../../../database/model/response/base/api_response.dart';
-import '../../../widgets/MultiStageButton.dart';
+import '../../../../database/model/response/base/api_response.dart';
+import '../../../../widgets/MultiStageButton.dart';
 
 class LayeredGraphViewPage extends StatefulWidget {
   @override
@@ -50,7 +50,9 @@ class _LayeredGraphViewPageState extends State<LayeredGraphViewPage> {
             isOnline && !loadingInitial && childrenMap.entries.isEmpty
                 ? Colors.white
                 : mainColor,
-        appBar: AppBar(title: titleLargeText('Team View',context,useGradient: true), shadowColor: Colors.white24),
+        appBar: AppBar(
+            title: titleLargeText('Team View', context, useGradient: true),
+            shadowColor: Colors.white24),
         body: isOnline
             ? Stack(
                 children: [

@@ -43,7 +43,7 @@ class DioClient {
     this.token = token;
     dio.options.headers = {
       'Content-Type': contentType ?? 'application/json; charset=UTF-8',
-      'x-api-key': '${token ?? this.token}',
+      'x-api-key': '${token}',
     };
   }
 

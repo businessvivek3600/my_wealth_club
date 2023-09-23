@@ -109,159 +109,167 @@ class _CashWalletPageState extends State<CashWalletPage> {
     );
   }
 
-  SliverPadding buildSliverList(CashWalletProvider provider) {
-    Color textColor = Colors.black;
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            var history = CashWalletHistory();
-            var date = '';
-            if (!provider.loadingWallet) {
-              history = provider.history[index];
-              date = DateFormat()
-                          .add_yMMMEd()
-                          .format(DateTime.parse(history.createdAt ?? '')) ==
-                      DateFormat().add_yMMMEd().format(DateTime.now())
-                  ? 'Today'
-                  : DateFormat().add_yMMMEd().format(
-                              DateTime.parse(history.createdAt ?? '')) ==
-                          DateFormat().add_yMMMEd().format(
-                              DateTime.now().subtract(Duration(days: 1)))
-                      ? 'Yesterday'
-                      : DateFormat()
-                          .add_yMMMEd()
-                          .format(DateTime.parse(history.createdAt ?? ''));
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildDateHeader(provider, index, history, date),
-                Container(
-                  width: double.maxFinite,
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    // border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              !provider.loadingWallet
-                                  ? capText(
-                                      DateFormat().add_jm().format(
-                                          DateTime.parse(
-                                              history.createdAt ?? '')),
-                                      context,
-                                      color: textColor)
-                                  : Skeleton(
-                                      height: 15,
-                                      width: 70,
-                                      textColor: Colors.black26,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                            ],
-                          ),
-                          // height10(),
-                          !provider.loadingWallet
-                              ? capText(
-                                  parseHtmlString(history.note ?? ''), context,
-                                  color: textColor)
-                              : Skeleton(
-                                  height: 15,
-                                  // width: 70,
-                                  textColor: Colors.black26,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                        ],
-                      ),
-                      const Divider(color: Colors.red),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              assetSvg(
-                                Assets.arrowIn,
-                                color: Colors.green,
-                                width: 13,
-                              ),
-                              width5(),
-                              !provider.loadingWallet
-                                  ? capText(
-                                      '${sl.get<AuthProvider>().userData.currency_icon ?? ''}${double.parse(history.credit ?? '0').toStringAsFixed(1)}',
-                                      context,
-                                      color: textColor)
-                                  : Skeleton(
-                                      height: 13,
-                                      width: 30,
-                                      textColor: Colors.black26,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              assetSvg(
-                                Assets.arrowOut,
-                                color: Colors.red,
-                                width: 13,
-                              ),
-                              width5(),
-                              !provider.loadingWallet
-                                  ? capText(
-                                      '${sl.get<AuthProvider>().userData.currency_icon ?? ''}${double.parse(history.debit ?? '0').toStringAsFixed(1)}',
-                                      context,
-                                      color: textColor)
-                                  : Skeleton(
-                                      height: 13,
-                                      width: 30,
-                                      textColor: Colors.black26,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              assetSvg(
-                                Assets.balanceColored,
-                                width: 13,
-                              ),
-                              width5(),
-                              !provider.loadingWallet
-                                  ? capText(
-                                      '${sl.get<AuthProvider>().userData.currency_icon ?? ''}${double.parse(history.balance ?? '0').toStringAsFixed(1)}',
-                                      context,
-                                      color: textColor)
-                                  : Skeleton(
-                                      height: 13,
-                                      width: 30,
-                                      textColor: Colors.black26,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                            ],
-                          ),
-                        ],
-                      )
+  SliverList buildSliverList(CashWalletProvider provider) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          var history = CashWalletHistory();
+          var date = '';
+          if (!provider.loadingWallet) {
+            history = provider.history[index];
+            date = DateFormat()
+                        .add_yMMMEd()
+                        .format(DateTime.parse(history.createdAt ?? '')) ==
+                    DateFormat().add_yMMMEd().format(DateTime.now())
+                ? 'Today'
+                : DateFormat()
+                            .add_yMMMEd()
+                            .format(DateTime.parse(history.createdAt ?? '')) ==
+                        DateFormat()
+                            .add_yMMMEd()
+                            .format(DateTime.now().subtract(Duration(days: 1)))
+                    ? 'Yesterday'
+                    : DateFormat()
+                        .add_yMMMEd()
+                        .format(DateTime.parse(history.createdAt ?? ''));
+          }
+          return buildTile(provider, index, history, date, context);
+        }, //ListTile
+        childCount: !provider.loadingWallet ? provider.history.length : 11,
+      ), //SliverChildBuildDelegate
+    );
+  }
+
+  Column buildTile(
+    CashWalletProvider provider,
+    int index,
+    CashWalletHistory history,
+    String date,
+    BuildContext context,
+  ) {
+    Color textColor = Color.fromARGB(255, 255, 255, 255);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildDateHeader(provider, index, history, date),
+        Container(
+          width: double.maxFinite,
+          margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: bColor,
+            // border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      !provider.loadingWallet
+                          ? capText(
+                              DateFormat().add_jm().format(
+                                  DateTime.parse(history.createdAt ?? '')),
+                              context,
+                              color: fadeTextColor)
+                          : Skeleton(
+                              height: 15,
+                              width: 70,
+                              textColor: Colors.black26,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
                     ],
                   ),
-                ),
-                if (index == provider.history.length - 1) height50(70),
-              ],
-            );
-          }, //ListTile
-          childCount: !provider.loadingWallet ? provider.history.length : 11,
-        ), //SliverChildBuildDelegate
-      ),
+                  // height10(),
+                  !provider.loadingWallet
+                      ? capText(parseHtmlString(history.note ?? ''), context,
+                          color: textColor)
+                      : Skeleton(
+                          height: 15,
+                          // width: 70,
+                          textColor: Colors.black26,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                ],
+              ),
+              const Divider(color: Colors.red),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      assetSvg(
+                        Assets.arrowIn,
+                        color: Colors.green,
+                        width: 13,
+                      ),
+                      width5(),
+                      !provider.loadingWallet
+                          ? capText(
+                              '${sl.get<AuthProvider>().userData.currency_icon ?? ''}${double.parse(history.credit ?? '0').toStringAsFixed(1)}',
+                              context,
+                              color: textColor)
+                          : Skeleton(
+                              height: 13,
+                              width: 30,
+                              textColor: Colors.black26,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      assetSvg(
+                        Assets.arrowOut,
+                        color: Colors.red,
+                        width: 13,
+                      ),
+                      width5(),
+                      !provider.loadingWallet
+                          ? capText(
+                              '${sl.get<AuthProvider>().userData.currency_icon ?? ''}${double.parse(history.debit ?? '0').toStringAsFixed(1)}',
+                              context,
+                              color: textColor)
+                          : Skeleton(
+                              height: 13,
+                              width: 30,
+                              textColor: Colors.black26,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      assetSvg(
+                        Assets.balanceColored,
+                        width: 13,
+                      ),
+                      width5(),
+                      !provider.loadingWallet
+                          ? capText(
+                              '${sl.get<AuthProvider>().userData.currency_icon ?? ''}${double.parse(history.balance ?? '0').toStringAsFixed(1)}',
+                              context,
+                              color: textColor)
+                          : Skeleton(
+                              height: 13,
+                              width: 30,
+                              textColor: Colors.black26,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                    ],
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+        if (index == provider.history.length - 1) height50(70),
+      ],
     );
   }
 
@@ -277,34 +285,32 @@ class _CashWalletPageState extends State<CashWalletPage> {
                 DateTime.parse(provider.history[index - 1].createdAt ?? ''));
       }
       return Container(
-        margin:
-            EdgeInsets.only(top: !sameDay ? 15 : 0, bottom: !sameDay ? 10 : 0),
+        margin: EdgeInsets.only(
+            top: index != 0 && !sameDay ? 10 : 0, bottom: !sameDay ? 10 : 0),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.0),
-          borderRadius: BorderRadius.circular(5),
-        ),
-        child: Row(
-          children: [
-            !provider.loadingWallet
-                ? !sameDay
-                    ? Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: appLogoColor,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: capText(date, context, color: Colors.white))
-                    : Container()
-                : Skeleton(
-                    height: 25,
-                    width: 100,
-                    textColor: appLogoColor,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-            width10(),
-            if (!sameDay) Expanded(child: Divider(color: Colors.white))
-          ],
-        ),
+            color: Color.fromARGB(255, 128, 128, 128),
+            borderRadius: BorderRadius.circular(0)),
+        child: !provider.loadingWallet
+            ? Row(
+                children: [
+                  !sameDay
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 8),
+                          decoration: BoxDecoration(
+                              // color: appLogoColor,
+                              borderRadius: BorderRadius.circular(5)),
+                          child: capText(date, context, color: Colors.white))
+                      : Container(),
+                  width10(),
+                  if (!sameDay) Expanded(child: Divider(color: Colors.white))
+                ],
+              )
+            : Skeleton(
+                height: 25,
+                width: double.maxFinite,
+                // textColor: appLogoColor,
+                borderRadius: BorderRadius.circular(5)),
       );
     });
   }
@@ -320,7 +326,8 @@ class _CashWalletPageState extends State<CashWalletPage> {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: titleLargeText("Cash Wallet", context,useGradient: true)),
+          Expanded(
+              child: titleLargeText("Cash Wallet", context, useGradient: true)),
           !provider.loadingWallet
               ? bodyLargeText(
                   "${sl.get<AuthProvider>().userData.currency_icon ?? ''}${provider.walletBalance.toStringAsFixed(2)}",

@@ -1,4 +1,3 @@
-import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -25,7 +24,6 @@ class TeamMemberPage extends StatefulWidget {
 
 class _TeamMemberPageState extends State<TeamMemberPage> {
   final globalKey = GlobalKey<ScaffoldState>();
-  final AutoScrollController scrollController = AutoScrollController();
   @override
   void initState() {
     sl.get<TeamViewProvider>().getCustomerTeam();
@@ -271,46 +269,3 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
     );
   }
 }
-
-class UserName {
-  final String firstName;
-  final String lastName;
-
-  UserName(this.firstName, this.lastName);
-}
-
-final simpleTree = TreeNode<UserName>.root(data: UserName("User", "Names"))
-  ..addAll([
-    TreeNode<UserName>(key: "0A", data: UserName("Sr. John", "Doe"))
-      ..add(TreeNode(key: "0A1A", data: UserName("Jr. John", "Doe"))),
-    TreeNode<UserName>(key: "0C", data: UserName("General", "Lee"))
-      ..addAll([
-        TreeNode<UserName>(key: "0C1A", data: UserName("Major", "Lee")),
-        TreeNode<UserName>(key: "0C1B", data: UserName("Happy", "Lee")),
-        TreeNode<UserName>(key: "0C1C", data: UserName("Busy", "Lee"))
-          ..addAll([
-            TreeNode<UserName>(key: "0C1C2A", data: UserName("Jr. Busy", "Lee"))
-          ]),
-      ]),
-    TreeNode<UserName>(key: "0D", data: UserName("Mr. Anderson", "Neo")),
-    TreeNode<UserName>(key: "0E", data: UserName("Mr. Smith", "Agent")),
-  ]);
-
-final indexedTree = IndexedTreeNode<UserName>.root(
-    data: UserName("User", "Names"))
-  ..addAll([
-    IndexedTreeNode<UserName>(key: "0A", data: UserName("Sr. John", "Doe"))
-      ..add(IndexedTreeNode(key: "0A1A", data: UserName("Jr. John", "Doe"))),
-    IndexedTreeNode<UserName>(key: "0C", data: UserName("General", "Lee"))
-      ..addAll([
-        IndexedTreeNode<UserName>(key: "0C1A", data: UserName("Major", "Lee")),
-        IndexedTreeNode<UserName>(key: "0C1B", data: UserName("Happy", "Lee")),
-        IndexedTreeNode<UserName>(key: "0C1C", data: UserName("Busy", "Lee"))
-          ..addAll([
-            IndexedTreeNode<UserName>(
-                key: "0C1C2A", data: UserName("Jr. Busy", "Lee"))
-          ]),
-      ]),
-    IndexedTreeNode<UserName>(key: "0D", data: UserName("Mr. Anderson", "Neo")),
-    IndexedTreeNode<UserName>(key: "0E", data: UserName("Mr. Smith", "Agent")),
-  ]);

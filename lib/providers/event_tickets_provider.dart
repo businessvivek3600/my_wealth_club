@@ -78,7 +78,7 @@ class EventTicketsProvider extends ChangeNotifier {
           print('create events list error $e');
         }
         try {} catch (e) {
-          walletBalance = double.parse(map['wallet_balance' ?? '0']);
+          walletBalance = double.parse(map['wallet_balance'] ?? '0');
         }
         try {
           if (map['ticket_request'] != null &&
@@ -125,8 +125,7 @@ class EventTicketsProvider extends ChangeNotifier {
           try {
             selectedTicket = EventTickets.fromJson(map['event']);
             notifyListeners();
-          } catch (e) {
-          }
+          } catch (e) {}
           try {
             if (map['wallet_balance'] != null && map['wallet_balance'] != '') {
               walletBalance = double.parse(map['wallet_balance']);

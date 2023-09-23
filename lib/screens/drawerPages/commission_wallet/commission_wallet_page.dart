@@ -93,80 +93,90 @@ class _CommissionWalletPageState extends State<CommissionWalletPage> {
     );
   }
 
-  SliverPadding buildSliverList(CommissionWalletProvider provider) {
-    Color textColor = Colors.black;
-    return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            var history = CommissionWalletHistory();
-            var date = '';
-            if (!provider.loadingWallet) {
-              history = provider.history[index];
-              date = DateFormat()
-                          .add_yMMMEd()
-                          .format(DateTime.parse(history.createdAt ?? '')) ==
-                      DateFormat().add_yMMMEd().format(DateTime.now())
-                  ? 'Today'
-                  : DateFormat().add_yMMMEd().format(
-                              DateTime.parse(history.createdAt ?? '')) ==
-                          DateFormat().add_yMMMEd().format(
-                              DateTime.now().subtract(Duration(days: 1)))
-                      ? 'Yesterday'
-                      : DateFormat()
-                          .add_yMMMEd()
-                          .format(DateTime.parse(history.createdAt ?? ''));
-            }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Builder(builder: (context) {
-                  bool sameDay = false;
-                  if (!provider.loadingWallet && index != 0) {
-                    sameDay = DateFormat()
+  SliverList buildSliverList(CommissionWalletProvider provider) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          var history = CommissionWalletHistory();
+          var date = '';
+          if (!provider.loadingWallet) {
+            history = provider.history[index];
+            date = DateFormat()
+                        .add_yMMMEd()
+                        .format(DateTime.parse(history.createdAt ?? '')) ==
+                    DateFormat().add_yMMMEd().format(DateTime.now())
+                ? 'Today'
+                : DateFormat()
                             .add_yMMMEd()
                             .format(DateTime.parse(history.createdAt ?? '')) ==
-                        DateFormat().add_yMMMEd().format(DateTime.parse(
-                            provider.history[index - 1].createdAt ?? ''));
-                  }
-                  return Row(
-                    children: [
-                      !provider.loadingWallet
-                          ? !sameDay
-                              ? Container(
-                                  padding: const EdgeInsets.all(5),
-                                  decoration: BoxDecoration(
-                                    color: appLogoColor,
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: capText(date, context))
-                              : Container()
-                          : Skeleton(
-                              height: 25,
-                              width: 100,
-                              textColor: appLogoColor,
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                      width10(),
-                      if (!sameDay)
-                        Expanded(child: Divider(color: Colors.white))
-                    ],
-                  );
-                }),
-                height5(),
-                CH_CM_Transaction_Tile_Widget(
-                  history: history,
-                  textColor: textColor,
-                  loading: provider.loadingWallet,
-                ),
-              ],
-            );
-          }, //ListTile
-          childCount: !provider.loadingWallet ? provider.history.length : 11,
-        ), //SliverChildBuildDelegate
-      ),
+                        DateFormat()
+                            .add_yMMMEd()
+                            .format(DateTime.now().subtract(Duration(days: 1)))
+                    ? 'Yesterday'
+                    : DateFormat()
+                        .add_yMMMEd()
+                        .format(DateTime.parse(history.createdAt ?? ''));
+          }
+          return buildTile(provider, index, history, date);
+        }, //ListTile
+        childCount: !provider.loadingWallet ? provider.history.length : 11,
+      ), //SliverChildBuildDelegate
     );
+  }
+
+  Column buildTile(CommissionWalletProvider provider, int index,
+      CommissionWalletHistory history, String date) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildHeader(provider, index, history, date),
+        height5(),
+        CH_CM_Transaction_Tile_Widget(
+            history: history, loading: provider.loadingWallet),
+      ],
+    );
+  }
+
+  Widget buildHeader(CommissionWalletProvider provider, int index,
+      CommissionWalletHistory history, String date) {
+    return Builder(builder: (context) {
+      bool sameDay = false;
+      if (!provider.loadingWallet && index != 0) {
+        sameDay = DateFormat()
+                .add_yMMMEd()
+                .format(DateTime.parse(history.createdAt ?? '')) ==
+            DateFormat().add_yMMMEd().format(
+                DateTime.parse(provider.history[index - 1].createdAt ?? ''));
+      }
+      return Container(
+        margin: EdgeInsets.only(
+            top: index != 0 && !sameDay ? 10 : 0, bottom: !sameDay ? 10 : 0),
+        decoration: BoxDecoration(
+            color: Color.fromARGB(255, 128, 128, 128),
+            borderRadius: BorderRadius.circular(0)),
+        child: !provider.loadingWallet
+            ? Row(
+                children: [
+                  !sameDay
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 5, horizontal: 8),
+                          decoration: BoxDecoration(
+                              // color: appLogoColor,
+                              borderRadius: BorderRadius.circular(5)),
+                          child: capText(date, context, color: Colors.white))
+                      : Container(),
+                  width10(),
+                  if (!sameDay) Expanded(child: Divider(color: Colors.white))
+                ],
+              )
+            : Skeleton(
+                height: 25,
+                width: double.maxFinite,
+                // textColor: appLogoColor,
+                borderRadius: BorderRadius.circular(5)),
+      );
+    });
   }
 
   SliverAppBar buildSliverAppBar(Size size, CommissionWalletProvider provider) {
@@ -271,27 +281,27 @@ class CH_CM_Transaction_Tile_Widget extends StatelessWidget {
   const CH_CM_Transaction_Tile_Widget({
     super.key,
     required this.history,
-    required this.textColor,
     required this.loading,
   });
 
   final CommissionWalletHistory history;
-  final Color textColor;
+
   final bool loading;
 
   @override
   Widget build(BuildContext context) {
     String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+    Color textColor = Colors.white;
 
     return Container(
       // height: 100,
       width: double.maxFinite,
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 5, left: 10, right: 10),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: bColor,
         // border: Border.all(color: Colors.white),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -307,7 +317,7 @@ class CH_CM_Transaction_Tile_Widget extends StatelessWidget {
                               .add_jm()
                               .format(DateTime.parse(history.createdAt ?? '')),
                           context,
-                          color: textColor)
+                          color: fadeTextColor)
                       : Skeleton(
                           height: 15,
                           width: 50,
@@ -346,11 +356,7 @@ class CH_CM_Transaction_Tile_Widget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  assetSvg(
-                    Assets.arrowIn,
-                    color: Colors.green,
-                    width: 13,
-                  ),
+                  assetSvg(Assets.arrowIn, color: Colors.green, width: 13),
                   width5(),
                   !loading
                       ? capText(
