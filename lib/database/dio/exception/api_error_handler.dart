@@ -1,6 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:get/get.dart';
-import '../../../utils/toasts.dart';
 import '../../model/response/base/error_response.dart';
 import '/utils/default_logger.dart';
 

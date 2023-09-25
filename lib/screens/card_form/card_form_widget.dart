@@ -1,10 +1,7 @@
-import 'dart:math';
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -280,7 +277,8 @@ class _CardFormWidgetState extends State<CardFormWidget> {
                             child: assetImages(Assets.appWebLogo)),
                       ],
                     ),
-                cacheManager: CacheManager(Config("${AppConstants.appID}_${package.name}",
+                cacheManager: CacheManager(Config(
+                    "${AppConstants.appID}_${package.name}",
                     stalePeriod: const Duration(days: 7)))),
           ),
         ],

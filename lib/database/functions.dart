@@ -2,14 +2,11 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:api_cache_manager/api_cache_manager.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart';
 import '/database/model/response/base/user_model.dart';
@@ -31,7 +28,6 @@ import '/sl_container.dart';
 import '/utils/check_app_update.dart';
 import '/utils/toasts.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:power_file_view/power_file_view.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -120,7 +116,7 @@ Future<String?> downloadAndSaveFile(String url, String filename) async {
       }
     });
     print("File is saved to $downloadFilePath");
-  } on DioError catch (e) {
+  } on DioException catch (e) {
     print('File download failed ${e.message}');
   }
   return downloadFilePath;
@@ -212,7 +208,7 @@ Stream<bool> checkFBForAppUpdate() async* {
             ? AppConstants.testAndroidVersionKey
             : AppConstants.androidVersionKey);*/
     // if (isOnline) {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    // FirebaseFirestore firestore = FirebaseFirestore.instance;
     //can run
 /*      var runKey =
           AppConstants.testMode ? AppConstants.testCanRun : AppConstants.canRun;

@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '/constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
 import '/providers/commission_wallet_provider.dart';
 import '/sl_container.dart';
@@ -35,7 +33,6 @@ class _CommissionWithdrawRequestPageState
   void initState() {
     var provider = sl.get<CommissionWalletProvider>();
     provider.getCommissionWithdrawRequest().then((value) {
-
       setState(() {
         if (provider.paymentTypes.entries.isNotEmpty) {
           _currentPaymentTypeVal = provider.paymentTypes.entries.first.value;
@@ -185,13 +182,13 @@ class _CommissionWithdrawRequestPageState
                                     style: TextStyle(color: Colors.white),
                                     onChanged: (val) => setState(() {}),
                                     decoration: InputDecoration(
-                                      prefix: Text('${sl.get<AuthProvider>().userData.currency_icon??''}'),
+                                      prefix: Text(
+                                          '${sl.get<AuthProvider>().userData.currency_icon ?? ''}'),
                                       hintText: 'Enter amount',
                                       helperText:
                                           'Note:- minimum ${currencyIcon}${provider.minimumBalance} withdraw',
                                       helperStyle: TextStyle(
-                                          color:
-                                              appLogoColor.withOpacity(0.8)),
+                                          color: appLogoColor.withOpacity(0.8)),
                                     ),
                                     // autovalidateMode: AutovalidateMode.always,
                                     validator: (val) {

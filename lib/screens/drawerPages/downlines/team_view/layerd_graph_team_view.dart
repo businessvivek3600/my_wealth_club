@@ -221,7 +221,6 @@ class _LayeredGraphViewPageState extends State<LayeredGraphViewPage> {
   final Map<int, List<TeamDownlineUser>> childrenMap = {};
   TeamDownlineUser? rooTUser;
   void init() async {
-    print('------- i ');
     setState(() {
       loadingInitial = true;
     });
@@ -270,6 +269,7 @@ class TeamViewUserIconWidget extends StatefulWidget {
     required this.context,
     this.callBack,
     required this.rootUser,
+    this.showMessage = false,
   });
 
   final TeamDownlineUser user;
@@ -277,6 +277,7 @@ class TeamViewUserIconWidget extends StatefulWidget {
   final int loadingNodeId;
   final BuildContext context;
   final VoidCallback? callBack;
+  final bool showMessage;
 
   @override
   State<TeamViewUserIconWidget> createState() => _TeamViewUserIconWidgetState();
@@ -381,7 +382,7 @@ class _TeamViewUserIconWidgetState extends State<TeamViewUserIconWidget>
                     ],
                   ),
                 ),
-                if (!widget.rootUser)
+                if (!widget.rootUser && widget.showMessage)
                   Positioned(
                     right: 0,
                     bottom: 0,

@@ -1,6 +1,17 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mycarclub/utils/color.dart';
+import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
+import '/constants/assets_constants.dart';
+import '/providers/auth_provider.dart';
+import '/providers/dashboard_provider.dart';
+import '/providers/team_view_provider.dart';
+import '/utils/color.dart';
+import '/utils/sizedbox_utils.dart';
+import 'package:provider/provider.dart';
+import '../../../sl_container.dart';
+import '../../../utils/MyClippers.dart';
 import '../../../utils/picture_utils.dart';
 import '../../../utils/text.dart';
 
@@ -12,108 +23,353 @@ class GenerationAnalyzerPage extends StatefulWidget {
 }
 
 class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
-  int? selectedIndex;
+  var provider = sl.get<TeamViewProvider>();
+  var authProvider = sl.get<AuthProvider>();
+
+  int selectedIndex = 0;
+  final searchController = TextEditingController();
+  bool isSearching = false;
   final ScrollController generationScoll = ScrollController();
   List<GlobalKey> generationKeys =
       List.generate(10, (index) => GlobalKey(debugLabel: 'generation_$index'));
+  List<String> generationList = [
+    'All',
+    'Generation 1',
+    'Generation 2',
+    'Generation 3',
+    'Generation 4',
+    'Generation 5',
+    'Generation 6',
+    'Generation 7',
+    'Generation 8',
+    'Generation 9'
+  ];
 
+  final breadCumbScroll = ScrollController();
+  void _animateToLast() {
+    breadCumbScroll.animateTo(
+      breadCumbScroll.position.maxScrollExtent,
+      curve: Curves.fastOutSlowIn,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
   initState() {
     super.initState();
-    generationScoll.addListener(() {
-      if (selectedIndex != null && selectedIndex != -1) {
-        generationScoll.position.ensureVisible(
-            generationKeys[selectedIndex!].currentContext!.findRenderObject()!);
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      provider.setBreadCrumbContent(
+          0,
+          BreadCrumbContent(
+              index: 0,
+              user: GenerationAnalyzerUser(
+                  name: 'Root', image: Assets.appWebLogo, generation: 0)));
+      provider.gUsers.addAll(provider.generateRandomUsers(0));
       setState(() {});
     });
   }
 
   @override
+  void dispose() {
+    provider.breadCrumbContent.clear();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title:
-            titleLargeText('Generation Analyzer', context, useGradient: true),
-      ),
-      body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              image: userAppBgImageProvider(context),
-              fit: BoxFit.cover,
-              opacity: 1),
+    return Consumer<TeamViewProvider>(builder: (context, provider, _) {
+      return GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Scaffold(
+          appBar: buildAppBar(context),
+          body: Container(
+            height: double.maxFinite,
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: userAppBgImageProvider(context),
+                    fit: BoxFit.cover,
+                    opacity: 1)),
+            child: Column(children: [
+              chipsTile(),
+              if (provider.breadCrumbContent.length > 1)
+                bradcrumRow(provider, context),
+              height10(),
+              Expanded(
+                  child: provider.loadingGUsers.name ==
+                          ButtonLoadingState.loading.name
+                      ? Center(
+                          child: CircularProgressIndicator(color: appLogoColor))
+                      : buildGrid(provider)),
+            ]),
+          ),
         ),
-        child: Column(children: [
-          ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 50),
-              child: ListView(
-                controller: generationScoll,
-                scrollDirection: Axis.horizontal,
+      );
+    });
+  }
+
+  Row bradcrumRow(TeamViewProvider provider, BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: buildBreadcrumbs(provider)),
+        width5(),
+        ClipPath(
+          clipper: OvalLeftBorderClipper(),
+          child: GestureDetector(
+            onTap: () {
+              if (provider.breadCrumbContent.length == 1) return;
+              setState(() {
+                selectedIndex = 0;
+              });
+              Scrollable.ensureVisible(
+                  generationKeys[selectedIndex].currentContext!,
+                  duration: Duration(milliseconds: 700),
+                  curve: Curves.fastOutSlowIn);
+              provider.setBreadCrumbContent(1);
+              provider.setGenerationUsers(0);
+              _animateToLast();
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  color: Colors.red,
+                  boxShadow: [
+                    BoxShadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 3,
+                        color: Colors.black26)
+                  ]),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Column(
+                  // Icon(Icons.arrow_back_rounded,
+                  //     color: Colors.white, size: 20),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: capText('Root', context,
+                        color: Colors.white, useGradient: false),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  GridView buildGrid(TeamViewProvider provider) {
+    return GridView.builder(
+      padding: EdgeInsets.only(
+          left: 10, right: 10, top: 0, bottom: kBottomNavigationBarHeight),
+      itemCount: provider.gUsers.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1),
+      itemBuilder: (context, index) {
+        GenerationAnalyzerUser user = provider.gUsers[index];
+        return GestureDetector(
+          onTap: () {
+            setState(() => selectedIndex = 0);
+            Scrollable.ensureVisible(
+                generationKeys[selectedIndex].currentContext!,
+                duration: Duration(milliseconds: 700));
+
+            provider.setBreadCrumbContent(
+                provider.breadCrumbContent.length,
+                BreadCrumbContent(
+                    index: provider.breadCrumbContent.length,
+                    user: GenerationAnalyzerUser(
+                        name: user.name,
+                        image: user.image,
+                        generation: user.generation)));
+            provider.setGenerationUsers(user.generation);
+            _animateToLast();
+          },
+          child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: bColor,
+                boxShadow: [
+                  BoxShadow(
+                      offset: Offset(0, 1),
+                      blurRadius: 3,
+                      color: Colors.black26)
+                ]),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                assetImages(user.image ?? '', height: 50, width: 50),
+                bodyLargeText(user.name ?? '', context,
+                    textAlign: TextAlign.center, useGradient: false),
+                height5(),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Container buildBreadcrumbs(TeamViewProvider provider) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          // color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+                offset: Offset(0, 1), blurRadius: 3, color: Colors.black26)
+          ]),
+      padding: EdgeInsets.all(8),
+      child: BreadCrumb.builder(
+        itemCount: provider.breadCrumbContent.length,
+        builder: (index) {
+          GenerationAnalyzerUser user = provider.breadCrumbContent[index].user;
+          return BreadCrumbItem(
+            margin: EdgeInsets.only(
+                right:
+                    index == provider.breadCrumbContent.length - 1 ? 100 : 0),
+            content: capText('Crumb ${user.name}', context, useGradient: true),
+            onTap: () {
+              setState(() => selectedIndex = 0);
+              Scrollable.ensureVisible(
+                  generationKeys[selectedIndex].currentContext!,
+                  duration: Duration(milliseconds: 700),
+                  curve: Curves.fastOutSlowIn);
+              provider.setBreadCrumbContent(index + 1);
+              provider.setGenerationUsers(user.generation);
+              _animateToLast();
+            },
+          );
+        },
+        divider: Icon(Icons.chevron_right, color: Colors.white, size: 20),
+        overflow: ScrollableOverflow(
+            direction: Axis.horizontal,
+            reverse: false,
+            keepLastDivider: false,
+            controller: breadCumbScroll),
+      ),
+    );
+  }
+
+  ConstrainedBox chipsTile() {
+    return ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: 50),
+        child: ListView(
+          controller: generationScoll,
+          physics: BouncingScrollPhysics(),
+          scrollDirection: Axis.horizontal,
+          children: [
+            ...generationList.map((gen) => Builder(builder: (context) {
+                  int index = generationList.indexOf(gen);
+                  return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _GenerationChip(
-                        key: generationKeys[0],
-                        title: 'All',
-                        selected: selectedIndex == null || selectedIndex == -1,
-                        index: -1,
-                        onCancel: (index) => {
-                          setState(() {
-                            selectedIndex = null;
-                          })
+                        widgetKey: generationKeys[index],
+                        title: gen,
+                        selected: selectedIndex == index,
+                        index: index,
+                        onCancel: (index) {
+                          setState(() => selectedIndex = 0);
+                          Scrollable.ensureVisible(
+                              generationKeys[selectedIndex].currentContext!,
+                              duration: Duration(milliseconds: 700),
+                              curve: Curves.fastOutSlowIn);
                         },
-                        onSelect: (index) => {
-                          setState(() {
-                            selectedIndex = index;
-                          })
+                        onSelect: (index) {
+                          setState(() => selectedIndex = index);
+                          Scrollable.ensureVisible(
+                            generationKeys[selectedIndex].currentContext!,
+                            duration: Duration(milliseconds: 700),
+                            curve: Curves.fastOutSlowIn,
+                          );
                         },
                       ),
                     ],
+                  );
+                }))
+          ],
+        ));
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+        title: AnimatedSwitcher(
+            duration: Duration(milliseconds: 500),
+            child: isSearching
+                ? SizedBox(
+                    height: 40,
+                    child: TextField(
+                      controller: searchController,
+                      autofocus: true,
+                      cursorColor: Colors.white,
+                      textInputAction: TextInputAction.search,
+                      style: TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        isDense: true,
+                        hintText: 'Search...',
+                        hintStyle: TextStyle(color: fadeTextColor),
+                        border: InputBorder.none,
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              searchController.clear();
+                              // isSearching = !isSearching;
+                            });
+                          },
+                          icon: Icon(CupertinoIcons.clear_circled_solid,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  )
+                : titleLargeText('Generation Analyzer', context,
+                    useGradient: true)),
+        actions: [
+          AnimatedSwitcher(
+            duration: Duration(milliseconds: 500),
+            child: !isSearching
+                ? IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isSearching = !isSearching;
+                      });
+                    },
+                    icon: Icon(Icons.search))
+                : Transform.rotate(
+                    angle: pi / 2,
+                    child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            isSearching = !isSearching;
+                          });
+                        },
+                        icon: Icon(Icons.u_turn_left)),
                   ),
-                  ...List.generate(
-                      9,
-                      (index) => Builder(builder: (context) {
-                            return Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _GenerationChip(
-                                  key: generationKeys[index + 1],
-                                  title: 'Generation $index',
-                                  selected: selectedIndex == index,
-                                  index: index,
-                                  onCancel: (index) => {
-                                    setState(() {
-                                      selectedIndex = -1;
-                                    })
-                                  },
-                                  onSelect: (index) => {
-                                    setState(() {
-                                      selectedIndex = index;
-                                    })
-                                  },
-                                ),
-                              ],
-                            );
-                          }))
-                ],
-              )),
-        ]),
-      ),
-    );
+          ),
+        ]);
   }
 }
 
 class _GenerationChip extends StatelessWidget {
   const _GenerationChip({
-    super.key,
+    required this.widgetKey,
     this.selected = false,
     required this.index,
     required this.onCancel,
     required this.onSelect,
     required this.title,
   });
+  final GlobalKey widgetKey;
   final bool selected;
   final int index;
   final Function(int) onSelect;
@@ -123,6 +379,7 @@ class _GenerationChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: widgetKey,
       onTap: () => onSelect(index),
       child: Container(
         // width: 100,
@@ -163,4 +420,19 @@ class _GenerationChip extends StatelessWidget {
       ),
     );
   }
+}
+
+class BreadCrumbContent {
+  final int index;
+  final GenerationAnalyzerUser user;
+  BreadCrumbContent({required this.index, required this.user});
+}
+
+class GenerationAnalyzerUser {
+  String? name;
+  String? referralId;
+  int generation;
+  String? image;
+  GenerationAnalyzerUser(
+      {this.name, required this.generation, this.image, this.referralId});
 }

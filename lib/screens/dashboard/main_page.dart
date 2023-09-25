@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,7 +12,6 @@ import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 import '/screens/dashboard/company_trade_ideas_page.dart';
 import '/database/model/response/ddashboard_subscription_pack_model.dart';
-import '/database/model/response/subscription_package_model.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import '../../constants/app_constants.dart';
 import '../youtube_video_play_widget.dart';
@@ -1452,7 +1450,6 @@ class _MainPageState extends State<MainPage>
 
 class _BuildUpcomingEventCard extends StatelessWidget {
   const _BuildUpcomingEventCard({
-    super.key,
     required this.pack,
     required this.loading,
   });

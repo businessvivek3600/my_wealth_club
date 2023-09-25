@@ -9,13 +9,11 @@ import '/constants/assets_constants.dart';
 import '/database/model/response/event_tickets_model.dart';
 import '/providers/event_tickets_provider.dart';
 import '/sl_container.dart';
-import '/utils/3d_button.dart';
 import '/utils/app_default_loading.dart';
 import '/utils/color.dart';
 import '/utils/picture_utils.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/text.dart';
-import '/utils/theme.dart';
 import 'package:provider/provider.dart';
 
 import '../../../providers/auth_provider.dart';
@@ -156,8 +154,8 @@ class _BuyEventTicketState extends State<BuyEventTicket>
               bottom: 10,
               right: 10,
               child: Container(
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: appLogoColor),
+                decoration:
+                    BoxDecoration(shape: BoxShape.circle, color: appLogoColor),
                 child: GestureDetector(
                     onTap: () => removeOverlay(),
                     child: Padding(
@@ -362,7 +360,8 @@ class _BuyEventTicketState extends State<BuyEventTicket>
                 child: CircularProgressIndicator(
                     color: appLogoColor.withOpacity(0.5)))),
         errorWidget: (context, url, error) => assetImages(Assets.noImage),
-        cacheManager: CacheManager(Config("${AppConstants.appID}_${widget.event.eventName}",
+        cacheManager: CacheManager(Config(
+            "${AppConstants.appID}_${widget.event.eventName}",
             stalePeriod: const Duration(days: 7))));
   }
 }

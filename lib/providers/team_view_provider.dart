@@ -1,10 +1,14 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:api_cache_manager/utils/cache_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '/screens/drawerPages/downlines/generation_analyzer.dart';
+import '/utils/default_logger.dart';
+import '../constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
 import '/database/model/response/base/user_model.dart';
@@ -397,6 +401,95 @@ class TeamViewProvider extends ChangeNotifier {
     notifyListeners();
     return status;
   }
+
+  ///generationAnalyzer
+  ///
+  List<BreadCrumbContent> breadCrumbContent = [];
+  setBreadCrumbContent(int index, [BreadCrumbContent? content]) async {
+    loadingGUsers = ButtonLoadingState.loading;
+    notifyListeners();
+    await Future.delayed(const Duration(seconds: 1));
+    errorLog(
+        'setBreadCrumbContent  ${index} ${breadCrumbContent.length - 1}  replace: ${breadCrumbContent.length - 1 <= index}',
+        'index out of range');
+    if (content != null) {
+      if (breadCrumbContent.isEmpty) {
+        breadCrumbContent.insert(index, content);
+      } else if (breadCrumbContent.length > index) {
+        breadCrumbContent[index] = content;
+        breadCrumbContent.removeRange(index + 1, breadCrumbContent.length);
+      } else {
+        breadCrumbContent.add(content);
+      }
+    } else {
+      breadCrumbContent.removeRange(index, breadCrumbContent.length);
+    }
+
+    loadingGUsers = ButtonLoadingState.completed;
+    notifyListeners();
+  }
+
+  List<GenerationAnalyzerUser> gUsers = [];
+
+  ButtonLoadingState loadingGUsers = ButtonLoadingState.idle;
+  setGenerationUsers(int generationId) async {
+    loadingGUsers = ButtonLoadingState.loading;
+    notifyListeners();
+    gUsers.clear();
+    gUsers.addAll(generateRandomUsers(generationId));
+    await Future.delayed(const Duration(seconds: 1))
+        .then((value) => loadingGUsers = ButtonLoadingState.completed);
+    notifyListeners();
+  }
+
+  generateRandomUsers(int generaionID) {
+    List<GenerationAnalyzerUser> users = [];
+    for (var i = 0; i < Random().nextInt(50); i++) {
+      users.add(GenerationAnalyzerUser(
+          name: 'User $i',
+          generation: generaionID + 1,
+          image: Assets.appLogo_S,
+          referralId: Random().nextInt(999999999).toString()));
+    }
+    return users;
+  }
+  // Future<void> getGenerationAnalyzer(String username) async {
+  //   if (isOnline) {
+  //     try {
+  //       ApiResponse apiResponse =
+  //           await teamViewRepo.getGenerationAnalyzer(username);
+  //       if (apiResponse.response != null &&
+  //           apiResponse.response!.statusCode == 200) {
+  //         Map map = apiResponse.response!.data;
+  //         bool status = false;
+  //         try {
+  //           status = map["status"];
+  //           if (map['is_logged_in'] == 0) {
+  //             logOut();
+  //           }
+  //         } catch (e) {}
+  //         if (status) {
+  //           try {
+  //             if (map['userData'] != null) {
+  //               sl.get<AuthProvider>().updateUser(map['userData']);
+  //             }
+  //           } catch (e) {}
+  //           try {
+  //             if (map['user'] != null) {
+  //               gUser.clear();
+  //               map['user'].forEach((e) {
+  //                 gUser.add(GenerationAnalyzerUser.fromJson(e));
+  //               });
+  //               notifyListeners();
+  //             }
+  //           } catch (e) {}
+  //         }
+  //       }
+  //     } catch (e) {}
+  //   } else {
+  //     Fluttertoast.showToast(msg: 'No internet connection');
+  //   }
+  // }
 
   clear() {
     tree = IndexedTreeNode();

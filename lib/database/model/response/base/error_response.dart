@@ -19,9 +19,7 @@ class ErrorResponse {
 
   Map<String, dynamic> toJson() {
     var map = <String, dynamic>{};
-    if (_errors != null) {
-      map["errors"] = _errors.map((v) => v.toJson()).toList();
-    }
+    map["errors"] = _errors.map((v) => v.toJson()).toList();
     return map;
   }
 }

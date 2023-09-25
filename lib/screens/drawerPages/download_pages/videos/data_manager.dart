@@ -1,16 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/sl_container.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
 import '/utils/default_logger.dart';
 // import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
@@ -19,9 +13,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../../database/dio/exception/api_error_handler.dart';
-import '../../../../database/model/response/base/api_response.dart';
-import '../../../../database/model/response/base/error_response.dart';
 import '../../../../database/model/response/videos_model.dart';
 import 'dart:developer' as dev;
 
@@ -411,7 +402,7 @@ class _VimeoVideoPlayerState extends State<VimeoVideoPlayer> {
       );
       var vimeoVideo = VimeoVideoConfig.fromJson(responseData.data);
       return vimeoVideo;
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       log('Dio Error : ', name: e.error.toString());
       return null;
     } on Exception catch (e) {
@@ -993,9 +984,7 @@ class VimeoEventPlayer extends StatefulWidget {
   // final VimeoVideo vimeoVideo;
   final VideoPlayerController videoController;
 
-  VimeoEventPlayer(
-      {Key? key,  required this.videoController})
-      : super(key: key);
+  VimeoEventPlayer({Key? key, required this.videoController}) : super(key: key);
 
   @override
   _VimeoEventPlayerState createState() => _VimeoEventPlayerState();

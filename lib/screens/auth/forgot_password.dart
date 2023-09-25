@@ -47,7 +47,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _onTextChanged(int index) {
-    String value = _boxControllers[index].text ?? "";
+    String value = _boxControllers[index].text;
     if (_myVars[index] == value) return;
     _myVars[index] = value;
     print('_myVars[index] ${_myVars[index]}');
@@ -560,12 +560,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       child: Container(
         height: 30,
         width: 30,
-        decoration:  BoxDecoration(
+        decoration: BoxDecoration(
           gradient: buildButtonGradient(),
           shape: BoxShape.circle,
         ),
         child: Center(
-          child: assetSvg(Assets.arrowBack,color: Colors.white),
+          child: assetSvg(Assets.arrowBack, color: Colors.white),
         ),
       ),
     );

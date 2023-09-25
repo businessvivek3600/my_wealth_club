@@ -6,15 +6,12 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import '/database/model/response/additional/signup_country_model.dart';
 import '/database/model/response/states_model.dart';
 import '/providers/auth_provider.dart';
-import '/screens/auth/sign_up_screen.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
-import '/utils/skeleton.dart';
 import '/widgets/app_country_picker.dart';
 import '/widgets/app_state_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../../../constants/assets_constants.dart';
 import '../../../utils/picture_utils.dart';
 import '../../../utils/sizedbox_utils.dart';
 import '../../../utils/text.dart';

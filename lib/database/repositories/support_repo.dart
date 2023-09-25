@@ -1,18 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import '/database/functions.dart';
-import '/database/model/response/base/user_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../constants/app_constants.dart';
 import '../dio/dio/dio_client.dart';
 import '../dio/exception/api_error_handler.dart';
-import '../model/body/login_model.dart';
-import '../model/body/register_model.dart';
 import '../model/response/base/api_response.dart';
 
 class SupportRepo {
@@ -25,7 +17,7 @@ class SupportRepo {
     try {
       Response response =
           await dioClient.post(AppConstants.support, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -36,7 +28,7 @@ class SupportRepo {
     try {
       Response response = await dioClient.post(AppConstants.newTicketSubmit,
           data: data, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -47,7 +39,7 @@ class SupportRepo {
     try {
       Response response = await dioClient.post(AppConstants.ticketDetail,
           token: true, data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -58,7 +50,7 @@ class SupportRepo {
     try {
       Response response = await dioClient.post(AppConstants.ticketReplySubmit,
           token: true, data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));

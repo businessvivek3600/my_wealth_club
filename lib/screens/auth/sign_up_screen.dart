@@ -149,12 +149,12 @@ class _SignUpScreenState extends State<SignUpScreen>
         child: Container(
           height: 40,
           width: 40,
-          decoration:  BoxDecoration(
+          decoration: BoxDecoration(
             gradient: buildButtonGradient(),
             shape: BoxShape.circle,
           ),
           child: Center(
-            child: assetSvg(Assets.arrowBack,color: Colors.white),
+            child: assetSvg(Assets.arrowBack, color: Colors.white),
           ),
         ),
       ),
@@ -231,7 +231,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                         if (val == null || val.isEmpty) {
                           return 'Please enter referral Id';
                         } else if (!RegExp(r"^[a-zA-Z0-9]{6,15}$")
-                            .hasMatch(val ?? '')) {
+                            .hasMatch(val)) {
                           return "Must contain uppercase, lowercase and numeric letter,\nand at least 6 and max 15 characters";
                         }
                         return null;
@@ -282,8 +282,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                       validator: (val) {
                         if (val != null &&
                             val.length > 0 &&
-                            !RegExp(r"^[a-zA-Z0-9]{6,15}$")
-                                .hasMatch(val ?? '')) {
+                            !RegExp(r"^[a-zA-Z0-9]{6,15}$").hasMatch(val)) {
                           return "Must contain uppercase, lowercase and numeric letter,\nand at least 6 and max 15 characters";
                         } else if (checkRestrictedText(val ?? '')) {
                           return 'This input is restricted.';
@@ -311,9 +310,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                         if (val == null || val.isEmpty) {
                           return 'Please enter username';
                         } else if (!RegExp(r"^[a-zA-Z0-9]{6,15}$")
-                            .hasMatch(val ?? '')) {
+                            .hasMatch(val)) {
                           return "Must contain uppercase, lowercase and numeric letter,\nand at least 6 and max 15 characters";
-                        } else if (checkRestrictedText(val ?? '')) {
+                        } else if (checkRestrictedText(val)) {
                           return 'This input is restricted.';
                         }
                         return null;
@@ -345,9 +344,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   if (val == null || val.isEmpty) {
                                     return 'Please enter first name';
                                   } else if (!RegExp(r"^[a-zA-Z]{2,15}$")
-                                      .hasMatch(val ?? '')) {
+                                      .hasMatch(val)) {
                                     return "Must contain uppercase, lowercase,\nand at least 2 and max 15 characters";
-                                  } else if (checkRestrictedText(val ?? '')) {
+                                  } else if (checkRestrictedText(val)) {
                                     return 'This input is restricted.';
                                   }
                                   return null;
@@ -384,9 +383,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   if (val == null || val.isEmpty) {
                                     return 'Please enter last name';
                                   } else if (!RegExp(r"^[a-zA-Z]{2,15}$")
-                                      .hasMatch(val ?? '')) {
+                                      .hasMatch(val)) {
                                     return "Must contain uppercase, lowercase,\nand at least 2 and max 15 characters";
-                                  } else if (checkRestrictedText(val ?? '')) {
+                                  } else if (checkRestrictedText(val)) {
                                     return 'This input is restricted.';
                                   }
                                   return null;
@@ -564,7 +563,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                         } else {
                           bool isValid = RegExp(
                                   r'^[\w-]+(\.[\w-]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*(\.[a-zA-Z]{2,})$')
-                              .hasMatch(val ?? '');
+                              .hasMatch(val);
                           if (!isValid) {
                             return 'Please enter a valid email address';
                           }

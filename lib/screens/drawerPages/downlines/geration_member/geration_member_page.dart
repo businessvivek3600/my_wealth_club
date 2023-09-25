@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -12,13 +11,11 @@ import 'package:toggle_switch/toggle_switch.dart';
 import '../../../../constants/assets_constants.dart';
 import '../../../../database/functions.dart';
 import '../../../../database/model/response/base/user_model.dart';
-import '../../../../providers/dashboard_provider.dart';
 import '../../../../providers/team_view_provider.dart';
 import '../../../../sl_container.dart';
 import '../../../../utils/color.dart';
 import '../../../../utils/picture_utils.dart';
 import '../../../../utils/sizedbox_utils.dart';
-import '../../../../utils/skeleton.dart';
 import '../../../../utils/text.dart';
 import '../trem_view_page.dart';
 
@@ -167,6 +164,7 @@ class _GenerationMemberPageState extends State<GenerationMemberPage> {
           //filter
           IconButton(
             onPressed: () {
+              FocusScope.of(context).unfocus();
               showModalBottomSheet(
                 context: context,
                 builder: (_) => _FilterGenerationMemberDialog(),
@@ -394,7 +392,7 @@ class _FilterGenerationMemberDialogState
                   ),
 
                   // text field for referrence id search
-                  height10(),
+                  height20(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [

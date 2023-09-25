@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '/providers/support_provider.dart';
 import '/utils/color.dart';
 import '/utils/sizedbox_utils.dart';
@@ -30,8 +29,9 @@ class _CreateSupportTicketPageState extends State<CreateSupportTicketPage> {
           },
           child: Scaffold(
             backgroundColor: mainColor,
-            appBar:
-                AppBar(title: titleLargeText('Create A New Ticket', context,useGradient: true)),
+            appBar: AppBar(
+                title: titleLargeText('Create A New Ticket', context,
+                    useGradient: true)),
             body: Form(
               key: _formKey,
               child: ListView(
@@ -231,7 +231,7 @@ class _CreateSupportTicketPageState extends State<CreateSupportTicketPage> {
                               ),
                               onTap: () {
                                 setState(() {
-                                  selectedPriority = type.key ?? '';
+                                  selectedPriority = type.key;
                                 });
                               },
                             );

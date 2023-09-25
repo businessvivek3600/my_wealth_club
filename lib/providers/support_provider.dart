@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -18,10 +17,7 @@ import '/database/repositories/support_repo.dart';
 import '/providers/auth_provider.dart';
 import '/sl_container.dart';
 import '/utils/app_default_loading.dart';
-import '/utils/color.dart';
 import '/utils/toasts.dart';
-
-import '../screens/drawerPages/support_pages/support_chat_page.dart';
 
 class SupportProvider extends ChangeNotifier {
   final SupportRepo supportRepo;

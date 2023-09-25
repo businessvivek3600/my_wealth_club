@@ -86,14 +86,9 @@ class AuthProvider with ChangeNotifier {
       }
       notifyListeners();
     } else {
-      String errorMessage;
       if (apiResponse.error is String) {
         // print('string ' + apiResponse.error.toString());
-        errorMessage = apiResponse.error.toString();
-      } else {
-        ErrorResponse errorResponse = apiResponse.error;
-        errorMessage = errorResponse.errors[0].message;
-      }
+      } else {}
       notifyListeners();
     }
   }
@@ -306,14 +301,11 @@ class AuthProvider with ChangeNotifier {
             : Toasts.showErrorNormalToast(message.split('.').first);
         loggedIn = status;
       } else {
-        String errorMessage = "";
         if (apiResponse.error is String) {
           print(apiResponse.error.toString());
-          errorMessage = apiResponse.error.toString();
         } else {
           ErrorResponse errorResponse = apiResponse.error;
           print('error message from login ${errorResponse.errors[0].message}');
-          errorMessage = errorResponse.errors[0].message;
         }
         Toasts.showErrorNormalToast('Some thing went wrong!');
         notifyListeners();
@@ -475,9 +467,7 @@ class AuthProvider with ChangeNotifier {
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
-        bool status = false;
         try {
-          status = map?["status"];
           if (map?['is_logged_in'] == 0) {
             logOut();
           }

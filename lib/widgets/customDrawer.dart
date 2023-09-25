@@ -3,7 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/screens/drawerPages/downlines/geration_member/geration_member_page.dart';
+import '../screens/drawerPages/downlines/matrix_analyzer .dart';
+import '/screens/drawerPages/downlines/geration_member/geration_member_page.dart';
 import '../screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
 import '../constants/app_constants.dart';
@@ -56,6 +57,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
+    String liquidUser = 'Liquid User';
+    String matrixAnalyzer = 'Matrix Analyzer';
     return Container(
       color: Colors.blueGrey.shade900,
       height: double.maxFinite,
@@ -92,28 +95,28 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             height10(),
                             DrawerTileItem(
                               onTap: () {
-                                dashBoardProvider.setDrawerTile('Subscription');
+                                dashBoardProvider.setDrawerTile(liquidUser);
                                 Widget page = const SubscriptionPage();
                                 Get.to(page);
                               },
                               leading: Assets.creditCard,
-                              title: 'Liquid User',
+                              title: liquidUser,
                               width: size.width * 0.7,
                               selected: dashBoardProvider.selectedDrawerTile ==
-                                  'Liquid User',
+                                  liquidUser,
                             ),
                             height10(),
                             DrawerTileItem(
                               onTap: () {
-                                dashBoardProvider.setDrawerTile('Subscription');
-                                Widget page = const SubscriptionPage();
+                                dashBoardProvider.setDrawerTile(matrixAnalyzer);
+                                Widget page = const MatrixAnalyzerPage();
                                 Get.to(page);
                               },
                               leading: Assets.analyzer,
-                              title: 'Matrix Analyzer',
+                              title: matrixAnalyzer,
                               width: size.width * 0.7,
                               selected: dashBoardProvider.selectedDrawerTile ==
-                                  'Matrix Analyzer',
+                                  matrixAnalyzer,
                             ),
                             height10(),
                             DrawerTileItem(
@@ -784,7 +787,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   Container buildHeader(
       Size size, BuildContext context, AuthProvider authProvider) {
     return Container(
-      height: 20 + size.height * 0.1,
+      height: 100,
       // color: CupertinoColors.white,
 
       width: double.maxFinite,

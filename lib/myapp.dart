@@ -1,16 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:in_app_update/in_app_update.dart';
 import '/screens/youtube_video_play_widget.dart';
 import 'package:video_player/video_player.dart';
 import '/database/my_notification_setup.dart';

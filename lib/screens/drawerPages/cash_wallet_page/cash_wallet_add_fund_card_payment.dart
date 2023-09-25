@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/fund_request_model.dart';
 import '/providers/Cash_wallet_provider.dart';
 import '/providers/auth_provider.dart';
-import '/screens/card_form/card_form_widget.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
 import '/utils/sizedbox_utils.dart';
@@ -56,8 +54,9 @@ class _CashWalletAddFundFromCardPaymentState
       builder: (context, provider, child) {
         return Scaffold(
           backgroundColor: mainColor,
-          appBar:
-              AppBar(title: titleLargeText('Card Payment History', context,useGradient: true)),
+          appBar: AppBar(
+              title: titleLargeText('Card Payment History', context,
+                  useGradient: true)),
           body: buildBody(provider),
           bottomNavigationBar: buildBottomButton(context, provider),
         );

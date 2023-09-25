@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import '/constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
 import '/providers/commission_wallet_provider.dart';
 import '/sl_container.dart';
@@ -43,8 +42,9 @@ class _CommissionTransferToCashWalletPageState
       builder: (context, provider, child) {
         return Scaffold(
           backgroundColor: mainColor,
-          appBar:
-              AppBar(title: titleLargeText('Transfer To Cash Wallet', context,useGradient: true)),
+          appBar: AppBar(
+              title: titleLargeText('Transfer To Cash Wallet', context,
+                  useGradient: true)),
           body: GestureDetector(
             onTap: () => primaryFocus?.unfocus(),
             child: Container(

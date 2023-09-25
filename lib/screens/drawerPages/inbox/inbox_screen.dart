@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import '/database/functions.dart';
 import '/database/model/response/inbox_model.dart';
@@ -776,7 +775,7 @@ String _parseHtmlString(String htmlString) {
   // visitor output
   print('html visitor:');
   // _Visitor().visit(document);
-  return document.outerHtml ?? "";
+  return document.outerHtml;
 }
 
 String removeTableTags(String htmlString) {

@@ -28,17 +28,14 @@ class _PaymentMethodsPageState extends State<PaymentMethodsPage> {
     var provider = sl.get<AuthProvider>();
     provider.commissionWithdrawal().then((value) {
       setState(() {
-        usdtt_address =
-            TextEditingController(text: provider.usdtt_address ?? '');
-        usdtb_address =
-            TextEditingController(text: provider.usdtb_address ?? '');
+        usdtt_address = TextEditingController(text: provider.usdtt_address);
+        usdtb_address = TextEditingController(text: provider.usdtb_address);
         account_holder_name =
-            TextEditingController(text: provider.account_holder_name ?? '');
-        account_number =
-            TextEditingController(text: provider.account_number ?? '');
-        ifsc_code = TextEditingController(text: provider.ifsc_code ?? '');
-        bank = TextEditingController(text: provider.bank ?? '');
-        address = TextEditingController(text: provider.address ?? '');
+            TextEditingController(text: provider.account_holder_name);
+        account_number = TextEditingController(text: provider.account_number);
+        ifsc_code = TextEditingController(text: provider.ifsc_code);
+        bank = TextEditingController(text: provider.bank);
+        address = TextEditingController(text: provider.address);
       });
     });
   }
