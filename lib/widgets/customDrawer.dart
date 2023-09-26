@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import '../screens/drawerPages/downlines/matrix_analyzer .dart';
+import '../screens/drawerPages/liquid_user_page.dart';
 import '/screens/drawerPages/downlines/geration_member/geration_member_page.dart';
 import '../screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
@@ -96,7 +97,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             DrawerTileItem(
                               onTap: () {
                                 dashBoardProvider.setDrawerTile(liquidUser);
-                                Widget page = const SubscriptionPage();
+                                Widget page = const LiquidUserPage();
                                 Get.to(page);
                               },
                               leading: Assets.creditCard,

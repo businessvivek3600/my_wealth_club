@@ -47,7 +47,9 @@ class _CashWalletAddFundFromCoinPaymentState
       builder: (context, provider, child) {
         return Scaffold(
           backgroundColor: mainColor,
-          appBar: AppBar(title: titleLargeText('Coin Payment', context,useGradient: true)),
+          appBar: AppBar(
+              title:
+                  titleLargeText('Coin Payment', context, useGradient: true)),
           body: buildBody(provider),
           bottomNavigationBar: buildBottomButton(context, provider),
         );
@@ -438,7 +440,6 @@ class _CashWalletAddFundFromCoinPaymentState
                                                         ))
                                                     .toList();
                                               },
-
                                               items: <DropdownMenuItem<String>>[
                                                 ...provider.paymentTypes.entries
                                                     .toList()
@@ -466,8 +467,7 @@ class _CashWalletAddFundFromCoinPaymentState
                                                   BorderRadius.circular(15),
                                               iconEnabledColor: Colors.black,
                                               menuMaxHeight: double.maxFinite,
-                                              dropdownColor:
-                                                  defaultBottomSheetColor,
+                                              dropdownColor: bColor,
                                               focusColor: Colors.transparent,
                                               elevation: 10,
                                             )

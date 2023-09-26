@@ -331,9 +331,7 @@ class _VoucherPageState extends State<VoucherPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           capText(e.usedBy ?? 'Not Yet', context,
-                              color: e.usedBy != null
-                                  ? defaultBottomSheetColor
-                                  : textColor,
+                              color: e.usedBy != null ? bColor : textColor,
                               textAlign: TextAlign.center,
                               fontWeight: FontWeight.bold),
                           if (e.updatedAt != null)
@@ -423,9 +421,7 @@ class _VoucherPageState extends State<VoucherPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           bodyLargeText(e.usedBy ?? 'Not Yet', context,
-                              color: e.usedBy != null
-                                  ? defaultBottomSheetColor
-                                  : textColor),
+                              color: e.usedBy != null ? bColor : textColor),
                           if (e.updatedAt != null)
                             capText(
                                 DateFormat()
@@ -475,7 +471,7 @@ class _VoucherPageState extends State<VoucherPage> {
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: defaultBottomSheetColor,
+                            backgroundColor: bColor,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10))),
                         child: Row(

@@ -154,7 +154,7 @@ class _CommissionWithdrawRequestPageState
                             //               iconEnabledColor: Colors.white,
                             //               style: TextStyle(color: Colors.white70),
                             //               menuMaxHeight: double.maxFinite,
-                            //               dropdownColor: defaultBottomSheetColor,
+                            //               dropdownColor: bColor,
                             //             ),
                             //           ),
                             //         );
@@ -278,7 +278,7 @@ class _CommissionWithdrawRequestPageState
                                 iconEnabledColor: Colors.white,
                                 style: TextStyle(color: Colors.white70),
                                 menuMaxHeight: double.maxFinite,
-                                dropdownColor: defaultBottomSheetColor,
+                                dropdownColor: bColor,
                               ),
                             ),
                           );
@@ -357,8 +357,7 @@ class _CommissionWithdrawRequestPageState
                                                 style: TextStyle(
                                                     color: Colors.white),
                                                 menuMaxHeight: double.maxFinite,
-                                                dropdownColor:
-                                                    defaultBottomSheetColor,
+                                                dropdownColor: bColor,
                                               ),
                                             )
                                           : Container(),

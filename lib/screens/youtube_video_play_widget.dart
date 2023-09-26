@@ -5,6 +5,7 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/functions.dart';
 import '/constants/assets_constants.dart';
 import '/utils/picture_utils.dart';
 import '/utils/color.dart';
@@ -31,6 +32,8 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
   var provider = sl.get<PlayerProvider>();
   String? videoId;
   bool isLive = false;
+  bool rotate = false;
+  Map<String, dynamic>? eventData;
   @override
   void initState() {
     super.initState();
@@ -42,13 +45,19 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
         setState(() {
           videoId = data['videoId'];
           isLive = data['isLive'];
+          rotate = data['rotate'];
+          eventData = data['data'];
         });
         if (videoId != null) {
           provider.init(videoId: videoId!, isLive: isLive);
         }
       }
-      SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+      if (rotate) {
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight
+        ]);
+      }
     });
   }
 
@@ -76,6 +85,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    DateTime? date = DateTime.tryParse(eventData?['webinar_time'] ?? '');
     // return Container();
     return Scaffold(
       backgroundColor: Colors.black,
@@ -170,80 +180,97 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                       ),
 
                       Expanded(
-                        child: ListView(
+                        child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                assetImages(
-                                  Assets.appLogo_S,
-                                  height: 50,
-                                  width: 50,
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor:
+                                        (!isLive ? Colors.red : appLogoColor)
+                                            .withOpacity(0.2),
+                                    child: assetImages(Assets.appLogo_S,
+                                        height: 25, width: 25),
+                                  ),
+                                  width10(),
+                                  Expanded(
+                                    child: titleLargeText(
+                                        (eventData?['webinar_title'] ?? '')
+                                            .toString()
+                                            .capitalize!,
+                                        context),
+                                  ),
+                                ],
+                              ),
+                              height10(),
+                              // create ui for time when started and total duration
+                              if (date != null)
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Icon(Icons.calendar_month_rounded,
+                                        color: Colors.white, size: 20),
+                                    width10(),
+                                    Expanded(
+                                      child: bodyLargeText(
+                                          'Started ${getTimeDifference(date)}',
+                                          context,
+                                          useGradient: false),
+                                    ),
+                                  ],
                                 ),
-                                width10(),
-                                Expanded(
-                                  child: titleLargeText(
-                                      'MyCarClub Introduction 1 SHORT - MyCarClub, A Social & Business Club',
-                                      context),
+
+                              height10(),
+                              // show location
+                              // Row(
+                              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              //   children: [
+                              //     Icon(Icons.location_on,
+                              //         color: Colors.pink, size: 20),
+                              //     width10(),
+                              //     Expanded(
+                              //       child: bodyLargeText(
+                              //           'Location: 123, ABC, XYZ', context,
+                              //           useGradient: false),
+                              //     ),
+                              //   ],
+                              // ),
+
+                              // description headline
+                              Divider(color: Colors.white),
+                              Expanded(
+                                child: ListView(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        width30(),
+                                        Expanded(
+                                            child: bodyLargeText(
+                                                '''Welcome To My Wealth Club
+                              Your Premier Trading Service
+                              Provider
+                              At My Wealth Club, we empower individuals to make informed decisions and unlock their true wealth potential. As a leading financial trading company you can follow our company trade opportunities and capitalise on the significant profits the company trades make.
+                              
+                              All Your Forex and Crypto Trading Essentials Under One Roof
+                              Then keep the boxes as they are except Trading Strategies and change that to Company Trade Opportunities and change Day Trader to Day Trading. Add another tick box with title Live Streamed Strategiesnk you.\n   Company Trade Ideas
+                              Our Institutional traders each week day trade company funds and make significant profits. When you join you get the change to follow these Trading opportunities yourself either on the website or our app. Imagine us informing you of every trade we are taking and then the actions taken until that trade closes. If you decide to follow our company trade opportunities you can make profits the same as our institutional trading team.''',
+                                                context,
+                                                useGradient: false,
+                                                color: Colors.white70,
+                                                maxLines: 200))
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            height10(),
-                            // create ui for time when started and total duration
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(Icons.calendar_month_rounded,
-                                    color: Colors.white, size: 20),
-                                width10(),
-                                Expanded(
-                                  child: bodyLargeText(
-                                      'Started 1 hour ago', context,
-                                      useGradient: false),
-                                ),
-                              ],
-                            ),
-
-                            height10(),
-                            // show location
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(Icons.location_on,
-                                    color: Colors.pink, size: 20),
-                                width10(),
-                                Expanded(
-                                  child: bodyLargeText(
-                                      'Location: 123, ABC, XYZ', context,
-                                      useGradient: false),
-                                ),
-                              ],
-                            ),
-
-                            // description headline
-                            Divider(color: Colors.white),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                width30(),
-                                Expanded(
-                                    child: bodyLargeText(
-                                        '''MyCarClub - A Social & Business Club
-
-Get back to the person who introduced you.
-
-If you found this randomly and yo do not have an introducer, please send a WhatsApp message "MCC" to Team Leaders at  +447502618888
-
-Thank you.
-Ken''', context,
-                                        useGradient: false,
-                                        color: Colors.white70,
-                                        maxLines: 200))
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                       )
 

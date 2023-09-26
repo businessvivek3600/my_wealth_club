@@ -441,7 +441,7 @@ class _CashWalletAddFundFromCardPaymentState
                                         iconEnabledColor: Colors.black,
                                         style: TextStyle(color: Colors.black),
                                         menuMaxHeight: double.maxFinite,
-                                        dropdownColor: defaultBottomSheetColor,
+                                        dropdownColor: bColor,
                                         focusColor: Colors.transparent,
                                         elevation: 10,
                                       ),

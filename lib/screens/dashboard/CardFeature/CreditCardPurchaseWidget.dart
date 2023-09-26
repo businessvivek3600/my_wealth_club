@@ -95,7 +95,8 @@ class _CreditCardPurchaseScreenState extends State<CreditCardPurchaseScreen>
           return Scaffold(
             backgroundColor: mainColor,
             appBar: AppBar(
-              title: titleLargeText('Buy ${widget.card['name']}',context,useGradient: true),
+              title: titleLargeText('Buy ${widget.card['name']}', context,
+                  useGradient: true),
               actions: [
                 Row(
                   children: [
@@ -116,7 +117,7 @@ class _CreditCardPurchaseScreenState extends State<CreditCardPurchaseScreen>
                               side: BorderSide(color: appLogoColor)),
                         ),
                         child: bodyLargeText('History', context,
-                            fontWeight: FontWeight.normal,useGradient: false),
+                            fontWeight: FontWeight.normal, useGradient: false),
                       ),
                     ),
                     width10(),
@@ -609,7 +610,7 @@ class _CreditCardPurchaseScreenState extends State<CreditCardPurchaseScreen>
                     iconEnabledColor: Colors.white,
                     style: TextStyle(color: Colors.white),
                     menuMaxHeight: double.maxFinite,
-                    dropdownColor: defaultBottomSheetColor,
+                    dropdownColor: bColor,
                     validator: (val) {
                       if (val == null) {
                         return 'Please select delivery type.';
@@ -649,7 +650,7 @@ class _CreditCardPurchaseScreenState extends State<CreditCardPurchaseScreen>
                     iconEnabledColor: Colors.white,
                     style: TextStyle(color: Colors.white),
                     menuMaxHeight: double.maxFinite,
-                    dropdownColor: defaultBottomSheetColor,
+                    dropdownColor: bColor,
                     validator: (val) {
                       if (val == null) {
                         return 'Please select payment type.';

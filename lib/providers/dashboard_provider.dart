@@ -6,6 +6,7 @@ import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/model/response/yt_video_model.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/CardDetailsPurchasedHistoryModel.dart';
 import '/database/model/response/achieved_reward_model.dart';
@@ -161,6 +162,7 @@ class DashBoardProvider extends ChangeNotifier {
   AchievedReward? achievedReward;
   AchievedReward? nextReward;
   List<Map<String, dynamic>> cards = [];
+  WebinarEventModel? wevinarEventVideo;
 
   Future<void> getCustomerDashboard() async {
     String? pdf_link;
@@ -243,7 +245,9 @@ class DashBoardProvider extends ChangeNotifier {
             placementIdController.text = placementUrl;
             notifyListeners();
           }
+          wevinarEventVideo = WebinarEventModel.fromJson(map['webinar_event']);
           // get_active_member = 274;
+
           notifyListeners();
         } catch (e) {
           errorLog('dashboard get active member error $e');

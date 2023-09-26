@@ -167,7 +167,7 @@ class _CreateSupportTicketPageState extends State<CreateSupportTicketPage> {
                         iconEnabledColor: Colors.white,
                         style: TextStyle(color: Colors.white),
                         menuMaxHeight: double.maxFinite,
-                        dropdownColor: defaultBottomSheetColor,
+                        dropdownColor: bColor,
                         focusColor: Colors.transparent,
                         elevation: 10,
                       )
@@ -241,7 +241,7 @@ class _CreateSupportTicketPageState extends State<CreateSupportTicketPage> {
                         iconEnabledColor: Colors.white,
                         style: TextStyle(color: Colors.white),
                         menuMaxHeight: double.maxFinite,
-                        dropdownColor: defaultBottomSheetColor,
+                        dropdownColor: bColor,
                         focusColor: Colors.transparent,
                         elevation: 10,
                       )

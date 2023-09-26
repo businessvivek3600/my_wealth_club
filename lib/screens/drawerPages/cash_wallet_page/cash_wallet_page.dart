@@ -373,7 +373,7 @@ class _CashWalletPageState extends State<CashWalletPage> {
       width: 350,
       margin: const EdgeInsets.only(),
       decoration: BoxDecoration(
-          // color: defaultBottomSheetColor,
+          // color: bColor,
           borderRadius: BorderRadius.circular(0)),
       padding: const EdgeInsets.all(15),
       child: Column(

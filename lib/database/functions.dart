@@ -352,6 +352,35 @@ Future<bool> checkVersion() async {
   return canUpdate;
 }
 
+/// Find [Time Difference] in between today and the given date-time
+String getTimeDifference(DateTime date) {
+  final now = DateTime.now();
+  final difference = now.difference(date);
+
+  if (difference.inDays > 365) {
+    final years = difference.inDays ~/ 365;
+    return '$years year${years > 1 ? 's' : ''} ago';
+  } else if (difference.inDays >= 30) {
+    final months = difference.inDays ~/ 30;
+    return '$months month${months > 1 ? 's' : ''} ago';
+  } else if (difference.inDays >= 7) {
+    final weeks = difference.inDays ~/ 7;
+    return '$weeks week${weeks > 1 ? 's' : ''} ago';
+  } else if (difference.inDays > 1) {
+    return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
+  } else if (difference.inDays > 0) {
+    return 'Yesterday';
+  } else if (difference.inHours > 0) {
+    return '${difference.inHours} hour${difference.inHours > 1 ? 's' : ''} ago';
+  } else if (difference.inMinutes > 0) {
+    return '${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''} ago';
+  } else if (difference.inSeconds > 0) {
+    return '${difference.inSeconds} second${difference.inSeconds > 1 ? 's' : ''} ago';
+  } else {
+    return 'Just now';
+  }
+}
+
 String formatDateTime(DateTime dateTime) {
   final now = DateTime.now();
 

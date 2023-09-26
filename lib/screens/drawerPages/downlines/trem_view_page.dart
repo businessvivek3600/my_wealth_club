@@ -12,7 +12,7 @@ import '../../../utils/skeleton.dart';
 import '../../../utils/text.dart';
 
 Widget buildTeamBuildingReferralLink(BuildContext context,
-    {Color linkColor = defaultBottomSheetColor}) {
+    {Color linkColor = Colors.blue}) {
   return Consumer<DashBoardProvider>(
     builder: (context, dashBoardProvider, child) {
       return Column(

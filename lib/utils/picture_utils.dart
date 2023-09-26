@@ -78,6 +78,7 @@ CachedNetworkImage buildCachedNetworkImage(
   Color? errorBgColor,
   Color? placeholderBgColor,
   Widget? errorStackChild,
+  bool cache = true,
 }) {
   return CachedNetworkImage(
     imageUrl: image,
@@ -106,8 +107,10 @@ CachedNetworkImage buildCachedNetworkImage(
         ),
       ),
     ),
-    cacheManager: CacheManager(Config(
-        "${AppConstants.appName}${cacheFileName ?? image}",
-        stalePeriod: const Duration(days: 30))),
+    cacheManager: cache
+        ? CacheManager(Config(
+            "${AppConstants.appName}${cacheFileName ?? image}",
+            stalePeriod: const Duration(days: 30)))
+        : null,
   );
 }

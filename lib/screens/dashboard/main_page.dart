@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
@@ -10,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import '../../database/model/response/yt_video_model.dart';
 import '/screens/dashboard/company_trade_ideas_page.dart';
 import '/database/model/response/ddashboard_subscription_pack_model.dart';
 import 'package:slide_countdown/slide_countdown.dart';
@@ -88,6 +90,8 @@ class _MainPageState extends State<MainPage>
     galleryProvider.getVideos(false);
     canShowNextDashPopUPBool.addListener(() {});
     super.initState();
+    print('device token ${getDeviceToken()}');
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setupAppRating(7 * 24).then((value) {
         if (value) {
@@ -184,9 +188,20 @@ class _MainPageState extends State<MainPage>
                                           // platinum member logo
 
                                           // Upcommin Events,
-                                          buildUpcomingEvents(
-                                              context, size, dashBoardProvider),
-                                          height20(),
+                                          if (dashboardProvider
+                                                      .wevinarEventVideo !=
+                                                  null &&
+                                              dashboardProvider
+                                                      .wevinarEventVideo!
+                                                      .status ==
+                                                  '1')
+                                            Column(
+                                              children: [
+                                                buildUpcomingEvents(context,
+                                                    size, dashBoardProvider),
+                                                height20(),
+                                              ],
+                                            ),
                                           // platinum member logo
                                           // GestureDetector(
                                           //   onTap: () =>
@@ -283,7 +298,7 @@ class _MainPageState extends State<MainPage>
         SizedBox(
           height: 200,
           child: _BuildUpcomingEventCard(
-              pack: DashboardSubscriptionPack(),
+              event: dashboardProvider.wevinarEventVideo!,
               loading: dashBoardProvider.loadingDash),
         )
       ],
@@ -1450,10 +1465,10 @@ class _MainPageState extends State<MainPage>
 
 class _BuildUpcomingEventCard extends StatelessWidget {
   const _BuildUpcomingEventCard({
-    required this.pack,
+    required this.event,
     required this.loading,
   });
-  final DashboardSubscriptionPack pack;
+  final WebinarEventModel event;
   final bool loading;
 
   @override
@@ -1469,9 +1484,10 @@ class _BuildUpcomingEventCard extends StatelessWidget {
           // 'https://www.analyticsinsight.net/wp-content/uploads/2021/10/Top-10-Cheap-Cryptocurrencies-to-Buy-in-October-2021.jpg';
           // 'https://i.ytimg.com/vi/qI_zuDqcTEI/hqdefault.jpg';
           // 'https://i.ytimg.com/vi/qI_zuDqcTEI/8sikTX9m7sQ.jpg';
-          'https://img.youtube.com/vi/8sikTX9m7sQ/0.jpg';
-      String title =
-          'CMyCarClub Introduction 1 SHORT - MyCarClub, A Social & Business Club';
+          'https://img.youtube.com/vi/${event.webinarId}/0.jpg';
+      String title = event.webinarTitle ?? '';
+      DateTime? date =
+          event.webinarTime != null ? DateTime.parse(event.webinarTime!) : null;
 
       return Padding(
         padding: const EdgeInsets.all(10),
@@ -1504,7 +1520,8 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                             height: bound.maxHeight,
                             textColor: Colors.white10,
                           )
-                        : buildCachedNetworkImage(url)),
+                        : buildCachedNetworkImage(url,
+                            fit: BoxFit.cover, cache: false)),
               ),
               Positioned(
                 top: pd,
@@ -1614,7 +1631,8 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                                           : RichText(
                                               text: TextSpan(children: [
                                               TextSpan(
-                                                text: '12/10/2021',
+                                                text: formatDate(
+                                                    date!, 'dd MMM yyyy'),
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: timeS,
@@ -1644,7 +1662,8 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                                           : RichText(
                                               text: TextSpan(children: [
                                               TextSpan(
-                                                text: '12:00 PM',
+                                                text: formatDate(
+                                                    date!, 'hh:mm a'),
                                                 style: TextStyle(
                                                   color: Colors.white,
                                                   fontSize: timeS,
@@ -1656,35 +1675,36 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              height5(),
-                              loading
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Skeleton(
-                                          height: titleS,
-                                          textColor: Colors.white38,
-                                          borderRadius:
-                                              BorderRadius.circular(2),
-                                        ),
-                                        // height5(),
-                                        // Skeleton(
-                                        //   height: titleS,
-                                        //   width: 70,
-                                        //   textColor: Colors.white38,
-                                        //   borderRadius:
-                                        //       BorderRadius.circular(2),
-                                        // )
-                                      ],
-                                    )
-                                  : bodyLargeText(
-                                      'More Details...',
-                                      context,
-                                      color: Colors.white70,
-                                      useGradient: false,
-                                      fontSize: capS,
-                                    ),
+                              // height5(),
+                              // loading
+                              //     ? Column(
+                              //         crossAxisAlignment:
+                              //             CrossAxisAlignment.start,
+                              //         children: [
+                              //           Skeleton(
+                              //               height: titleS,
+                              //               textColor: Colors.white38,
+                              //               borderRadius:
+                              //                   BorderRadius.circular(2)),
+                              //           // height5(),
+                              //           // Skeleton(
+                              //           //   height: titleS,
+                              //           //   width: 70,
+                              //           //   textColor: Colors.white38,
+                              //           //   borderRadius:
+                              //           //       BorderRadius.circular(2),
+                              //           // )
+                              //         ],
+                              //       )
+                              //     : bodyLargeText(
+                              //         'More Details...',
+                              //         context,
+                              //         color: Colors.white70,
+                              //         useGradient: false,
+                              //         fontSize: capS,
+                              //       ),
+
+                              ///
                               // Spacer(),
                               // Row(
                               //   mainAxisAlignment:
@@ -1815,8 +1835,12 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                       onTap: () {
                         Navigator.pushNamed(
                             context, YoutubePlayerPage.routeName,
-                            arguments: jsonEncode(
-                                {'videoId': '8sikTX9m7sQ', 'isLive': false}));
+                            arguments: jsonEncode({
+                              'videoId': event.webinarId,
+                              'isLive': true,
+                              'rotate': true,
+                              'data': event.toJson()
+                            }));
                       },
                       child: Container(
                         width: 57,
@@ -1826,11 +1850,7 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                         padding: EdgeInsets.only(left: 6, top: 10, bottom: 10),
-                        child: Center(
-                            child: assetImages(
-                          'playbutton.png',
-                          // fit: BoxFit.cover,
-                        )),
+                        child: Center(child: assetImages('playbutton.png')),
                       ),
                     ),
                   ),

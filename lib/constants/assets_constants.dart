@@ -71,6 +71,7 @@ class Assets {
   static const whiteNoImageIcon = 'white-no-image-icon.png';
   static const noVideoThumbnail = 'no_video_image.png';
   static const deActiveUser = 'deactive_user.png';
+  static const mlm = 'mlm.png';
   static const activeUser = 'active_user.png';
   static const nullUser = 'nullUser.png';
   static const candleStick = 'icons8-candlestick-chart-48.png';
