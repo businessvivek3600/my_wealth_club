@@ -47,4 +47,15 @@ class TeamViewRepo {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
+
+  ///get matrixvAnalyzer
+  Future<ApiResponse> matrixAnalyzer(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient.post(AppConstants.matrixAnalyzer,
+          token: true, data: data);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
 }

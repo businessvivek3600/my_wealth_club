@@ -54,7 +54,8 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
       builder: (context, provider, child) {
         return Scaffold(
           backgroundColor: mainColor,
-          appBar: AppBar(title: titleLargeText('My Events', context,useGradient: true)),
+          appBar: AppBar(
+              title: titleLargeText('My Events', context, useGradient: true)),
           body: Container(
             height: double.maxFinite,
             width: double.maxFinite,
@@ -88,7 +89,7 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                   //         : buildNoEvents(context),
                   //   ),
                   // ),
-                  SliverToBoxAdapter(child: Divider(color: Colors.white)),
+                  // SliverToBoxAdapter(child: Divider(color: Colors.white)),
                   SliverToBoxAdapter(
                       child: Container(
                     height: Get.height * 0.3,
@@ -98,6 +99,9 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                         ? EventCards()
                         : buildNoEvents(context),
                   )),
+                  if (!provider.loadingMyTickets &&
+                      provider.ticketRequests.isEmpty)
+                    SliverToBoxAdapter(child: Divider(color: Colors.white54)),
                   (provider.loadingMyTickets ||
                           provider.ticketRequests.isNotEmpty)
                       ? buildTicketList(provider, tColor)
@@ -118,10 +122,12 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, color: Colors.white, size: Get.height * 0.1),
+          // Icon(Icons.history, color: Colors.white, size: Get.height * 0.1),
+          assetSvg(Assets.eventTicket,
+              height: Get.height * 0.1, color: Colors.white),
           height20(),
           Center(
-            child: titleLargeText('Event history not found.', context,
+            child: bodyLargeText('Event history not found.', context,
                 color: Colors.white),
           ),
         ],
@@ -296,67 +302,60 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                 },
                 // child: Hero(
                 //   tag: '${e.eventName}+${e.eventBanner}',
-                  child: Container(
-                    margin: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(5),
-                      child: Stack(
-                        children: [
-                          CachedNetworkImage(
+                child: Container(
+                  margin: EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: Stack(
+                      children: [
+                        CachedNetworkImage(
                             imageUrl: e.eventBanner ?? '',
                             placeholder: (context, url) => SizedBox(
-                              height: 50,
-                              width: 100,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: appLogoColor.withOpacity(0.5),
-                                ),
-                              ),
-                            ),
+                                height: 50,
+                                width: 100,
+                                child: Center(
+                                    child: CircularProgressIndicator(
+                                        color: appLogoColor.withOpacity(0.5)))),
                             errorWidget: (context, url, error) =>
                                 assetImages(Assets.noImage),
                             cacheManager: CacheManager(Config(
-                              "${AppConstants.appID}_${e.eventName}",
-                              stalePeriod: const Duration(days: 7),
-                              //one week cache period
-                            )),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(0),
-                                // color: appLogoColor,
-                                gradient: LinearGradient(
-                                    colors: [Colors.black, Colors.black38]),
-                                // backgroundBlendMode: BlendMode.srcOver,
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  capText('Book Now', context,
-                                      color: appLogoColor,
-                                      fontWeight: FontWeight.bold),
-                                  Icon(
-                                    Icons.arrow_forward_ios_rounded,
-                                    color: appLogoColor,
-                                    size: 13,
-                                  )
-                                ],
-                              ),
+                                "${AppConstants.appID}_${e.eventName}",
+                                stalePeriod: const Duration(days: 7)))),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(0),
+                              // color: appLogoColor,
+                              gradient: LinearGradient(
+                                  colors: [Colors.black, Colors.black38]),
+                              // backgroundBlendMode: BlendMode.srcOver,
                             ),
-                          )
-                        ],
-                      ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                capText('Book Now', context,
+                                    color: appLogoColor,
+                                    fontWeight: FontWeight.bold),
+                                Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  color: appLogoColor,
+                                  size: 13,
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
+                ),
                 // ),
               )),
         if (provider.loadingMyTickets)
@@ -377,9 +376,14 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
     return Column(
       children: [
         Expanded(
-          child: Center(
-            child:
-                titleLargeText('No Active Event', context, color: Colors.white),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.calendar_month_rounded,
+                  color: Colors.white, size: Get.height * 0.1),
+              height20(),
+              bodyLargeText('No Active Event', context, color: Colors.white),
+            ],
           ),
         ),
       ],
@@ -413,8 +417,7 @@ class EventCards extends StatelessWidget {
                                 width: 100,
                                 child: Center(
                                     child: CircularProgressIndicator(
-                                        color:
-                                            appLogoColor.withOpacity(0.5)))),
+                                        color: appLogoColor.withOpacity(0.5)))),
                             errorWidget: (context, url, error) =>
                                 assetImages(Assets.noImage),
                             cacheManager: CacheManager(Config(

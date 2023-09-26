@@ -61,7 +61,7 @@ class _VoucherPageState extends State<VoucherPage> {
         return Scaffold(
           backgroundColor: mainColor,
           appBar: AppBar(
-            title: titleLargeText('Vouchers',context,useGradient: true),
+            title: titleLargeText('Vouchers', context, useGradient: true),
             shadowColor: Colors.white,
             actions: [
               //   if (provider.history.isNotEmpty)
@@ -91,7 +91,10 @@ class _VoucherPageState extends State<VoucherPage> {
                     physics: BouncingScrollPhysics(),
                     children: [
                       Container(
-                        height: Get.height * 0.5,
+                        height: !provider.loadingVoucher &&
+                                provider.packages.isEmpty
+                            ? Get.height * 0.3
+                            : Get.height * 0.4,
                         child: (provider.loadingVoucher ||
                                 provider.packages.isNotEmpty)
                             ? Column(
@@ -104,34 +107,23 @@ class _VoucherPageState extends State<VoucherPage> {
                             : buildNoVouchers(context),
                       ),
                       SizedBox(height: 20),
-                      ...provider.history.map(
-                        (e) => buildVoucher(e, context),
-                      ),
+                      ...provider.history.map((e) => buildVoucher(e, context)),
+                      if (provider.history.isEmpty)
+                        Divider(color: Colors.white54),
                       if (provider.history.isEmpty)
                         Column(
                           children: [
                             SizedBox(
-                                height: 200,
+                                height: Get.height * 0.2,
                                 child: assetLottie(Assets.emptyCards)),
-                            titleLargeText(
+                            bodyLargeText(
                                 "You don't have any voucher yet.", context,
                                 textAlign: TextAlign.center),
-                            // GestureDetector(
-                            //   onTap: () => buildShowModalBottomSheet(context),
-                            //   child: Container(
-                            //       width: Get.width * 0.25,
-                            //       height: Get.width * 0.25,
-                            //       // color: Colors.red,
-                            //       child: assetLottie(Assets.addItemLottie,
-                            //           fit: BoxFit.cover)),
-                            // ),
                           ],
                         ),
                     ],
                   )
-                : Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  ),
+                : Center(child: CircularProgressIndicator(color: Colors.white)),
           ),
           // bottomNavigationBar: buildBottomButton(context),
         );
@@ -162,7 +154,9 @@ class _VoucherPageState extends State<VoucherPage> {
             padding: EdgeInsets.all(5),
             child: Row(
               children: [
-                UiCategoryTitleContainer(child: bodyLargeText('My Vouchers', context, color: Colors.white)),
+                UiCategoryTitleContainer(
+                    child: bodyLargeText('My Vouchers', context,
+                        color: Colors.white)),
                 width10(),
                 bodyLargeText('(', context, color: Colors.white),
                 bodyLargeText(
@@ -211,7 +205,6 @@ class _VoucherPageState extends State<VoucherPage> {
               //         borderRadius: BorderRadius.circular(50))),
             ),
           ),
-
         ],
       ),
     );
@@ -261,7 +254,8 @@ class _VoucherPageState extends State<VoucherPage> {
                       child: ElevatedButton(
                           onPressed: !used
                               ? () {
-                                  Clipboard.setData(ClipboardData(text: e.epin??''))
+                                  Clipboard.setData(
+                                          ClipboardData(text: e.epin ?? ''))
                                       .then((value) => Fluttertoast.showToast(
                                           msg: 'Voucher code copied!'));
                                 }
@@ -474,7 +468,8 @@ class _VoucherPageState extends State<VoucherPage> {
                     child: ElevatedButton(
                         onPressed: !used
                             ? () {
-                                Clipboard.setData(ClipboardData(text: e.epin??''))
+                                Clipboard.setData(
+                                        ClipboardData(text: e.epin ?? ''))
                                     .then((value) => Fluttertoast.showToast(
                                         msg: 'Voucher code copied!'));
                               }
@@ -583,8 +578,7 @@ class VoucherCarousel extends StatelessWidget {
                                 width: 100,
                                 child: Center(
                                     child: CircularProgressIndicator(
-                                        color:
-                                            appLogoColor.withOpacity(0.5)))),
+                                        color: appLogoColor.withOpacity(0.5)))),
                             errorWidget: (context, url, error) => SizedBox(
                               height: 250,
                               width: 150,

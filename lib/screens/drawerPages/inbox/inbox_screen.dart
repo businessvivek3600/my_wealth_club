@@ -595,11 +595,16 @@ class _InboxScreenState extends State<InboxScreen> {
           Container(
               width: 130,
               height: 130,
-              child: assetImages(Assets.noMessage, fit: BoxFit.cover)),
+              child: assetLottie(Assets.mail, fit: BoxFit.cover)),
           height20(),
           Center(
-            child: titleLargeText('You don\'t have any message yet.', context,
-                color: Colors.white),
+            child: bodyLargeText(
+              'You don\'t have any message yet.',
+              context,
+              color: Colors.white,
+              useGradient: true,
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

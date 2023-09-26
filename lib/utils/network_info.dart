@@ -24,25 +24,33 @@ class NetworkInfo {
       print('You are ${isOnline ? 'Online' : 'Offline'}');
       if (!_firstTime) {
         //bool isNotConnected = result != ConnectivityResult.wifi && result != ConnectivityResult.mobile;
-        bool isNotConnected;
-        if (result == ConnectivityResult.none) {
-          isNotConnected = true;
-        } else {
-          isNotConnected = !await _updateConnectivityStatus();
-        }
-        // isNotConnected
-        //     ? SizedBox()
-        //     : ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        //   backgroundColor: isNotConnected ? Colors.red : Colors.green,
-        //   duration: Duration(seconds: isNotConnected ? 6000 : 3),
-        //   content: Text(
-        //     isNotConnected
-        //         ? "You don't have internet connection"
-        //         : "You are connected",
-        //     textAlign: TextAlign.center,
-        //   ),
-        // ));
+        // bool isNotConnected;
+        // if (result == ConnectivityResult.none) {
+        //   isNotConnected = true;
+        // } else {
+        //   isNotConnected = !await _updateConnectivityStatus();
+        // }
+        // if (isNotConnected) {
+        //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //     backgroundColor: Colors.red,
+        //     duration: Duration(seconds: 6000),
+        //     content: Text(
+        //       "You don't have internet connection",
+        //       textAlign: TextAlign.center,
+        //     ),
+        //   ));
+        // } else {
+        //   ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        //   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        //     backgroundColor: Colors.green,
+        //     duration: Duration(seconds: 3),
+        //     content: Text(
+        //       "You are connected",
+        //       textAlign: TextAlign.center,
+        //     ),
+        //   ));
+        // }
       }
 
       _firstTime = false;

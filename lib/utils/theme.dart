@@ -43,6 +43,7 @@ final lightTheme = ThemeData(
       if (states.contains(MaterialState.selected)) {
         return appLogoColor;
       } else if (states.contains(MaterialState.disabled)) return Colors.white10;
+      return null;
     }),
     trackColor: MaterialStateProperty.resolveWith((states) {
       // If the button is pressed, return green, otherwise blue

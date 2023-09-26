@@ -282,7 +282,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     const String myTreeView = 'My Tree View';
     const String generationAnalyzer = 'Generation Analyzer';
     const String generationMember = 'Generation Member';
-    const String inactiveAnalyzer = 'Inactive Analyzer';
+    const String inactiveAnalyzer = 'Inactive Member';
 
     return expansionTile(
       title: 'My Downlines',
@@ -309,7 +309,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 myTreeView,
                 generationMember,
                 generationAnalyzer,
-                inactiveAnalyzer
+                // inactiveAnalyzer
               ].map(
                 (e) => Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),

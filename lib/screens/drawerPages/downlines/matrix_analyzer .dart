@@ -1,19 +1,11 @@
 import 'dart:math';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:graphview/GraphView.dart';
-import 'package:mycarclub/database/dio/exception/api_error_handler.dart';
-import '../../../constants/app_constants.dart';
+import 'package:mycarclub/database/model/response/abstract_user_model.dart';
 import '../../../constants/assets_constants.dart';
-import '../../../database/functions.dart';
-import '../../../database/model/response/base/api_response.dart';
-import '../../../database/model/response/team_downline_user_model.dart';
-import '../../../database/repositories/team_view_repo.dart';
-import '../../../utils/default_logger.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';
 import '/providers/team_view_provider.dart';
@@ -25,8 +17,6 @@ import '../../../utils/MyClippers.dart';
 import '../../../utils/picture_utils.dart';
 import '../../../utils/text.dart';
 import 'generation_analyzer.dart';
-import 'team_view/layerd_graph_team_view.dart';
-import 'trem_view_page.dart';
 
 class MatrixAnalyzerPage extends StatefulWidget {
   const MatrixAnalyzerPage({super.key});
@@ -58,8 +48,7 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
           0,
           BreadCrumbContent(
               index: 0,
-              user: GenerationAnalyzerUser(
-                  name: 'Root', image: Assets.appWebLogo, generation: 0)));
+              user: MatrixUser(username: authProvider.userData.username)));
       provider.gUsers.clear();
       provider.gUsers.addAll(provider.generateRandomUsers(0));
       setState(() {});
@@ -101,29 +90,30 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
                       ? Center(
                           child: CircularProgressIndicator(color: appLogoColor))
                       : _MatrixTree(
-                          username:
-                              provider.breadCrumbContent.last.user.name ?? "",
-                          onTap: (TeamDownlineUser user) {
+                          username: (provider.breadCrumbContent.last.user
+                                      as MatrixUser)
+                                  .username ??
+                              "",
+                          onTap: (MatrixUser user) {
                             print('user ${user.toJson()}');
                             if (!provider.breadCrumbContent.any((element) =>
-                                element.user.name == user.username)) {
+                                (element.user as MatrixUser).username ==
+                                user.username)) {
                               provider.setBreadCrumbContent(
                                   provider.breadCrumbContent.length,
                                   BreadCrumbContent(
                                       index: provider.breadCrumbContent.length,
-                                      user: GenerationAnalyzerUser(
-                                          name: user.username,
-                                          generation: user.newLevel!)));
+                                      user: user));
                             } else {
                               provider.setBreadCrumbContent(
                                   provider.breadCrumbContent.indexWhere(
                                       (element) =>
-                                          element.user.name == user.username),
+                                          (element.user as MatrixUser)
+                                              .username ==
+                                          user.username),
                                   BreadCrumbContent(
                                       index: provider.breadCrumbContent.length,
-                                      user: GenerationAnalyzerUser(
-                                          name: user.username,
-                                          generation: user.newLevel!)));
+                                      user: user));
                             }
                           })),
             ]),
@@ -180,57 +170,6 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
     );
   }
 
-  GridView buildGrid(TeamViewProvider provider) {
-    return GridView.builder(
-      padding: EdgeInsets.only(
-          left: 10, right: 10, top: 0, bottom: kBottomNavigationBarHeight),
-      itemCount: provider.gUsers.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1),
-      itemBuilder: (context, index) {
-        GenerationAnalyzerUser user = provider.gUsers[index];
-        return GestureDetector(
-          onTap: () {
-            provider.setBreadCrumbContent(
-                provider.breadCrumbContent.length,
-                BreadCrumbContent(
-                    index: provider.breadCrumbContent.length,
-                    user: GenerationAnalyzerUser(
-                        name: user.name,
-                        image: user.image,
-                        generation: user.generation)));
-            provider.setGenerationUsers(user.generation);
-            _animateToLast();
-          },
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: bColor,
-                boxShadow: [
-                  BoxShadow(
-                      offset: Offset(0, 1),
-                      blurRadius: 3,
-                      color: Colors.black26)
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                assetImages(user.image ?? '', height: 50, width: 50),
-                bodyLargeText(user.name ?? '', context,
-                    textAlign: TextAlign.center, useGradient: false),
-                height5(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Container buildBreadcrumbs(TeamViewProvider provider) {
     return Container(
       width: double.infinity,
@@ -245,15 +184,16 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
       child: BreadCrumb.builder(
         itemCount: provider.breadCrumbContent.length,
         builder: (index) {
-          GenerationAnalyzerUser user = provider.breadCrumbContent[index].user;
+          MatrixUser user =
+              provider.breadCrumbContent[index].user as MatrixUser;
           return BreadCrumbItem(
             margin: EdgeInsets.only(
                 right:
                     index == provider.breadCrumbContent.length - 1 ? 100 : 0),
-            content: capText('Crumb ${user.name}', context, useGradient: true),
+            content: capText('${user.username}', context, useGradient: true),
             onTap: () {
               provider.setBreadCrumbContent(index + 1);
-              provider.setGenerationUsers(user.generation);
+              // provider.setGenerationUsers(user.generation);
               _animateToLast();
               setState(() {});
             },
@@ -282,7 +222,7 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
 class _MatrixTree extends StatefulWidget {
   _MatrixTree({super.key, required this.username, required this.onTap});
   final String username;
-  final Function(TeamDownlineUser user) onTap;
+  final Function(MatrixUser user) onTap;
   @override
   _MatrixTreeState createState() => _MatrixTreeState();
 }
@@ -294,10 +234,8 @@ class _MatrixTreeState extends State<_MatrixTree> {
   @override
   void initState() {
     super.initState();
-
     init();
     builder
-      // ..nodeSeparation = (5)
       ..siblingSeparation = (25).toInt()
       ..levelSeparation = (25).toInt()
       ..subtreeSeparation = (25).toInt()
@@ -336,7 +274,7 @@ class _MatrixTreeState extends State<_MatrixTree> {
                         builder: (Node node) {
                           // I can decide what widget should be shown here based on the id
                           var a = node.key!.value as int?;
-                          TeamDownlineUser source = TeamDownlineUser();
+                          MatrixUser source = MatrixUser();
                           return LayoutBuilder(builder: (context, c) {
                             print('c ${c.maxHeight} ${c.maxWidth}');
                             return rectangleWidget(a, source);
@@ -353,190 +291,177 @@ class _MatrixTreeState extends State<_MatrixTree> {
 
   Random r = Random();
 
-  Widget rectangleWidget(int? a, TeamDownlineUser source) {
-    TeamDownlineUser user = a == 1 ? rooTUser! : TeamDownlineUser();
+  Widget rectangleWidget(int? a, MatrixUser source) {
+    MatrixUser user = a == 1 ? rooTUser! : MatrixUser();
     childrenMap.entries.forEach((element) {
-      if (element.value.any((element) => element.nodeVal == a)) {
-        user = element.value.firstWhere((element) => element.nodeVal == a);
+      if (element.value.any((element) => element.nodeValue == a)) {
+        user = element.value.firstWhere((element) => element.nodeValue == a);
       }
     });
-    return GestureDetector(
-      // onTap: (user.downline ?? 0) > 0 ? () => loadChildren(user) : null,
-      onTap: () => widget.onTap(user),
-      child: TeamViewUserIconWidget(
-        rootUser: a == 1,
-        user: user,
-        loadingNodeId: loadingNodeId,
-        context: context,
-        // callBack: (user.downline ?? 0) > 0 ? () => loadChildren(user) : null,
-        showMessage: false,
-      ),
+    return _TeamViewUserIconWidget(
+      rootUser: a == 1,
+      user: user,
+      loadingNodeId: loadingNodeId,
+      context: context,
+      callBack: user.username != null ? () => widget.onTap(user) : null,
+      showMessage: false,
     );
   }
 
   final Graph graph = Graph()..isTree = true;
   BuchheimWalkerConfiguration builder = BuchheimWalkerConfiguration();
 
-  int nodeVal = 1;
+  int nodeValue = 1;
   int loadingNodeId = 1;
   bool loadingInitial = false;
   bool loadingChildren = false;
 
-  Future<void> loadChildren(TeamDownlineUser data) async {
+  Future<void> loadChildren(MatrixUser data, {String? username}) async {
     setState(() {
-      loadingNodeId = data.nodeVal!;
+      loadingNodeId = data.nodeValue!;
       loadingChildren = true;
     });
     await Future.delayed(const Duration(milliseconds: 750));
-    var users = await getDownLines(data.newLevel!, data.username!);
-    final mSource = Node.Id(data.nodeVal);
-    data.expanded = true;
-    print('users.length   ${users.length}');
-    print('source   ${data.nodeVal}  ${data.toJson()}');
+    var users = await getDownLines(data.newLevel!, username);
+    final mSource = Node.Id(data.nodeValue);
+    // print('users.length   ${users.length}');
+    // print('source   ${data.nodeValue}  ${data.toJson()}');
+
+    // loop for mUsers
     users.forEach((element) {
       var mUser = element;
-
-      if (!childrenMap.entries.any((entry) => entry.key == data.nodeVal!)) {
-        childrenMap.addEntries([MapEntry(data.nodeVal!, <TeamDownlineUser>[])]);
+      if (!childrenMap.entries.any((entry) => entry.key == data.nodeValue!)) {
+        childrenMap.addEntries([MapEntry(data.nodeValue!, <MatrixUser>[])]);
       }
-      print('m childrenMap  ${childrenMap.entries.length}');
       var nodeArray = childrenMap.entries
-          .firstWhere((element) => element.key == data.nodeVal!)
+          .firstWhere((element) => element.key == data.nodeValue!)
           .value;
+      // if (!nodeArray.any((ele) => ele.username == mUser.username)) {
+      nodeArray.add(mUser);
+      final destination = Node.Id(mUser.nodeValue);
+      // print('loadChildren m nodeArray  ${nodeArray.map((e) => e.toJson())}');
+      print('m destination  ${destination.key}');
+      graph.addEdge(mSource, destination);
+      var dUsers = mUser.team ?? [];
+      print('loadChildren d users.length   ${dUsers.length}');
+      final dSource = Node.Id(mUser.nodeValue);
 
-      print('m nodeArray  ${nodeArray.map((e) => e.toJson())}');
-      if (!nodeArray.any((ele) => ele.username == mUser.username)) {
-        childrenMap.entries
-            .firstWhere((element) => element.key == data.nodeVal!)
-            .value
-            .add(mUser);
-        final destination = Node.Id(mUser.nodeVal);
+      // loop for dUsers
+      dUsers.forEach((element) {
+        var dUser = element;
+        print(
+            'loadChildren d childrenMap  ${childrenMap.entries.any((element) => element.key == mUser.nodeValue!)}');
 
-        print('m destination  ${destination.key}');
-        graph.addEdge(mSource, destination);
+        // add first time
+        if (!childrenMap.entries
+            .any((entry) => entry.key == mUser.nodeValue!)) {
+          childrenMap.addEntries([MapEntry(mUser.nodeValue!, <MatrixUser>[])]);
+        }
+        var nodeArray = childrenMap.entries
+            .firstWhere((element) => element.key == mUser.nodeValue!)
+            .value;
 
-        var dUsers = mUser.team ?? [];
-        print('d users.length   ${dUsers.length}');
-        final dSource = Node.Id(mUser.nodeVal);
-        dUsers.forEach((element) {
-          var dUser = element;
-          print(
-              'd childrenMap  ${childrenMap.entries.any((element) => element.key == mUser.nodeVal!)}');
+        print('loadChildren d nodeArray  ${nodeArray.length}');
 
-          if (!childrenMap.entries
-              .any((entry) => entry.key == mUser.nodeVal!)) {
-            childrenMap
-                .addEntries([MapEntry(mUser.nodeVal!, <TeamDownlineUser>[])]);
-          }
-          var nodeArray = childrenMap.entries
-              .firstWhere((element) => element.key == mUser.nodeVal!)
-              .value;
-
-          print('d nodeArray  ${nodeArray.length}');
-          if (!nodeArray.any((ele) => ele.username == dUser.username)) {
-            childrenMap.entries
-                .firstWhere((element) => element.key == mUser.nodeVal!)
-                .value
-                .add(dUser);
-            final destination = Node.Id(dUser.nodeVal);
-            graph.addEdge(dSource, destination);
-          } else {
-            print('duser already contains');
-          }
-        });
-      } else {
-        print('user already contains');
-      }
-      print('children map is not empty ${childrenMap.entries.length}');
+        // add first dUser
+        // if (!nodeArray.any((ele) => ele.username == dUser.username)) {
+        nodeArray.add(dUser);
+        final destination = Node.Id(dUser.nodeValue);
+        graph.addEdge(dSource, destination);
+        // } else {
+        //   print('duser already contains');
+        // }
+      });
+      // } else {
+      //   print('user already contains');
+      // }
+      print('loadChildren m children map ${childrenMap.length}');
     });
+    print('children map is not empty ${childrenMap.entries.length}');
     setState(() {
       loadingNodeId = 0;
       loadingChildren = false;
     });
   }
 
-  // Future<ApiResponse> getDownLiness(Map<String, dynamic> data) async {
-  //   try {
-  //     Dio dio = Dio();
-  //     //add base url
-  //     dio.options.baseUrl = 'https://mycarclub.com/api/';
-  //     dio.options.headers['Authorization'] =
-  //         'Bearer ${'0400937c365c59f47d9b9066cb18f241'}';
-  //     dio.options.headers['x-api-key'] = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
-  //     FormData formData = new FormData();
-  //     blackLog('post dio client data: ${data}');
-  //     formData.fields
-  //         .addAll((data).entries.toList().map((e) => MapEntry(e.key, e.value)));
-  //     formData.fields
-  //         .add(MapEntry('login_token', '0400937c365c59f47d9b9066cb18f241'));
-  //     print(formData.fields);
-  //     Response response =
-  //         await dio.post(AppConstants.getDownLines, data: formData);
-  //     return ApiResponse.withSuccess(response);
-  //   } catch (e) {
-  //     return ApiResponse.withError(ApiErrorHandler.getMessage(e));
-  //   }
-  // }
+  Future<List<MatrixUser>> getDownLines(int level, String? id) async {
+    //dummy mUsers
+    List<MatrixUser> mUsers = [MatrixUser(), MatrixUser(), MatrixUser()];
 
-  Future<List<TeamDownlineUser>> getDownLines(int level, String id) async {
-    List<TeamDownlineUser> levelArray = [];
-    for (int i = 0; i < 3; i++) {
-      nodeVal++;
-      TeamDownlineUser mUser = TeamDownlineUser(
-          username: 'user $nodeVal', nodeVal: nodeVal, newLevel: level + 1);
-      for (int i = 0; i < 3; i++) {
-        nodeVal++;
-        TeamDownlineUser dUser = TeamDownlineUser(
-            username: 'user $nodeVal', nodeVal: nodeVal, newLevel: level + 2);
-        if (mUser.team == null) mUser.team = [];
-        mUser.team?.add(dUser);
+    //api result
+    List<MatrixUser> levelArray =
+        await provider.getMatrixUsers({'customer_id': id ?? ''});
+
+    // for loop to manipulate dummy mUsers
+    for (int mIndex = 0; mIndex < 3; mIndex++) {
+      print('****dummy mUser $mIndex started ****');
+      nodeValue++;
+      MatrixUser mUser = mUsers[mIndex];
+
+      if (levelArray.isNotEmpty) {
+        if (levelArray.any((element) =>
+            element.position != null &&
+            element.position!.isNotEmpty &&
+            int.parse(element.position!) == mIndex + 1)) {
+          mUser = levelArray.firstWhere((element) =>
+              element.position != null &&
+              element.position!.isNotEmpty &&
+              int.parse(element.position!) == mIndex + 1);
+        }
       }
-      levelArray.add(mUser);
+      mUser.nodeValue = nodeValue;
+      mUser.newLevel = level + 1;
+
+      List<MatrixUser> dUsers = [MatrixUser(), MatrixUser(), MatrixUser()];
+      // for loop for dummy dUsers
+      try {
+        for (int dIndex = 0; dIndex < 3; dIndex++) {
+          nodeValue++;
+          print('------> dummy mUser$mIndex  <----- $dIndex dUser started');
+          // manipulating dummy dUser
+          MatrixUser dUser = dUsers[dIndex];
+          var levelArray = mUser.team ?? [];
+          if (levelArray.isNotEmpty) {
+            if (levelArray.any((element) =>
+                element.position != null &&
+                element.position!.isNotEmpty &&
+                int.parse(element.position!) == dIndex + 1)) {
+              dUser = levelArray.firstWhere((element) =>
+                  element.position != null &&
+                  element.position!.isNotEmpty &&
+                  int.parse(element.position!) == dIndex + 1);
+            }
+          }
+          dUser.nodeValue = nodeValue;
+          dUser.newLevel = level + 2;
+          dUsers[dIndex] = dUser;
+        }
+      } catch (e) {
+        print('e $e');
+      }
+      mUser.team = dUsers;
+      mUsers[mIndex] = mUser;
+      print(
+          '****dummy mUser$mIndex $mIndex finished **** ${mUser.toJson()}\n\n ----');
     }
-    return levelArray;
-    // if (isOnline) {
-    //   try {
-    //     ApiResponse apiResponse = await getDownLiness(
-    //         {'level': level.toString(), 'sponser_username': id});
-    //     print('apiResponse ${apiResponse.response!.data}');
-    //     if (apiResponse.response != null &&
-    //         apiResponse.response!.statusCode == 200) {
-    //       Map map = apiResponse.response!.data;
-    //       bool status = false;
-    //       try {
-    //         status = map["status"];
-    //         if (map['is_logged_in'] == 0) {
-    //           logOut();
-    //         }
-    //         if (status) {
-    //           try {
-    //             map['levelArray'].forEach(
-    //                 (e) => levelArray.add(TeamDownlineUser.fromJson(e)));
-    //             print(levelArray.length);
-    //           } catch (e) {
-    //             print('could not generate the level array $e');
-    //           }
-    //         }
-    //       } catch (e) {}
-    //     }
-    //   } catch (e) {}
-    // } else {
-    //   Fluttertoast.showToast(msg: 'No internet connection');
-    // }
-    // return levelArray;
+    print('_ mUsers.length ${mUsers.length}');
+    return mUsers;
   }
 
-  final Map<int, List<TeamDownlineUser>> childrenMap = {};
-  TeamDownlineUser? rooTUser;
+  final Map<int, List<MatrixUser>> childrenMap = {};
+  MatrixUser? rooTUser;
   void init() async {
     setState(() {
       loadingInitial = true;
     });
     try {
-      rooTUser = TeamDownlineUser(
-          username: widget.username, nodeVal: nodeVal, newLevel: 1);
+      rooTUser = MatrixUser(
+          username: widget.username, nodeValue: nodeValue, newLevel: 1);
       print('------- user ${rooTUser!.toJson()} ----------- ux');
-      await loadChildren(rooTUser!);
+      await loadChildren(rooTUser!,
+          username: sl.get<TeamViewProvider>().breadCrumbContent.length == 1
+              ? null
+              : rooTUser!.username);
     } catch (e) {
       print('-------e $e ----------- e');
     }
@@ -547,28 +472,35 @@ class _MatrixTreeState extends State<_MatrixTree> {
 
   Padding buildEmptyList(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: const EdgeInsets.all(16.0),
+      child: Row(
         children: [
-          //TODO: teamViewLottie
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              assetLottie(Assets.teamViewLottie, width: 200),
-            ],
-          ),
-          titleLargeText(
-              'Create team & join more people to enlarge the system.', context,
-              color: Colors.white, textAlign: TextAlign.center),
-          height20(),
-          buildTeamBuildingReferralLink(context, linkColor: Colors.white)
+          width50(),
+          Expanded(
+              flex: 2,
+              child: Container(
+                  decoration: BoxDecoration(
+                    color: appLogoColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: assetLottie(Assets.teamViewLottie))),
+          Expanded(
+              flex: 2,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  bodyLargeText('No Data Found', context, useGradient: false),
+                  height20(),
+                  bodyLargeText('Please try again later', context,
+                      useGradient: false),
+                ],
+              )),
         ],
       ),
     );
   }
 
-  Widget buildUser(TeamDownlineUser user) {
+  Widget buildUser(MatrixUser user) {
     return Container(
       height: 20,
       width: 20,
@@ -577,6 +509,92 @@ class _MatrixTreeState extends State<_MatrixTree> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [titleLargeText(user.username ?? '', context, fontSize: s)],
+      ),
+    );
+  }
+}
+
+class _TeamViewUserIconWidget extends StatefulWidget {
+  const _TeamViewUserIconWidget({
+    super.key,
+    required this.user,
+    required this.loadingNodeId,
+    required this.context,
+    this.callBack,
+    required this.rootUser,
+    this.showMessage = false,
+  });
+
+  final MatrixUser user;
+  final bool rootUser;
+  final int loadingNodeId;
+  final BuildContext context;
+  final VoidCallback? callBack;
+  final bool showMessage;
+
+  @override
+  State<_TeamViewUserIconWidget> createState() =>
+      _TeamViewUserIconWidgetState();
+}
+
+class _TeamViewUserIconWidgetState extends State<_TeamViewUserIconWidget>
+    with SingleTickerProviderStateMixin {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    animationController?.dispose();
+    super.dispose();
+  }
+
+  AnimationController? animationController;
+  Animation<double>? animation;
+  @override
+  Widget build(BuildContext context) {
+    bool dummy = widget.user.username == null;
+    return GestureDetector(
+      onTap: widget.callBack,
+      child: Container(
+        padding: EdgeInsets.all(dummy ? 0 : 2),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(2),
+            border: dummy
+                ? null
+                : Border.all(
+                    width: 0.5,
+                    color: widget.user.status == '1'
+                        ? Colors.green
+                        : widget.user.status == '2'
+                            ? Colors.red
+                            : Colors.grey)),
+        child: Column(
+          children: [
+            Column(
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle, color: Colors.cyan.shade50),
+                  child: Icon(Icons.person,
+                      size: 6,
+                      color: widget.user.status == '1'
+                          ? Colors.green
+                          : widget.user.status == '2'
+                              ? Colors.red
+                              : Colors.grey),
+                ),
+                if (!dummy) height5(1),
+                if (!dummy)
+                  capText(widget.user.username ?? '', context, fontSize: 3)
+              ],
+            ),
+            if (!dummy) height5(2),
+          ],
+        ),
       ),
     );
   }

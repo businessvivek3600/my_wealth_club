@@ -73,7 +73,6 @@ class Assets {
   static const deActiveUser = 'deactive_user.png';
   static const activeUser = 'active_user.png';
   static const nullUser = 'nullUser.png';
-  static const noMessage = 'icons8-deleted-message-64.png';
   static const candleStick = 'icons8-candlestick-chart-48.png';
   static const emergencyStop = 'icons8-emergency-stop-button-48.png';
   static const doneImg = 'done.png';
@@ -102,4 +101,5 @@ class Assets {
   static const shiningStars = '38319-shining-stars.zip';
   static const done = '50465-done.zip';
   static const tradingSignals = 'kaRTgezOn1.json';
+  static const mail = 'mail.json';
 }

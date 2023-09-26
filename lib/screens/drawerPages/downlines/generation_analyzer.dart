@@ -230,7 +230,8 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
       child: BreadCrumb.builder(
         itemCount: provider.breadCrumbContent.length,
         builder: (index) {
-          GenerationAnalyzerUser user = provider.breadCrumbContent[index].user;
+          GenerationAnalyzerUser user =
+              provider.breadCrumbContent[index].user as GenerationAnalyzerUser;
           return BreadCrumbItem(
             margin: EdgeInsets.only(
                 right:
@@ -424,11 +425,13 @@ class _GenerationChip extends StatelessWidget {
 
 class BreadCrumbContent {
   final int index;
-  final GenerationAnalyzerUser user;
+  final BreadCrumbData user;
   BreadCrumbContent({required this.index, required this.user});
 }
 
-class GenerationAnalyzerUser {
+abstract class BreadCrumbData {}
+
+class GenerationAnalyzerUser extends BreadCrumbData {
   String? name;
   String? referralId;
   int generation;

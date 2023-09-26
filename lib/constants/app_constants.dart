@@ -48,6 +48,8 @@ class AppConstants {
   static const String customerTeam = 'customer/team-view';
   static const String sendInboxMessageToUser = 'send-inbox-message-to-user';
 
+  static const String matrixAnalyzer = 'customer/matrix-analyzer';
+
   //voucher
   static const String voucherList = 'customer/voucher-list';
   static const String createVoucher = 'customer/create-voucher';

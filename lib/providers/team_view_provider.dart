@@ -6,6 +6,7 @@ import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:api_cache_manager/utils/cache_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../database/model/response/abstract_user_model.dart';
 import '/screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
 import '../constants/assets_constants.dart';
@@ -490,6 +491,50 @@ class TeamViewProvider extends ChangeNotifier {
   //     Fluttertoast.showToast(msg: 'No internet connection');
   //   }
   // }
+
+// get matrix user api
+
+  Future<List<MatrixUser>> getMatrixUsers(Map<String, dynamic> data) async {
+    List<MatrixUser> matrixUsers = [];
+
+    Map? map;
+    if (isOnline) {
+      ApiResponse apiResponse = await teamViewRepo.matrixAnalyzer(data);
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        map = apiResponse.response!.data;
+        bool status = false;
+        try {
+          status = map?["status"];
+          if (map?['is_logged_in'] == 0) {
+            logOut();
+          }
+        } catch (e) {}
+      }
+    } else {
+      print('getMatrixUsers not online not cache exist ');
+    }
+    print('getMatrixUsers online hit success data: $map');
+
+    try {
+      if (map != null) {
+        try {
+          if (map['client_tree'] != null && map['client_tree'].isNotEmpty) {
+            matrixUsers.clear();
+            map['client_tree']
+                .forEach((e) => matrixUsers.add(MatrixUser.fromJson(e)));
+            notifyListeners();
+          }
+        } catch (e) {
+          print('getMatrixUsers failed ${e}');
+        }
+      }
+    } catch (e) {
+      print('getMatrixUsers failed ${e}');
+    }
+    print('getMatrixUsers return matrixUsers: $matrixUsers');
+    return matrixUsers;
+  }
 
   clear() {
     tree = IndexedTreeNode();
