@@ -13,14 +13,14 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import 'data_manager.dart';
 
-class VideosMainPage extends StatefulWidget {
-  const VideosMainPage({Key? key}) : super(key: key);
+class DrawerVideosMainPage extends StatefulWidget {
+  const DrawerVideosMainPage({Key? key}) : super(key: key);
 
   @override
-  State<VideosMainPage> createState() => _VideosMainPageState();
+  State<DrawerVideosMainPage> createState() => _DrawerVideosMainPageState();
 }
 
-class _VideosMainPageState extends State<VideosMainPage> {
+class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
   void _onRefresh() async {
@@ -35,8 +35,71 @@ class _VideosMainPageState extends State<VideosMainPage> {
         return Scaffold(
           // backgroundColor: Colors.white.withOpacity(0.9),
           appBar: AppBar(
-            title: titleLargeText('Videos', context,useGradient: true),
+            title: titleLargeText('Videos', context, useGradient: true),
             elevation: provider.categoryVideos.length > 0 ? null : 0,
+            actions: [
+              provider.loadingVideos
+                  ? Center(
+                      child: Container(
+                          height: 20,
+                          width: 20,
+                          margin: EdgeInsets.only(right: 10),
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 1)))
+                  : provider.videoLanguages.isNotEmpty
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 30,
+                              child: PopupMenuButton<String>(
+                                child: Container(
+                                  margin: EdgeInsets.only(right: 10),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.0),
+                                      border: Border.all(color: Colors.white),
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.language,
+                                          color: Colors.white, size: 15),
+                                      width5(),
+                                      capText(
+                                          provider.currentVideoLanguage ??
+                                              'English',
+                                          context,
+                                          color: Colors.white),
+                                    ],
+                                  ),
+                                ),
+                                onSelected: (String value) {
+                                  provider.setVideoLanguage(value);
+                                  provider.getVideos(false);
+                                },
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(5)),
+                                offset: Offset(0, 50),
+                                itemBuilder: (BuildContext context) {
+                                  return provider.videoLanguages.entries
+                                      .map<PopupMenuItem<String>>(
+                                          (MapEntry<String, String> value) {
+                                    return PopupMenuItem<String>(
+                                        value: value.value,
+                                        child: Text(value.value,
+                                            style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight:
+                                                    FontWeight.normal)));
+                                  }).toList();
+                                },
+                              ),
+                            ),
+                          ],
+                        )
+                      : Container(),
+            ],
           ),
           body: SmartRefresher(
             enablePullDown: true,
@@ -44,30 +107,36 @@ class _VideosMainPageState extends State<VideosMainPage> {
             controller: _refreshController,
             header: MaterialClassicHeader(),
             onRefresh: _onRefresh,
-            child: provider.categoryVideos.length > 0
-                ? buildVideosListView(provider)
-                : ListView(
-                    children: [
-                      height100(),
-                      assetImages(
-                        Assets.dataFileImage,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: titleLargeText('Videos not found.', context,
-                                color: Colors.black,
-                                textAlign: TextAlign.center,
-                                fontSize: 22),
-                          ),
-                        ],
-                      ),
-                      height100(),
-                    ],
-                  ),
+            child: provider.loadingVideos
+                ? Center(child: CircularProgressIndicator(color: appLogoColor))
+                : provider.categoryVideos.length > 0
+                    ? buildVideosListView(provider)
+                    : buildNoVideos(context),
           ),
         );
       },
+    );
+  }
+
+  ListView buildNoVideos(BuildContext context) {
+    return ListView(
+      children: [
+        height100(),
+        assetImages(
+          Assets.dataFileImage,
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: titleLargeText('Videos not found.', context,
+                  color: Colors.black,
+                  textAlign: TextAlign.center,
+                  fontSize: 22),
+            ),
+          ],
+        ),
+        height100(),
+      ],
     );
   }
 
@@ -97,9 +166,8 @@ class _VideosMainPageState extends State<VideosMainPage> {
                   child: Row(
                     children: [
                       Expanded(
-                        child: bodyLargeText(category.header ?? '', context,
-                            color: Colors.black, maxLines: 5),
-                      ),
+                          child: bodyLargeText(category.header ?? '', context,
+                              color: Colors.black, maxLines: 5)),
                       // GestureDetector(
                       //   onTap: () {},
                       //   child: Row(
@@ -129,9 +197,7 @@ class _VideosMainPageState extends State<VideosMainPage> {
                           provider.setCategoryModel(category);
                           provider.setCurrentVideo(video);
                           Get.to(CustomOrientationPlayer(
-                            videos: category.videoList!,
-                            videoIndex: i,
-                          ));
+                              videos: category.videoList!, videoIndex: i));
 
                           // Get.to(VimeoPlayerWidget(
                           //     url: video.videoUrl ?? ''));

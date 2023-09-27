@@ -184,7 +184,7 @@ Widget titleLargeText(
     textAlign: textAlign,
     overflow: overflow,
     maxLines: maxLines ?? 3,
-    style:style ??
+    style: style ??
         TextStyle(
             fontWeight: fontWeight ?? FontWeight.bold,
             letterSpacing: letterSpacing,

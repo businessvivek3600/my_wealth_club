@@ -61,6 +61,7 @@ class Assets {
 
   static const appWebLogo = 'appLogo_l.png';
   static const appWebLogoWhite = 'appLogo_l.png';
+  static const eagleAi = 'EagleAi.png';
   static const noImage = 'no_image.jfif';
   static const offlineWifi = 'offline-5.png';
   static const imageNotFound = 'image-not-found.png';

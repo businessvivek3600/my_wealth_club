@@ -26,7 +26,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
   var provider = sl.get<TeamViewProvider>();
   var authProvider = sl.get<AuthProvider>();
 
-  int selectedIndex = 0;
+  // int selectedIndex = 0;
   final searchController = TextEditingController();
   bool isSearching = false;
   final ScrollController generationScoll = ScrollController();
@@ -63,8 +63,11 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
           BreadCrumbContent(
               index: 0,
               user: GenerationAnalyzerUser(
-                  name: 'Root', image: Assets.appWebLogo, generation: 0)));
-      provider.gUsers.addAll(provider.generateRandomUsers(0));
+                  name: 'Root',
+                  referralId: '',
+                  image: Assets.appWebLogo,
+                  generation: 0)));
+      provider.setGenerationUsers('Root');
       setState(() {});
     });
   }
@@ -72,6 +75,10 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
   @override
   void dispose() {
     provider.breadCrumbContent.clear();
+    generationScoll.dispose();
+    breadCumbScroll.dispose();
+    searchController.dispose();
+    provider.selectedGeneration = 0;
     super.dispose();
   }
 
@@ -91,7 +98,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                     fit: BoxFit.cover,
                     opacity: 1)),
             child: Column(children: [
-              chipsTile(),
+              chipsTile(provider),
               if (provider.breadCrumbContent.length > 1)
                 bradcrumRow(provider, context),
               height10(),
@@ -118,15 +125,13 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
           child: GestureDetector(
             onTap: () {
               if (provider.breadCrumbContent.length == 1) return;
-              setState(() {
-                selectedIndex = 0;
-              });
+              provider.setSelectedGeneration(0);
               Scrollable.ensureVisible(
-                  generationKeys[selectedIndex].currentContext!,
+                  generationKeys[provider.selectedGeneration].currentContext!,
                   duration: Duration(milliseconds: 700),
                   curve: Curves.fastOutSlowIn);
               provider.setBreadCrumbContent(1);
-              provider.setGenerationUsers(0);
+              provider.setGenerationUsers('Root');
               _animateToLast();
             },
             child: Container(
@@ -166,19 +171,19 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
           left: 10, right: 10, top: 0, bottom: kBottomNavigationBarHeight),
       itemCount: provider.gUsers.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1),
+        crossAxisCount: 3,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.8,
+      ),
       itemBuilder: (context, index) {
         GenerationAnalyzerUser user = provider.gUsers[index];
         return GestureDetector(
           onTap: () {
-            setState(() => selectedIndex = 0);
+            provider.setSelectedGeneration(0);
             Scrollable.ensureVisible(
-                generationKeys[selectedIndex].currentContext!,
+                generationKeys[provider.selectedGeneration].currentContext!,
                 duration: Duration(milliseconds: 700));
-
             provider.setBreadCrumbContent(
                 provider.breadCrumbContent.length,
                 BreadCrumbContent(
@@ -186,11 +191,13 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                     user: GenerationAnalyzerUser(
                         name: user.name,
                         image: user.image,
+                        referralId: user.referralId,
                         generation: user.generation)));
-            provider.setGenerationUsers(user.generation);
+            provider.setGenerationUsers('${user.name}');
             _animateToLast();
           },
           child: Container(
+            padding: EdgeInsets.all(10),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4),
                 color: bColor,
@@ -208,6 +215,10 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                 bodyLargeText(user.name ?? '', context,
                     textAlign: TextAlign.center, useGradient: false),
                 height5(),
+                capText('Generation ${user.generation}', context,
+                    useGradient: false),
+                height5(),
+                capText('Referral ID: ${user.referralId}', context),
               ],
             ),
           ),
@@ -236,15 +247,15 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
             margin: EdgeInsets.only(
                 right:
                     index == provider.breadCrumbContent.length - 1 ? 100 : 0),
-            content: capText('Crumb ${user.name}', context, useGradient: true),
+            content: capText('${user.name}', context, useGradient: true),
             onTap: () {
-              setState(() => selectedIndex = 0);
+              provider.setSelectedGeneration(0);
               Scrollable.ensureVisible(
-                  generationKeys[selectedIndex].currentContext!,
+                  generationKeys[provider.selectedGeneration].currentContext!,
                   duration: Duration(milliseconds: 700),
                   curve: Curves.fastOutSlowIn);
               provider.setBreadCrumbContent(index + 1);
-              provider.setGenerationUsers(user.generation);
+              provider.setGenerationUsers('${user.name}');
               _animateToLast();
             },
           );
@@ -259,7 +270,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
     );
   }
 
-  ConstrainedBox chipsTile() {
+  ConstrainedBox chipsTile(TeamViewProvider provider) {
     return ConstrainedBox(
         constraints: BoxConstraints(maxHeight: 50),
         child: ListView(
@@ -275,22 +286,27 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                       _GenerationChip(
                         widgetKey: generationKeys[index],
                         title: gen,
-                        selected: selectedIndex == index,
+                        selected: provider.selectedGeneration == index,
                         index: index,
                         onCancel: (index) {
-                          setState(() => selectedIndex = 0);
+                          provider.setSelectedGeneration(0);
                           Scrollable.ensureVisible(
-                              generationKeys[selectedIndex].currentContext!,
+                              generationKeys[provider.selectedGeneration]
+                                  .currentContext!,
                               duration: Duration(milliseconds: 700),
                               curve: Curves.fastOutSlowIn);
+                          provider.setGenerationUsers('Root');
                         },
                         onSelect: (index) {
-                          setState(() => selectedIndex = index);
+                          provider.setSelectedGeneration(index);
                           Scrollable.ensureVisible(
-                            generationKeys[selectedIndex].currentContext!,
-                            duration: Duration(milliseconds: 700),
-                            curve: Curves.fastOutSlowIn,
-                          );
+                              generationKeys[provider.selectedGeneration]
+                                  .currentContext!,
+                              duration: Duration(milliseconds: 700),
+                              curve: Curves.fastOutSlowIn);
+                          provider.setGenerationUsers(index == 0
+                              ? 'Root'
+                              : '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).name}');
                         },
                       ),
                     ],
@@ -433,9 +449,12 @@ abstract class BreadCrumbData {}
 
 class GenerationAnalyzerUser extends BreadCrumbData {
   String? name;
-  String? referralId;
+  String referralId;
   int generation;
   String? image;
   GenerationAnalyzerUser(
-      {this.name, required this.generation, this.image, this.referralId});
+      {this.name,
+      required this.generation,
+      this.image,
+      required this.referralId});
 }

@@ -4,6 +4,8 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:mycarclub/sl_container.dart';
+import '../utils/sp_utils.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
@@ -156,7 +158,8 @@ class GalleryProvider extends ChangeNotifier {
         await APICacheManager().isAPICacheKeyExist(AppConstants.galleryVideos);
     try {
       if (isOnline) {
-        ApiResponse apiResponse = await galleryRepo.galleryVideos();
+        ApiResponse apiResponse = await galleryRepo
+            .galleryVideos({'lng': getVideoLanguage() ?? 'english'});
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
           map = apiResponse.response!.data;
@@ -200,7 +203,17 @@ class GalleryProvider extends ChangeNotifier {
               (e) => categoryVideos.add(VideoCategoryModel.fromJson(e)));
           notifyListeners();
         }
-        infoLog("map['videoData']  ${map['videoData']}");
+        if (map['language_array'] != null && map['language_array'].isNotEmpty) {
+          videoLanguages.clear();
+          map['language_array']
+              .entries
+              .toList()
+              .forEach((e) => videoLanguages.addAll({e.key: e.value}));
+
+          // videoLanguages = map['language_array'];
+          notifyListeners();
+        }
+
         infoLog("categoryVideos  ${categoryVideos.length}");
       } catch (e) {
         print(' getVideos videoData error $e');
@@ -235,10 +248,32 @@ class GalleryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  String? currentVideoLanguage;
+
+  String? getVideoLanguage() {
+    var sp = sl.get<SpUtil>();
+    currentVideoLanguage = sp.getString(SPConstants.videoLanguage);
+    notifyListeners();
+    return currentVideoLanguage;
+  }
+
+  setVideoLanguage(String language) async {
+    var sp = sl.get<SpUtil>();
+    await sp.setString(SPConstants.videoLanguage, language);
+
+    currentVideoLanguage = language;
+    notifyListeners();
+  }
+
   clear() {
     thumbnails.clear();
     images.clear();
     categoryVideos.clear();
+    videoLanguages.clear();
     loadingThumbnails = false;
+    loadingGalleryDetails = false;
+    loadingVideos = false;
+    currentCategoryModel = null;
+    currentVideo = null;
   }
 }

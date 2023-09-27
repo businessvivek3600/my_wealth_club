@@ -48,6 +48,29 @@ class TeamViewRepo {
     }
   }
 
+  ///get team member
+  Future<ApiResponse> getGenerationAnalyzer(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient
+          .post(AppConstants.getGenerationAnalyzer, token: true, data: data);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  ///get matrixvAnalyzer
+  Future<ApiResponse> liquidUser(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient.post(AppConstants.liquidUser,
+          token: true, data: data);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
   ///get matrixvAnalyzer
   Future<ApiResponse> matrixAnalyzer(Map<String, dynamic> data) async {
     try {

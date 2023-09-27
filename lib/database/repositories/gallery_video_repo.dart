@@ -14,33 +14,34 @@ class GalleryRepo {
   Future<ApiResponse> getGalleryData() async {
     try {
       Response response =
-      await dioClient.post(AppConstants.gallery, token: true);
-      
+          await dioClient.post(AppConstants.gallery, token: true);
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
 
-  Future<ApiResponse> getGalleryDetails(Map<String,dynamic>data) async {
+  Future<ApiResponse> getGalleryDetails(Map<String, dynamic> data) async {
     try {
-      Response response =
-      await dioClient.post(AppConstants.galleryDetail, token: true,data: data);
-      
+      Response response = await dioClient.post(AppConstants.galleryDetail,
+          token: true, data: data);
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
 
-  Future<ApiResponse> galleryVideos() async {
+//
+  Future<ApiResponse> galleryVideos(Map<String, String> map) async {
     try {
       Response response = await dioClient.post(AppConstants.galleryVideos,
-          token: true);
-      
+          data: map, token: true);
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
+//
 }

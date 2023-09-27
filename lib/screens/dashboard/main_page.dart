@@ -175,9 +175,9 @@ class _MainPageState extends State<MainPage>
                                           _buildTeamBuildingReferralLink(
                                               context, dashBoardProvider),
                                           height10(),
-                                          _buildPlaceholderIdField(
-                                              context, dashBoardProvider),
-                                          height10(),
+                                          // _buildPlaceholderIdField(
+                                          //     context, dashBoardProvider),
+                                          // height10(),
                                           // buildQRCodeContainer(
                                           //     dashBoardProvider),
 
@@ -199,7 +199,7 @@ class _MainPageState extends State<MainPage>
                                               children: [
                                                 buildUpcomingEvents(context,
                                                     size, dashBoardProvider),
-                                                height20(),
+                                                // height20(),
                                               ],
                                             ),
                                           // platinum member logo
@@ -261,27 +261,19 @@ class _MainPageState extends State<MainPage>
           Row(
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: titleLargeText(
-                  'Company Trade Ideas',
+                  'EAGLE AI',
                   context,
                   fontSize: 25,
                   useGradient: true,
                   decoration: TextDecoration.underline,
                 ),
               ),
+              width10(),
+              assetImages(Assets.eagleAi, height: 50),
             ],
           ),
-          Positioned(
-            top: -10,
-            bottom: -10,
-            right: 0,
-            child: Container(
-              // color: Colors.white,
-              child: assetLottie(Assets.tradingSignals),
-            ),
-          )
         ],
       ),
     );
@@ -294,12 +286,13 @@ class _MainPageState extends State<MainPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         UiCategoryTitleContainer(
-            child: bodyLargeText('Upcomincg Events', context)),
+            child: bodyLargeText('Academic Broadcast', context)),
         SizedBox(
           height: 200,
           child: _BuildUpcomingEventCard(
-              event: dashboardProvider.wevinarEventVideo!,
-              loading: dashBoardProvider.loadingDash),
+            event: dashboardProvider.wevinarEventVideo!,
+            loading: dashBoardProvider.loadingDash,
+          ),
         )
       ],
     );
@@ -394,9 +387,9 @@ class _MainPageState extends State<MainPage>
       preferredSize: Size.fromHeight(50),
       child: Column(
         children: [
-          SizedBox(height: 10),
+          // SizedBox(height: 10),
           Container(
-              width: Get.width * 0.6,
+              width: Get.width * 0.5,
               child: CachedNetworkImage(
                   imageUrl: dashBoardProvider.logoUrl ?? '',
                   placeholder: (context, url) => SizedBox(
@@ -1483,7 +1476,7 @@ class _BuildUpcomingEventCard extends StatelessWidget {
       var url =
           // 'https://www.analyticsinsight.net/wp-content/uploads/2021/10/Top-10-Cheap-Cryptocurrencies-to-Buy-in-October-2021.jpg';
           // 'https://i.ytimg.com/vi/qI_zuDqcTEI/hqdefault.jpg';
-          // 'https://i.ytimg.com/vi/qI_zuDqcTEI/8sikTX9m7sQ.jpg';
+          // 'https://img.youtube.com/vi/ezdP1lzsNUg/0.jpg';
           'https://img.youtube.com/vi/${event.webinarId}/0.jpg';
       String title = event.webinarTitle ?? '';
       DateTime? date =
@@ -1675,148 +1668,6 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              // height5(),
-                              // loading
-                              //     ? Column(
-                              //         crossAxisAlignment:
-                              //             CrossAxisAlignment.start,
-                              //         children: [
-                              //           Skeleton(
-                              //               height: titleS,
-                              //               textColor: Colors.white38,
-                              //               borderRadius:
-                              //                   BorderRadius.circular(2)),
-                              //           // height5(),
-                              //           // Skeleton(
-                              //           //   height: titleS,
-                              //           //   width: 70,
-                              //           //   textColor: Colors.white38,
-                              //           //   borderRadius:
-                              //           //       BorderRadius.circular(2),
-                              //           // )
-                              //         ],
-                              //       )
-                              //     : bodyLargeText(
-                              //         'More Details...',
-                              //         context,
-                              //         color: Colors.white70,
-                              //         useGradient: false,
-                              //         fontSize: capS,
-                              //       ),
-
-                              ///
-                              // Spacer(),
-                              // Row(
-                              //   mainAxisAlignment:
-                              //       MainAxisAlignment.spaceBetween,
-                              //   children: [
-                              //     // watch now button
-                              //     /*
-                              //     loading
-                              //         ? Skeleton(
-                              //             height: 25,
-                              //             width: 70,
-                              //             textColor: Colors.white54,
-                              //             borderRadius:
-                              //                 BorderRadius.circular(5),
-                              //           )
-                              //         : index % 2 != 0
-                              //             ? SizedBox.shrink()
-                              //             : InkWell(
-                              //                 splashColor: Colors.white,
-                              //                 onTap: () {
-                              //                   Navigator.pushNamed(context,
-                              //                       YoutubePlayerPage.routeName,
-                              //                       arguments: jsonEncode({
-                              //                         'videoId': 'ePplpyOQd74',
-                              //                         'isLive': false
-                              //                       }));
-                              //                 },
-                              //                 highlightColor: Colors.white,
-                              //                 focusColor: Colors.white,
-                              //                 child: Container(
-                              //                   padding:
-                              //                       EdgeInsets.all(capS / 2),
-                              //                   decoration: BoxDecoration(
-                              //                     gradient: LinearGradient(
-                              //                       colors: [
-                              //                         Color.fromARGB(
-                              //                             255, 169, 4, 246),
-                              //                         appLogoColor
-                              //                             .withOpacity(0.8),
-                              //                       ],
-                              //                       begin: Alignment.topLeft,
-                              //                       end: Alignment.bottomRight,
-                              //                     ),
-                              //                     borderRadius:
-                              //                         BorderRadius.circular(5),
-                              //                   ),
-                              //                   child: bodyMedText(
-                              //                     'Watch Now',
-                              //                     context,
-                              //                     color: Colors.white,
-                              //                     textAlign: TextAlign.center,
-                              //                     maxLines: 1,
-                              //                   ),
-                              //                 ),
-                              //               ),
-
-                              //     */
-                              //     width10(),
-                              //     // add count down
-
-                              //     loading
-                              //         ? Skeleton(
-                              //             height: 25,
-                              //             width: 100,
-                              //             textColor: Colors.white54,
-                              //             borderRadius:
-                              //                 BorderRadius.circular(5),
-                              //           )
-                              //         : index % 2 == 0
-                              //             ?
-                              //             // build live container
-                              //             Container(
-                              //                 padding: EdgeInsets.symmetric(
-                              //                     vertical: capS / 2,
-                              //                     horizontal: capS),
-                              //                 decoration: BoxDecoration(
-                              //                   color: Colors.red,
-                              //                   borderRadius:
-                              //                       BorderRadius.circular(5),
-                              //                 ),
-                              //                 child: bodyMedText(
-                              //                   'Live',
-                              //                   context,
-                              //                   color: Colors.white,
-                              //                   textAlign: TextAlign.center,
-                              //                   maxLines: 1,
-                              //                 ),
-                              //               )
-                              //             : Builder(builder: (context) {
-                              //                 const defaultDuration = Duration(
-                              //                     hours: 2, minutes: 30);
-                              //                 return SlideCountdown(
-                              //                   duration: defaultDuration,
-                              //                   padding:
-                              //                       EdgeInsets.all(capS / 2),
-                              //                   separatorType:
-                              //                       SeparatorType.symbol,
-                              //                   textStyle: TextStyle(
-                              //                       fontSize: capS,
-                              //                       color: Colors.white),
-                              //                   durationTitle:
-                              //                       DurationTitle.id(),
-                              //                   decoration: const BoxDecoration(
-                              //                       color: Colors.red,
-                              //                       borderRadius:
-                              //                           BorderRadius.all(
-                              //                               Radius.circular(
-                              //                                   5))),
-                              //                 );
-                              //               }),
-                              //   ],
-                              // ),
                             ],
                           );
                         }))
@@ -1837,6 +1688,7 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                             context, YoutubePlayerPage.routeName,
                             arguments: jsonEncode({
                               'videoId': event.webinarId,
+                              // 'videoId': 'ezdP1lzsNUg',
                               'isLive': true,
                               'rotate': true,
                               'data': event.toJson()

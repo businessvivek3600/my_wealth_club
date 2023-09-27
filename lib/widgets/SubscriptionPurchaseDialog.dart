@@ -17,7 +17,6 @@ import '/utils/sizedbox_utils.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
-
 class SubscriptionPurchaseDialog extends StatefulWidget {
   const SubscriptionPurchaseDialog({
     super.key,
@@ -275,10 +274,13 @@ DraggableScrollableSheet buildDraggableScrollableSheet(
         child: Container(
           margin: EdgeInsets.only(top: kToolbarHeight),
           decoration: BoxDecoration(
-              // color: Color(0xff0d193e),
-              color: bColor,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15), topRight: Radius.circular(15))),
+            // color: Color(0xff0d193e),
+            color: defaultBottomSheetColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+          ),
           child: Stack(
             children: [
               ListView.builder(

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mycarclub/constants/assets_constants.dart';
+import 'package:mycarclub/providers/team_view_provider.dart';
 import 'package:mycarclub/utils/picture_utils.dart';
 import 'package:mycarclub/utils/sizedbox_utils.dart';
 import 'package:mycarclub/utils/text.dart';
+import 'package:provider/provider.dart';
+
+import '../../sl_container.dart';
 
 class LiquidUserPage extends StatefulWidget {
   const LiquidUserPage({super.key});
@@ -12,27 +16,33 @@ class LiquidUserPage extends StatefulWidget {
 }
 
 class _LiquidUserPageState extends State<LiquidUserPage> {
+  var provider = sl.get<TeamViewProvider>();
   @override
   void initState() {
     super.initState();
+    provider.getLiquidUsers();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Liquid User Page'),
-      ),
-      body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              image: userAppBgImageProvider(context), fit: BoxFit.cover),
+    return Consumer<TeamViewProvider>(builder: (context, provider, _) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('Liquid User Page'),
         ),
-        child: buildNoActiveWidget(context),
-      ),
-    );
+        body: Container(
+          height: double.maxFinite,
+          width: double.maxFinite,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: userAppBgImageProvider(context), fit: BoxFit.cover),
+          ),
+          child: provider.loadingLoquidUser
+              ? Center(child: CircularProgressIndicator(color: Colors.white))
+              : buildNoActiveWidget(context),
+        ),
+      );
+    });
   }
 
   Padding buildNoActiveWidget(BuildContext context) {

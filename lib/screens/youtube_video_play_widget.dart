@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
@@ -93,378 +94,167 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
         return OrientationBuilder(builder: (context, orientation) {
           return Stack(
             children: [
-              YoutubePlayerBuilder(
-                onExitFullScreen: () {
-                  SystemChrome.setPreferredOrientations([
-                    DeviceOrientation.portraitUp,
-                    DeviceOrientation.portraitDown
-                  ]);
-                },
-                onEnterFullScreen: () {
-                  SystemChrome.setPreferredOrientations([
-                    DeviceOrientation.landscapeLeft,
-                    DeviceOrientation.landscapeRight
-                  ]);
-                },
-                player: YoutubePlayer(
-                  controller: provider.controller,
-                  showVideoProgressIndicator: true,
-                  progressIndicatorColor: Colors.white,
-                  progressColors: ProgressBarColors(
-                      playedColor: Colors.blueAccent,
-                      handleColor: Colors.blueAccent),
-                  topActions: <Widget>[
-                    // const SizedBox(width: 8.0),
-                    // Expanded(
-                    //   child: Text(
-                    //     provider.controller.metadata.title,
-                    //     style: const TextStyle(
-                    //       color: Colors.white,
-                    //       fontSize: 18.0,
-                    //     ),
-                    //     overflow: TextOverflow.ellipsis,
-                    //     maxLines: 1,
-                    //   ),
-                    // ),
-                    // IconButton(
-                    //   icon: const Icon(
-                    //     Icons.settings,
-                    //     color: Colors.white,
-                    //     size: 25.0,
-                    //   ),
-                    //   onPressed: () {
-                    //     Get.to(PlayVideoFromNetwork());
-                    //   },
-                    // ),
-                  ],
-                  onReady: () {
-                    provider.isPlayerReady = true;
+              Padding(
+                padding: EdgeInsets.symmetric(
+                    vertical: orientation == Orientation.portrait ? 0 : 35.0),
+                child: YoutubePlayerBuilder(
+                  onExitFullScreen: () {
+                    SystemChrome.setPreferredOrientations([
+                      DeviceOrientation.portraitUp,
+                      DeviceOrientation.portraitDown
+                    ]);
                   },
-                  onEnded: (data) {
-                    Get.back();
-                    _showSnackBar('Thank you for watching!');
+                  onEnterFullScreen: () {
+                    SystemChrome.setPreferredOrientations([
+                      DeviceOrientation.landscapeLeft,
+                      DeviceOrientation.landscapeRight
+                    ]);
                   },
-                ),
-                builder: (context, player) => Scaffold(
-                  backgroundColor: Colors.black,
-                  appBar: buildAppBar(isLive: isLive, provider: provider),
-                  body: Column(
-                    children: [
-                      Stack(
-                        children: [
-                          AspectRatio(
-                              aspectRatio: 16 /
-                                  9, //provider.controller.value.aspectRatio
-                              child: player),
+                  player: YoutubePlayer(
+                    controller: provider.controller,
+                    showVideoProgressIndicator: true,
+                    progressIndicatorColor: Colors.white,
+                    progressColors: ProgressBarColors(
+                        playedColor: Colors.blueAccent,
+                        handleColor: Colors.blueAccent),
+                    topActions: <Widget>[],
+                    onReady: () {
+                      provider.isPlayerReady = true;
+                    },
+                    onEnded: (data) {
+                      Get.back();
+                      _showSnackBar('Thank you for watching!');
+                    },
+                  ),
+                  builder: (context, player) => Scaffold(
+                    backgroundColor: Colors.black,
+                    appBar: buildAppBar(isLive: isLive, provider: provider),
+                    body: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            AspectRatio(
+                                aspectRatio: 16 /
+                                    9, //provider.controller.value.aspectRatio
+                                child: player),
 
-                          ///Skip screen
-                          if (!provider.controller.value.isFullScreen)
-                            buildCutomScreenTapSkipWidget(provider),
+                            ///Skip screen
+                            if (!provider.controller.value.isFullScreen)
+                              buildCutomScreenTapSkipWidget(provider),
 
-                          //thumbnail image
-                          if (!provider.controller.value.isFullScreen)
-                            buildCutomThumbnailWidget(provider),
+                            //thumbnail image
+                            if (!provider.controller.value.isFullScreen)
+                              buildCutomThumbnailWidget(provider),
 
-                          ///Live indicator
-                          if (!provider.controller.value.isFullScreen)
-                            buildCutomLiveIndicator(provider),
+                            ///Live indicator
+                            if (!provider.controller.value.isFullScreen)
+                              buildCutomLiveIndicator(provider),
 
-                          /// progress bar and full screen button
-                          if (!provider.controller.value.isFullScreen)
-                            buildCustomProgressBarWidget(provider),
+                            /// progress bar and full screen button
+                            if (!provider.controller.value.isFullScreen)
+                              buildCustomProgressBarWidget(provider),
 
-                          // ///play button
-                          // if (!provider.controller.value.isFullScreen)
-                          //   buildCustomPlayButton(provider)
-                        ],
-                      ),
-
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor:
-                                        (!isLive ? Colors.red : appLogoColor)
-                                            .withOpacity(0.2),
-                                    child: assetImages(Assets.appLogo_S,
-                                        height: 25, width: 25),
-                                  ),
-                                  width10(),
-                                  Expanded(
-                                    child: titleLargeText(
-                                        (eventData?['webinar_title'] ?? '')
-                                            .toString()
-                                            .capitalize!,
-                                        context),
-                                  ),
-                                ],
-                              ),
-                              height10(),
-                              // create ui for time when started and total duration
-                              if (date != null)
+                            // ///play button
+                            // if (!provider.controller.value.isFullScreen)
+                            //   buildCustomPlayButton(provider)
+                          ],
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              children: [
                                 Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(Icons.calendar_month_rounded,
-                                        color: Colors.white, size: 20),
+                                    CircleAvatar(
+                                      backgroundColor:
+                                          (!isLive ? Colors.red : appLogoColor)
+                                              .withOpacity(0.2),
+                                      child: assetImages(Assets.appLogo_S,
+                                          height: 25, width: 25),
+                                    ),
                                     width10(),
                                     Expanded(
-                                      child: bodyLargeText(
-                                          'Started ${getTimeDifference(date)}',
-                                          context,
-                                          useGradient: false),
+                                      child: titleLargeText(
+                                          (eventData?['webinar_title'] ?? '')
+                                              .toString()
+                                              .capitalize!,
+                                          context),
                                     ),
                                   ],
                                 ),
+                                height10(),
+                                // create ui for time when started and total duration
+                                if (date != null)
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Icon(Icons.calendar_month_rounded,
+                                          color: Colors.white, size: 20),
+                                      width10(),
+                                      Expanded(
+                                        child: bodyLargeText(
+                                            'Started ${getTimeDifference(date)}',
+                                            context,
+                                            useGradient: false),
+                                      ),
+                                    ],
+                                  ),
 
-                              height10(),
-                              // show location
-                              // Row(
-                              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              //   children: [
-                              //     Icon(Icons.location_on,
-                              //         color: Colors.pink, size: 20),
-                              //     width10(),
-                              //     Expanded(
-                              //       child: bodyLargeText(
-                              //           'Location: 123, ABC, XYZ', context,
-                              //           useGradient: false),
-                              //     ),
-                              //   ],
-                              // ),
+                                height10(),
+                                // show location
+                                // Row(
+                                //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                //   children: [
+                                //     Icon(Icons.location_on,
+                                //         color: Colors.pink, size: 20),
+                                //     width10(),
+                                //     Expanded(
+                                //       child: bodyLargeText(
+                                //           'Location: 123, ABC, XYZ', context,
+                                //           useGradient: false),
+                                //     ),
+                                //   ],
+                                // ),
 
-                              // description headline
-                              Divider(color: Colors.white),
-                              Expanded(
-                                child: ListView(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        width30(),
-                                        Expanded(
-                                            child: bodyLargeText(
-                                                '''Welcome To My Wealth Club
-                              Your Premier Trading Service
-                              Provider
-                              At My Wealth Club, we empower individuals to make informed decisions and unlock their true wealth potential. As a leading financial trading company you can follow our company trade opportunities and capitalise on the significant profits the company trades make.
-                              
-                              All Your Forex and Crypto Trading Essentials Under One Roof
-                              Then keep the boxes as they are except Trading Strategies and change that to Company Trade Opportunities and change Day Trader to Day Trading. Add another tick box with title Live Streamed Strategiesnk you.\n   Company Trade Ideas
-                              Our Institutional traders each week day trade company funds and make significant profits. When you join you get the change to follow these Trading opportunities yourself either on the website or our app. Imagine us informing you of every trade we are taking and then the actions taken until that trade closes. If you decide to follow our company trade opportunities you can make profits the same as our institutional trading team.''',
-                                                context,
-                                                useGradient: false,
-                                                color: Colors.white70,
-                                                maxLines: 200))
-                                      ],
-                                    ),
-                                  ],
+                                // description headline
+                                Divider(color: Colors.white),
+                                Expanded(
+                                  child: ListView(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          width30(),
+                                          Expanded(
+                                              child: bodyLargeText(
+                                                  '''Welcome To My Wealth Club
+                                Your Premier Trading Service
+                                Provider
+                                At My Wealth Club, we empower individuals to make informed decisions and unlock their true wealth potential. As a leading financial trading company you can follow our company trade opportunities and capitalise on the significant profits the company trades make.
+                                
+                                All Your Forex and Crypto Trading Essentials Under One Roof
+                                Then keep the boxes as they are except Trading Strategies and change that to Company Trade Opportunities and change Day Trader to Day Trading. Add another tick box with title Live Streamed Strategiesnk you.\n   Company Trade Ideas
+                                Our Institutional traders each week day trade company funds and make significant profits. When you join you get the change to follow these Trading opportunities yourself either on the website or our app. Imagine us informing you of every trade we are taking and then the actions taken until that trade closes. If you decide to follow our company trade opportunities you can make profits the same as our institutional trading team.''',
+                                                  context,
+                                                  useGradient: false,
+                                                  color: Colors.white70,
+                                                  maxLines: 200))
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      )
-
-                      // FilledButton.icon(
-                      // onPressed: () async {
-                      //   var web = provider.controller.value.webViewController;
-                      //   var data = web?.javaScriptHandlersMap;
-
-                      //   // errorLog(data.toString());
-                      //   web?.addJavaScriptHandler(
-                      //     handlerName: 'onPlaybackQualityChange',
-                      //     callback: (args) {
-                      //       // provider.controller.updateValue(
-                      //       //  provider. controller.value.copyWith(errorCode: int.parse(args.first)),
-                      //       // );
-                      //       errorLog(args.toString());
-                      //     },
-                      //   );
-
-                      // errorLog(d2.toString());
-                      // provider.controller.load(provider.ids[
-                      //     (provider.ids.indexOf(data.videoId) + 1) %
-                      //         provider.ids.length]);
-                      // _showSnackBar('Next Video Started!'
-                      // },
-                      // icon: Icon(Icons.youtube_searched_for),
-                      // label: Text('Experiments'))
-
-                      // Padding(
-                      //   padding: const EdgeInsets.all(8.0),
-                      //   child: Column(
-                      //     crossAxisAlignment: CrossAxisAlignment.stretch,
-                      //     children: [
-                      //       IconButton(
-                      //         icon: const Icon(
-                      //           Icons.settings,
-                      //           // color: Colors.white,
-                      //           size: 25.0,
-                      //         ),
-                      //         onPressed: () {
-                      //           Get.to(PlayVideoFromNetwork());
-                      //         },
-                      //       ),
-                      //       _space,
-                      //       _text('Title', videoMetaData.title),
-                      //       _space,
-                      //       _text('Channel', videoMetaData.author),
-                      //       _space,
-                      //       _text('Video Id', videoMetaData.videoId),
-                      //       _space,
-                      //       Row(
-                      //         children: [
-                      //           _text(
-                      //             'Playback Quality',
-                      //             provider.controller.value.playbackQuality ?? '',
-                      //           ),
-                      //           const Spacer(),
-                      //           _text(
-                      //             'Playback Rate',
-                      //             '${provider.controller.value.playbackRate}x  ',
-                      //           ),
-                      //         ],
-                      //       ),
-                      //       _space,
-                      //       TextField(
-                      //         enabled: provider.isPlayerReady,
-                      //         controller: provider.idController,
-                      //         decoration: InputDecoration(
-                      //           border: InputBorder.none,
-                      //           hintText: 'Enter youtube \<video id\> or \<link\>',
-                      //           fillColor: Colors.blueAccent.withAlpha(20),
-                      //           filled: true,
-                      //           hintStyle: const TextStyle(
-                      //             fontWeight: FontWeight.w300,
-                      //             color: Colors.blueAccent,
-                      //           ),
-                      //           suffixIcon: IconButton(
-                      //             icon: const Icon(Icons.clear),
-                      //             onPressed: () => provider.idController.clear(),
-                      //           ),
-                      //         ),
-                      //       ),
-                      //       _space,
-                      //       Row(
-                      //         children: [
-                      //           _loadCueButton('LOAD'),
-                      //           const SizedBox(width: 10.0),
-                      //           _loadCueButton('CUE'),
-                      //         ],
-                      //       ),
-                      //       _space,
-                      //       Row(
-                      //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      //         children: [
-                      //           IconButton(
-                      //             icon: const Icon(Icons.skip_previous),
-                      //             onPressed: provider.isPlayerReady
-                      //                 ? () => provider.controller.load(provider.ids[
-                      //                     (provider.ids.indexOf(provider.controller.metadata.videoId) -
-                      //                             1) %
-                      //                         provider.ids.length])
-                      //                 : null,
-                      //           ),
-                      //           IconButton(
-                      //             icon: Icon(
-                      //               provider.controller.value.isPlaying
-                      //                   ? Icons.pause
-                      //                   : Icons.play_arrow,
-                      //             ),
-                      //             onPressed: provider.isPlayerReady
-                      //                 ? () {
-                      //                     provider.controller.value.isPlaying
-                      //                         ? provider.controller.pause()
-                      //                         : provider.controller.play();
-                      //                     setState(() {});
-                      //                   }
-                      //                 : null,
-                      //           ),
-                      //           IconButton(
-                      //             icon: Icon(_muted ? Icons.volume_off : Icons.volume_up),
-                      //             onPressed: provider.isPlayerReady
-                      //                 ? () {
-                      //                     _muted
-                      //                         ? provider.controller.unMute()
-                      //                         : provider.controller.mute();
-                      //                     setState(() {
-                      //                       _muted = !_muted;
-                      //                     });
-                      //                   }
-                      //                 : null,
-                      //           ),
-                      //           FullScreenButton(
-                      //             controller: provider.controller,
-                      //             color: Colors.blueAccent,
-                      //           ),
-                      //           IconButton(
-                      //             icon: const Icon(Icons.skip_next),
-                      //             onPressed: provider.isPlayerReady
-                      //                 ? () => provider.controller.load(provider.ids[
-                      //                     (provider.ids.indexOf(provider.controller.metadata.videoId) +
-                      //                             1) %
-                      //                         provider.ids.length])
-                      //                 : null,
-                      //           ),
-                      //         ],
-                      //       ),
-                      //       _space,
-                      //       Row(
-                      //         children: <Widget>[
-                      //           const Text(
-                      //             "Volume",
-                      //             style: TextStyle(fontWeight: FontWeight.w300),
-                      //           ),
-                      //           Expanded(
-                      //             child: Slider(
-                      //               inactiveColor: Colors.transparent,
-                      //               value: _volume,
-                      //               min: 0.0,
-                      //               max: 100.0,
-                      //               divisions: 10,
-                      //               label: '${(_volume).round()}',
-                      //               onChanged: provider.isPlayerReady
-                      //                   ? (value) {
-                      //                       setState(() {
-                      //                         _volume = value;
-                      //                       });
-                      //                       provider.controller.setVolume(_volume.round());
-                      //                     }
-                      //                   : null,
-                      //             ),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //       _space,
-                      //       AnimatedContainer(
-                      //         duration: const Duration(milliseconds: 800),
-                      //         decoration: BoxDecoration(
-                      //           borderRadius: BorderRadius.circular(20.0),
-                      //           color: _getStateColor(playerState),
-                      //         ),
-                      //         padding: const EdgeInsets.all(8.0),
-                      //         child: Text(
-                      //           playerState.toString(),
-                      //           style: const TextStyle(
-                      //             fontWeight: FontWeight.w300,
-                      //             color: Colors.white,
-                      //           ),
-                      //           textAlign: TextAlign.center,
-                      //         ),
-                      //       ),
-                      //     ],
-                      //   ),
-                      // ),
-                    ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -484,6 +274,10 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
               /// progress bar and full screen button
               if (provider.controller.value.isFullScreen)
                 buildCustomProgressBarWidget(provider),
+
+              /// progress bar and full screen button
+              if (provider.controller.value.isFullScreen && Platform.isIOS)
+                buildFullScreenCloseWidget(provider),
 
               // ///play button
               // if (provider.controller.value.isFullScreen)
@@ -526,6 +320,41 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                 });
               },
             )));
+  }
+
+  Positioned buildFullScreenCloseWidget(PlayerProvider provider) {
+    return Positioned(
+        top: 0,
+        left: 0,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          child: AnimatedOpacity(
+            opacity: provider.showControls ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+              padding: const EdgeInsets.all(0.0),
+              margin: const EdgeInsets.all(10.0),
+              decoration: BoxDecoration(
+                // borderRadius: BorderRadius.circular(5.0),
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.blueGrey.withOpacity(0.8),
+                    Colors.blueGrey.withOpacity(0.8),
+                    Colors.blueGrey.withOpacity(0.8),
+                    Colors.blueGrey.withOpacity(0.8),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: IconButton(
+                  onPressed: () => Get.back(),
+                  icon:
+                      Icon(Icons.close_rounded, color: Colors.white, size: 20)),
+            ),
+          ),
+        ));
   }
 
   Positioned buildCustomProgressBarWidget(PlayerProvider provider) {
@@ -828,7 +657,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
           textAlign: TextAlign.center,
           style: const TextStyle(fontWeight: FontWeight.w300, fontSize: 16.0),
         ),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: appLogoColor,
         behavior: SnackBarBehavior.floating,
         elevation: 1.0,
         shape:
@@ -947,3 +776,31 @@ class PlayerProvider extends ChangeNotifier {
     });
   }
 }
+
+/*
+
+    // const SizedBox(width: 8.0),
+                    // Expanded(
+                    //   child: Text(
+                    //     provider.controller.metadata.title,
+                    //     style: const TextStyle(
+                    //       color: Colors.white,
+                    //       fontSize: 18.0,
+                    //     ),
+                    //     overflow: TextOverflow.ellipsis,
+                    //     maxLines: 1,
+                    //   ),
+                    // ),
+                    // IconButton(
+                    //   icon: const Icon(
+                    //     Icons.settings,
+                    //     color: Colors.white,
+                    //     size: 25.0,
+                    //   ),
+                    //   onPressed: () {
+                    //     Get.to(PlayVideoFromNetwork());
+                    //   },
+                    // ),
+                
+
+*/

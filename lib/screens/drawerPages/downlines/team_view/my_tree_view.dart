@@ -24,12 +24,12 @@ import 'package:provider/provider.dart';
 import '../../../../database/model/response/base/api_response.dart';
 import '../../../../widgets/MultiStageButton.dart';
 
-class LayeredGraphViewPage extends StatefulWidget {
+class MyTreeViewPage extends StatefulWidget {
   @override
-  _LayeredGraphViewPageState createState() => _LayeredGraphViewPageState();
+  _MyTreeViewPageState createState() => _MyTreeViewPageState();
 }
 
-class _LayeredGraphViewPageState extends State<LayeredGraphViewPage> {
+class _MyTreeViewPageState extends State<MyTreeViewPage> {
   var auth = sl.get<AuthProvider>();
 
   @override
@@ -51,7 +51,7 @@ class _LayeredGraphViewPageState extends State<LayeredGraphViewPage> {
                 ? Colors.white
                 : mainColor,
         appBar: AppBar(
-            title: titleLargeText('Team View', context, useGradient: true),
+            title: titleLargeText('My Tree View', context, useGradient: true),
             shadowColor: Colors.white24),
         body: isOnline
             ? Stack(

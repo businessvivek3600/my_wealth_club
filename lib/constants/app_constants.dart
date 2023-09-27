@@ -47,7 +47,9 @@ class AppConstants {
   static const String getDownLines = 'customer/get-customer-downline';
   static const String customerTeam = 'customer/team-view';
   static const String sendInboxMessageToUser = 'send-inbox-message-to-user';
+  static const String getGenerationAnalyzer = 'customer/generation-analyzer';
 
+  static const String liquidUser = 'customer/liquid-user';
   static const String matrixAnalyzer = 'customer/matrix-analyzer';
 
   //voucher
@@ -135,6 +137,7 @@ class SPConstants {
   static const String pdfLink = 'pdfLink';
   static const String pptLink = 'pptLink';
   static const String videoLink = 'videoLink';
+  static const String videoLanguage = 'videoLanguage';
 
   static const String ratingScheduleDate = 'RatingScheduleDate';
 

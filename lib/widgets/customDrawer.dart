@@ -19,13 +19,13 @@ import '/screens/auth/login_screen.dart';
 import '/screens/dashboard/main_page.dart';
 import '../screens/drawerPages/commission_wallet/commission_wallet_page.dart';
 import '/screens/drawerPages/download_pages/gallery_main_page.dart';
-import '/screens/drawerPages/download_pages/videos/videos_page.dart';
+import '../screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/screens/drawerPages/event_tickets/event_tickets_page.dart';
 import '/screens/drawerPages/inbox/inbox_screen.dart';
 import '/screens/drawerPages/pofile/profile_screen.dart';
 import '/screens/drawerPages/subscription/subscription_page.dart';
 import '/screens/drawerPages/support_pages/support_Page.dart';
-import '../screens/drawerPages/downlines/team_view/layerd_graph_team_view.dart';
+import '../screens/drawerPages/downlines/team_view/my_tree_view.dart';
 import '../screens/drawerPages/downlines/trem_member_page.dart';
 import '/screens/drawerPages/voucher/voucher_page.dart';
 import '/sl_container.dart';
@@ -38,7 +38,7 @@ import 'package:provider/provider.dart';
 
 import '../screens/drawerPages/cash_wallet_page/cash_wallet_page.dart';
 import '../screens/drawerPages/payment_methods_page.dart';
-import '../screens/drawerPages/download_pages/drawer_video_page.dart';
+import '../screens/drawerPages/download_pages/drawer_video_player_page.dart';
 import '../screens/drawerPages/settings_page.dart';
 
 class CustomDrawer extends StatefulWidget {
@@ -282,7 +282,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     const String teamView = 'Team View';
     const String myTreeView = 'My Tree View';
     const String generationAnalyzer = 'Generation Analyzer';
-    const String generationMember = 'Generation Member';
+    const String directMember = 'Direct Member';
     const String inactiveAnalyzer = 'Inactive Member';
 
     return expansionTile(
@@ -291,7 +291,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       initiallyExpanded: dashBoardProvider.selectedDrawerTile == teamMemeber ||
           dashBoardProvider.selectedDrawerTile == teamView ||
           dashBoardProvider.selectedDrawerTile == myTreeView ||
-          dashBoardProvider.selectedDrawerTile == generationMember ||
+          dashBoardProvider.selectedDrawerTile == directMember ||
           dashBoardProvider.selectedDrawerTile == generationAnalyzer ||
           dashBoardProvider.selectedDrawerTile == inactiveAnalyzer,
       children: [
@@ -308,7 +308,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 teamMemeber,
                 teamView,
                 myTreeView,
-                generationMember,
+                directMember,
                 generationAnalyzer,
                 // inactiveAnalyzer
               ].map(
@@ -322,11 +322,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           page = const TeamMemberPage();
                           break;
                         case teamView:
-                          page = LayeredGraphViewPage();
+                          page = MyTreeViewPage();
                           break;
                         case myTreeView:
+                          page = MyTreeViewPage();
+                          break;
 
-                        case generationMember:
+                        case directMember:
                           page = GenerationMemberPage();
                           break;
                         case generationAnalyzer:
@@ -348,7 +350,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             ? Assets.teamView
                             : e == myTreeView
                                 ? Assets.downline
-                                : e == generationMember
+                                : e == directMember
                                     ? Assets.layer
                                     : e == generationAnalyzer
                                         ? Assets.layer
@@ -678,7 +680,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           page = GalleryMainPage();
                           break;
                         case videos:
-                          page = VideosMainPage();
+                          page = DrawerVideosMainPage();
                           break;
                         default:
                           page = buildDefaultPage();

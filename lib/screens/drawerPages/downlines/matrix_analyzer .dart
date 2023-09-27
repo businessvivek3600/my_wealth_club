@@ -49,9 +49,6 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
           BreadCrumbContent(
               index: 0,
               user: MatrixUser(username: authProvider.userData.username)));
-      provider.gUsers.clear();
-      provider.gUsers.addAll(provider.generateRandomUsers(0));
-      setState(() {});
       SystemChrome.setPreferredOrientations(
           [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
     });
@@ -133,9 +130,7 @@ class _MatrixAnalyzerPageState extends State<MatrixAnalyzerPage> {
           child: GestureDetector(
             onTap: () {
               if (provider.breadCrumbContent.length == 1) return;
-
               provider.setBreadCrumbContent(1);
-              provider.setGenerationUsers(0);
               _animateToLast();
               setState(() {});
             },
@@ -248,7 +243,7 @@ class _MatrixTreeState extends State<_MatrixTree> {
       return !loadingInitial
           ? childrenMap.entries.isNotEmpty
               ? LayoutBuilder(builder: (context, b) {
-                  print('b ${b.maxHeight} ${b.maxWidth}');
+                  print('b bound ${b.maxHeight} ${b.maxWidth}');
                   return OrientationBuilder(builder: (context, orientation) {
                     double margin =
                         orientation == Orientation.landscape ? 50 : 0;
@@ -256,7 +251,7 @@ class _MatrixTreeState extends State<_MatrixTree> {
                       constrained: false,
                       boundaryMargin: EdgeInsets.only(
                           left: margin, right: margin, bottom: margin),
-                      minScale: 0.01,
+                      minScale: 1,
                       maxScale: 10.6,
                       scaleFactor: 100,
                       onInteractionEnd: (details) {

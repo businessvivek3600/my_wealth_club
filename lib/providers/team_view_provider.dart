@@ -36,244 +36,6 @@ class TeamViewProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<TeamDownlineUser> teams = [];
-/*
-
-  void addNodes(IndexedTreeNode<TeamDownlineUser> tree, int level, String id,
-      List<TeamDownlineUser> team) {
-    print('addNodes---> level: $level   key: $id');
-    if (adding) {
-      print(tree.children);
-      try {
-        if (tree.childrenAsList.any((element) => element.level + 1 != level)) {
-          print(
-              'element not matched  with level: ${tree.first.level + 1} ----- $level');
-          tree.childrenAsList.forEach((e) {
-            IndexedTreeNode<TeamDownlineUser> _tree = IndexedTreeNode();
-            _tree.addAll([...e.childrenAsList]);
-            addNodes(_tree, level, id, team);
-            print('e---> $e');
-          });
-        } else {
-          print('element matched  with level: $level ');
-          // if (tree.firstWhere((element) => element.key == id).children.length !=
-          //     0) {
-          if (tree.children.any((element) => element.key == id)) {
-            tree.firstWhere((element) => element.key == id).children.clear();
-            tree.firstWhere((element) => element.key == id).addAll([
-              ...team.map((e) => IndexedTreeNode<TeamDownlineUser>(
-                  key: e.username,
-                  data: TeamDownlineUser(
-                      newLevel: e.newLevel,
-                      username: e.username,
-                      nameWithUsername: e.nameWithUsername)))
-            ]);
-            notifyListeners();
-          } else {
-            tree.addAll([
-              ...team.map((e) => IndexedTreeNode<TeamDownlineUser>(
-                  key: e.username,
-                  data: TeamDownlineUser(
-                      newLevel: e.newLevel,
-                      username: e.username,
-                      nameWithUsername: e.nameWithUsername)))
-            ]);
-            print('added new nodes');
-            adding = false;
-            notifyListeners();
-          }
-        }
-        // }
-      } catch (e) {
-        print('addNodes---> error $e');
-        throw e;
-      }
-    }
-  }
-
-  void addTeam(TeamDownlineUser user, List<TeamDownlineUser> tree, int level,
-      String id, List<TeamDownlineUser> team) {
-    // print('addNodes---> level: $level   key: $id');
-    if (adding) {
-      try {
-        if (tree.length > 0 &&
-            tree.every((element) => element.newLevel! != level)) {
-          // print(
-          //     'element not matched  with level: ${tree.first.newLevel! + 1} ----- $level');
-          tree.forEach((e) {
-            // print(e.username);
-            // e.expanded = false;
-            notifyListeners();
-            if (e.team != null && e.team!.isNotEmpty) {
-              // print('loading data for ${e.newLevel}  ${e.username}');
-              addTeam(e, e.team!, level, id, team);
-            }
-            // print('e---> $e');
-          });
-        } else {
-          // print('element matched  with level: $level $tree');
-          print(tree.any((element) => element.username == id));
-          // if (tree.firstWhere((element) => element.key == id).children.length !=
-          //     0) {
-          if (tree.length > 0 &&
-              tree.any((element) => element.username == id)) {
-            tree.firstWhere((element) => element.username == id).team = team;
-            // print('element matched  adding   tree.any(');
-            adding = false;
-            // user.expanded = true;
-            notifyListeners();
-          } else {
-            // print('element matched  adding   tree.addAll(');
-            tree = team;
-            // print('added new nodes');
-            // user.expanded = true;
-            adding = false;
-            notifyListeners();
-          }
-        }
-        // }
-      } catch (e) {
-        print('addNodes---> error $e');
-        throw e;
-      }
-    }
-  }
-
-  Future<void> addTreeNodes(
-      int level, String id, List<TeamDownlineUser> team) async {
-    try {
-      adding = true;
-      addNodes(tree, level, id, team);
-    } catch (e) {
-      print('addTreeNodes--->  level: $level   key: $id  ***** error $e');
-    }
-    notifyListeners();
-  }
-
-  Future<void> addTeamNodes(
-      int level, String id, List<TeamDownlineUser> team) async {
-    try {
-      adding = true;
-      addTeam(TeamDownlineUser(), teams, level, id, team);
-    } catch (e) {
-      print('addTreeNodes--->  level: $level   key: $id  ***** error $e');
-    }
-    notifyListeners();
-  }
-
-  Future<void> generateTreeNode(List<TeamDownlineUser> team) async {
-    tree = IndexedTreeNode<TeamDownlineUser>.root(
-        data: TeamDownlineUser(
-            newLevel: 1, username: 'GK123456', nameWithUsername: 'Gaurav Test'))
-      ..addAll([
-        ...team.map((e) => IndexedTreeNode<TeamDownlineUser>(
-                key: e.username,
-                data: TeamDownlineUser(
-                    newLevel: e.newLevel,
-                    username: e.username,
-                    nameWithUsername: e.nameWithUsername))
-            // ..add(IndexedTreeNode(
-            //     key: "0A1A", data: UserName("Jr. John", "Doe"))),
-            ),
-        //   IndexedTreeNode<UserName>(key: "0A", data: UserName("Sr. John", "Doe"))
-        //     ..add(
-        //         IndexedTreeNode(key: "0A1A", data: UserName("Jr. John", "Doe"))),
-        //   IndexedTreeNode<UserName>(key: "0C", data: UserName("General", "Lee"))
-        //     ..addAll([
-        //       IndexedTreeNode<UserName>(
-        //           key: "0C1A", data: UserName("Major", "Lee")),
-        //       IndexedTreeNode<UserName>(
-        //           key: "0C1B", data: UserName("Happy", "Lee")),
-        //       IndexedTreeNode<UserName>(
-        //           key: "0C1C", data: UserName("Busy", "Lee"))
-        //         ..addAll([
-        //           IndexedTreeNode<UserName>(
-        //               key: "0C1C2A", data: UserName("Jr. Busy", "Lee"))
-        //         ]),
-        //     ]),
-        //   IndexedTreeNode<UserName>(
-        //       key: "0D", data: UserName("Mr. Anderson", "Neo")),
-        //   IndexedTreeNode<UserName>(
-        //       key: "0E", data: UserName("Mr. Smith", "Agent")),
-      ]);
-    if (initialLoading) {
-      initialLoading = false;
-    }
-    notifyListeners();
-  }
-*/
-
-  Future<void> generateTeams(List<TeamDownlineUser> team) async {
-    teams = team;
-    if (initialLoading) {
-      initialLoading = false;
-    }
-    notifyListeners();
-  }
-
-  Future<void> getDownLines(int level, String id) async {
-    // print('TeamViewProvider getDownLines');
-    if (isOnline) {
-      try {
-        setLevel(level, id);
-        ApiResponse apiResponse = await teamViewRepo.getDownLines({
-          'level': level.toString(),
-          'sponser_username': id,
-        });
-        if (apiResponse.response != null &&
-            apiResponse.response!.statusCode == 200) {
-          Map map = apiResponse.response!.data;
-          bool status = false;
-          List<TeamDownlineUser> levelArray = [];
-          try {
-            status = map["status"];
-            try {
-              if (map['is_logged_in'] == 0) {
-                logOut();
-              }
-            } catch (e) {}
-            if (status) {
-              try {
-                map['levelArray'].forEach(
-                    (e) => levelArray.add(TeamDownlineUser.fromJson(e)));
-                print(levelArray.length);
-              } catch (e) {
-                print('could not generate the level array $e');
-              }
-              try {
-                if (map['userData'] != null) {
-                  sl.get<AuthProvider>().updateUser(map['userData']);
-                }
-              } catch (e) {}
-              try {
-                // if (levelArray.isNotEmpty) {
-                if (initialLoading) {
-                  // print('running... generateTreeNode');
-                  // await generateTreeNode(levelArray);
-
-                  //original
-                  // await generateTeams(levelArray);
-                } else {
-                  // print('running... addTreeNodes');
-                  // await addTreeNodes(level, id, levelArray);
-
-                  //original
-                  // await addTeamNodes(level, id, levelArray);
-                  // }
-                }
-              } catch (e) {
-                print('could not generate the generateTreeNode $e');
-              }
-            }
-          } catch (e) {}
-        }
-      } catch (e) {}
-    } else {
-      Fluttertoast.showToast(msg: 'No internet connection');
-    }
-    setLevel(null, null);
-  }
-
   bool loadingTeamMembers = false;
   List<UserData> customerTeam = [];
   Future<void> getCustomerTeam() async {
@@ -404,7 +166,6 @@ class TeamViewProvider extends ChangeNotifier {
   }
 
   ///generationAnalyzer
-  ///
   List<BreadCrumbContent> breadCrumbContent = [];
   setBreadCrumbContent(int index, [BreadCrumbContent? content]) async {
     loadingGUsers = ButtonLoadingState.loading;
@@ -431,66 +192,137 @@ class TeamViewProvider extends ChangeNotifier {
   }
 
   List<GenerationAnalyzerUser> gUsers = [];
-
   ButtonLoadingState loadingGUsers = ButtonLoadingState.idle;
-  setGenerationUsers(int generationId) async {
+  setGenerationUsers(String username) async {
     loadingGUsers = ButtonLoadingState.loading;
     notifyListeners();
     gUsers.clear();
-    gUsers.addAll(generateRandomUsers(generationId));
+    gUsers.addAll(generateRandomUsers(username, selectedGeneration));
+    await getGenerationAnalyzer(username);
     await Future.delayed(const Duration(seconds: 1))
         .then((value) => loadingGUsers = ButtonLoadingState.completed);
     notifyListeners();
   }
 
-  generateRandomUsers(int generaionID) {
+  generateRandomUsers(String username, int generaionID) {
     List<GenerationAnalyzerUser> users = [];
     for (var i = 0; i < Random().nextInt(50); i++) {
       users.add(GenerationAnalyzerUser(
-          name: 'User $i',
-          generation: generaionID + 1,
-          image: Assets.appLogo_S,
-          referralId: Random().nextInt(999999999).toString()));
+        name: 'User $i',
+        generation: generaionID + 1,
+        image: Assets.appLogo_S,
+        referralId: username,
+      ));
     }
     return users;
   }
-  // Future<void> getGenerationAnalyzer(String username) async {
-  //   if (isOnline) {
-  //     try {
-  //       ApiResponse apiResponse =
-  //           await teamViewRepo.getGenerationAnalyzer(username);
-  //       if (apiResponse.response != null &&
-  //           apiResponse.response!.statusCode == 200) {
-  //         Map map = apiResponse.response!.data;
-  //         bool status = false;
-  //         try {
-  //           status = map["status"];
-  //           if (map['is_logged_in'] == 0) {
-  //             logOut();
-  //           }
-  //         } catch (e) {}
-  //         if (status) {
-  //           try {
-  //             if (map['userData'] != null) {
-  //               sl.get<AuthProvider>().updateUser(map['userData']);
-  //             }
-  //           } catch (e) {}
-  //           try {
-  //             if (map['user'] != null) {
-  //               gUser.clear();
-  //               map['user'].forEach((e) {
-  //                 gUser.add(GenerationAnalyzerUser.fromJson(e));
-  //               });
-  //               notifyListeners();
-  //             }
-  //           } catch (e) {}
-  //         }
-  //       }
-  //     } catch (e) {}
-  //   } else {
-  //     Fluttertoast.showToast(msg: 'No internet connection');
-  //   }
-  // }
+
+  int selectedGeneration = 0;
+  setSelectedGeneration(int val) {
+    selectedGeneration = val;
+    notifyListeners();
+  }
+
+  Future<List<GenerationAnalyzerUser>> getGenerationAnalyzer(
+      String username) async {
+    List<GenerationAnalyzerUser> gUsers = [];
+    if (isOnline) {
+      try {
+        var data = {
+          'username': username,
+          'generation': selectedGeneration,
+        };
+        print('getGenerationAnalyzer post data: $data');
+        ApiResponse apiResponse =
+            await teamViewRepo.getGenerationAnalyzer(data);
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          Map map = apiResponse.response!.data;
+          bool status = false;
+          try {
+            status = map["status"];
+            if (map['is_logged_in'] == 0) {
+              logOut();
+            }
+          } catch (e) {}
+          if (status) {
+            try {
+              if (map['user'] != null) {
+                // gUser.clear();
+                // map['user'].forEach((e) {
+                //   gUser.add(GenerationAnalyzerUser.fromJson(e));
+                // });
+                // notifyListeners();
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    } else {
+      Fluttertoast.showToast(msg: 'No internet connection');
+    }
+    return gUsers;
+  }
+
+//Liquid user
+
+  bool loadingLoquidUser = false;
+  List<UserData> liquidUsers = [];
+  Future<void> getLiquidUsers() async {
+    loadingLoquidUser = true;
+    notifyListeners();
+    bool cacheExist =
+        await APICacheManager().isAPICacheKeyExist(AppConstants.liquidUser);
+    Map? map;
+    if (isOnline) {
+      ApiResponse apiResponse = await teamViewRepo.liquidUser({});
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        map = apiResponse.response!.data;
+        bool status = false;
+        try {
+          status = map?["status"];
+          if (map?['is_logged_in'] == 0) {
+            logOut();
+          }
+        } catch (e) {}
+        try {
+          if (status) {
+            try {
+              var cacheModel = APICacheDBModel(
+                  key: AppConstants.liquidUser, syncData: jsonEncode(map));
+              await APICacheManager().addCacheData(cacheModel);
+            } catch (e) {}
+          }
+        } catch (e) {
+          print('liquidUser online hit failed \n $e');
+        }
+      }
+    } else if (!isOnline && cacheExist) {
+      var cacheData =
+          (await APICacheManager().getCacheData(AppConstants.liquidUser))
+              .syncData;
+      map = jsonDecode(cacheData);
+    } else {
+      print('liquidUser not online not cache exist ');
+    }
+    try {
+      if (map != null) {
+        try {
+          if (map['direct_child'] != null && map['direct_child'].isNotEmpty) {
+            liquidUsers.clear();
+            map['direct_child']
+                .forEach((e) => liquidUsers.add(UserData.fromJson(e)));
+            notifyListeners();
+          }
+        } catch (e) {}
+      }
+    } catch (e) {
+      print('liquidUser failed ${e}');
+    }
+    loadingLoquidUser = false;
+    notifyListeners();
+  }
 
 // get matrix user api
 
@@ -543,7 +375,15 @@ class TeamViewProvider extends ChangeNotifier {
     loadingLevel = 0;
     widthLevel = 1;
     loadingId = '';
-    teams.clear();
     customerTeam.clear();
+
+    sendingStatus = ButtonLoadingState.idle;
+    errorText = null;
+    breadCrumbContent.clear();
+    gUsers.clear();
+    loadingGUsers = ButtonLoadingState.idle;
+    liquidUsers.clear();
+    loadingLoquidUser = false;
+    selectedGeneration = 0;
   }
 }
