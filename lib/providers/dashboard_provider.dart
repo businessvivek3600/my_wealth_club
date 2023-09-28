@@ -6,7 +6,7 @@ import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/database/model/response/yt_video_model.dart';
+import '/database/model/response/yt_video_model.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/CardDetailsPurchasedHistoryModel.dart';
 import '/database/model/response/achieved_reward_model.dart';

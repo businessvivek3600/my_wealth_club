@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
@@ -11,9 +10,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import '/database/model/body/login_model.dart';
 import '../../database/model/response/yt_video_model.dart';
 import '/screens/dashboard/company_trade_ideas_page.dart';
-import '/database/model/response/ddashboard_subscription_pack_model.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 import '../../constants/app_constants.dart';
 import '../youtube_video_play_widget.dart';
@@ -53,9 +52,10 @@ import '../../utils/picture_utils.dart';
 import '../../utils/skeleton.dart';
 
 class MainPage extends StatefulWidget {
-  MainPage({Key? key}) : super(key: key);
+  MainPage({Key? key, this.loginModel}) : super(key: key);
   static const String routeName = '/MainPage';
   GlobalKey<ScaffoldState> dashScaffoldKey = GlobalKey();
+  final LoginModel? loginModel;
   @override
   State<MainPage> createState() => _MainPageState();
 }
@@ -90,9 +90,31 @@ class _MainPageState extends State<MainPage>
     galleryProvider.getVideos(false);
     canShowNextDashPopUPBool.addListener(() {});
     super.initState();
-    print('device token ${getDeviceToken()}');
+    // print('device token ${getDeviceToken()}');
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (widget.loginModel != null) {
+        Future.delayed(Duration(seconds: 2), () async {
+          var list = await authProvider.getSavedCredentials();
+          bool isSaved = false;
+          bool update = false;
+          if (list.isNotEmpty &&
+              list.entries.any(
+                  (element) => element.key == widget.loginModel!.username)) {
+            update = list.entries
+                    .firstWhere(
+                        (element) => element.key == widget.loginModel!.username)
+                    .value !=
+                widget.loginModel!.password;
+            isSaved = true;
+          }
+          warningLog(
+              'SavedCredentials isSaved $isSaved update $update', 'Main Page');
+          if (!isSaved || update) {
+            _showBottomSheet(context, saved: isSaved, update: update);
+          }
+        });
+      }
       setupAppRating(7 * 24).then((value) {
         if (value) {
           rateApp();
@@ -102,6 +124,60 @@ class _MainPageState extends State<MainPage>
   }
 
   appRating() async {}
+
+//create bottom sheet to ask to save password
+  Future<void> _showBottomSheet(BuildContext context,
+      {bool saved = false, bool update = false}) async {
+    await showModalBottomSheet(
+        context: context,
+        builder: (context) => Container(
+              padding: EdgeInsets.all(10),
+              height: 150,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Row(
+                    children: [
+                      width20(),
+                      Expanded(
+                        child: FilledButton.icon(
+                            onPressed: () async {
+                              if (!update) {
+                                await authProvider.saveCredentials(
+                                    widget.loginModel!.username!,
+                                    widget.loginModel!.password!);
+                              } else {
+                                await authProvider.updateCredential(
+                                    widget.loginModel!.username!,
+                                    widget.loginModel!.password!);
+                              }
+                              Navigator.pop(context);
+                            },
+                            icon: Icon(Icons.save_alt_rounded,
+                                color: Colors.white),
+                            label: Text(
+                              update ? 'Update Password' : 'Save Password',
+                              style: TextStyle(color: Colors.white),
+                            )),
+                      ),
+                      width20(),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      width20(),
+                      TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('Cancel',
+                              style: TextStyle(color: Colors.red))),
+                      width20(),
+                    ],
+                  ),
+                ],
+              ),
+            ));
+  }
 
   @override
   void dispose() {
@@ -178,8 +254,12 @@ class _MainPageState extends State<MainPage>
                                           // _buildPlaceholderIdField(
                                           //     context, dashBoardProvider),
                                           // height10(),
-                                          // buildQRCodeContainer(
-                                          //     dashBoardProvider),
+                                          // GestureDetector(
+                                          //   onTap: () =>
+                                          //       _showBottomSheet(context),
+                                          //   child: buildQRCodeContainer(
+                                          //       dashBoardProvider),
+                                          // ),
 
                                           // Trading view,
                                           buildTradingViewWidget(
@@ -217,8 +297,8 @@ class _MainPageState extends State<MainPage>
                                       buildSubscriptionHistory(
                                           context, size, dashBoardProvider),
                                       height20(),
-                                      buildCardFeatureListview(
-                                          context, size, dashBoardProvider),
+                                      // buildCardFeatureListview(
+                                      //     context, size, dashBoardProvider),
                                       buildCommissionActivity(
                                           context, size, dashBoardProvider),
                                       height20(),
@@ -234,8 +314,8 @@ class _MainPageState extends State<MainPage>
                           ],
                         ),
                       ),
-                      buildDrawerMenuButton(dashBoardProvider),
-                      buildSQRCodeContainer(dashBoardProvider),
+                      // buildDrawerMenuButton(dashBoardProvider),
+                      // buildSQRCodeContainer(dashBoardProvider),
                     ],
                   ),
                 ),
@@ -385,12 +465,17 @@ class _MainPageState extends State<MainPage>
   PreferredSize buildAppLogo(DashBoardProvider dashBoardProvider) {
     return PreferredSize(
       preferredSize: Size.fromHeight(50),
-      child: Column(
+      child: Stack(
         children: [
-          // SizedBox(height: 10),
-          Container(
-              width: Get.width * 0.5,
-              child: CachedNetworkImage(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // SizedBox(height: 10),
+              Container(
+                width: Get.width * 0.5,
+                // color: redDark,
+                child: CachedNetworkImage(
                   imageUrl: dashBoardProvider.logoUrl ?? '',
                   placeholder: (context, url) => SizedBox(
                       height: 70,
@@ -400,10 +485,20 @@ class _MainPageState extends State<MainPage>
                               color: Colors.transparent))),
                   errorWidget: (context, url, error) => SizedBox(
                       height: 70, child: assetImages(Assets.appWebLogoWhite)),
-                  cacheManager: CacheManager(Config(
-                    "${AppConstants.appID}_app_dash_logo",
-                    stalePeriod: const Duration(days: 1),
-                  )))),
+                  cacheManager: CacheManager(
+                    Config(
+                      "${AppConstants.appID}_app_dash_logo",
+                      stalePeriod: const Duration(days: 1),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          //
+          buildDrawerMenuButton(dashBoardProvider),
+          buildSQRCodeContainer(dashBoardProvider),
         ],
       ),
     );
@@ -411,87 +506,105 @@ class _MainPageState extends State<MainPage>
 
   Positioned buildDrawerMenuButton(DashBoardProvider dashBoardProvider) {
     return Positioned(
-      top: kToolbarHeight / 2 + 35,
+      top: 0,
       left: 16,
-      child: Stack(
-        children: [
-          GestureDetector(
-            onTap: () => widget.dashScaffoldKey.currentState?.openDrawer(),
-            child: Container(
-              height: 40,
-              width: 40,
-              decoration: BoxDecoration(
-                  gradient: buildButtonGradient(), shape: BoxShape.circle),
-              child: Center(
-                child: assetSvg(Assets.squareMenu, color: Colors.white),
-              ),
+      bottom: 0,
+      child: Container(
+        // color: Colors.red,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: () =>
+                      widget.dashScaffoldKey.currentState?.openDrawer(),
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    decoration: BoxDecoration(
+                        gradient: buildButtonGradient(),
+                        shape: BoxShape.circle),
+                    child: Center(
+                      child: assetSvg(Assets.squareMenu, color: Colors.white),
+                    ),
+                  ),
+                ),
+                if (Provider.of<NotificationProvider>(context, listen: true)
+                        .totalUnread >
+                    0)
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.red, shape: BoxShape.circle),
+                      width: 8,
+                      height: 8,
+                    ),
+                  ),
+              ],
             ),
-          ),
-          if (Provider.of<NotificationProvider>(context, listen: true)
-                  .totalUnread >
-              0)
-            Positioned(
-              right: 2,
-              top: 2,
-              child: Container(
-                decoration:
-                    BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                width: 8,
-                height: 8,
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Positioned buildSQRCodeContainer(DashBoardProvider dashBoardProvider) {
     return Positioned(
-      top: kToolbarHeight / 2 + 35,
+      top: 0,
       right: 16,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(7),
-        child: GestureDetector(
-          onTap: () {
-            Dialog QRCodeDialog = Dialog(
-              backgroundColor: Colors.transparent,
-              surfaceTintColor: Colors.transparent,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 250,
-                      height: 250,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.white
-                          // color: Color(appLogoColor.value).withOpacity(01),
+      bottom: 0,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(7),
+            child: GestureDetector(
+              onTap: () {
+                Dialog QRCodeDialog = Dialog(
+                  backgroundColor: Colors.transparent,
+                  surfaceTintColor: Colors.transparent,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 250,
+                          height: 250,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.white
+                              // color: Color(appLogoColor.value).withOpacity(01),
+                              ),
+                          padding: EdgeInsets.all(10),
+                          child: Hero(
+                            tag: 'qr_code',
+                            child: buildQRCodeContainer(
+                              dashBoardProvider,
+                              showLogo: true,
+                              dataModuleShape: QrDataModuleShape.circle,
+                              size: Size(200, 200),
+                              color: Colors.black,
+                            ),
                           ),
-                      padding: EdgeInsets.all(10),
-                      child: Hero(
-                        tag: 'qr_code',
-                        child: buildQRCodeContainer(
-                          dashBoardProvider,
-                          showLogo: true,
-                          dataModuleShape: QrDataModuleShape.circle,
-                          size: Size(200, 200),
-                          color: Colors.black,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                );
+                showDialog(context: context, builder: (_) => QRCodeDialog);
+              },
+              child: Hero(
+                tag: 'qr_code',
+                child: buildQRCodeContainer(dashBoardProvider,
+                    size: Size(40, 40), logoS: Size(10, 10)),
               ),
-            );
-            showDialog(context: context, builder: (_) => QRCodeDialog);
-          },
-          child: Hero(
-            tag: 'qr_code',
-            child: buildQRCodeContainer(dashBoardProvider,
-                size: Size(40, 40), logoS: Size(10, 10)),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -1513,8 +1626,14 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                             height: bound.maxHeight,
                             textColor: Colors.white10,
                           )
-                        : buildCachedNetworkImage(url,
-                            fit: BoxFit.cover, cache: false)),
+                        : buildCachedNetworkImage(
+                            url,
+                            fit: BoxFit.cover,
+                            cache: false,
+                            ph: double.infinity,
+                            pw: double.infinity,
+                            placeholderImg: Assets.videoPlaceholder,
+                          )),
               ),
               Positioned(
                 top: pd,

@@ -37,7 +37,18 @@ class TeamViewProvider extends ChangeNotifier {
   }
 
   bool loadingTeamMembers = false;
-  List<UserData> customerTeam = [];
+  List<UserData> customerTeamMembers = [];
+  final directMemberSearchController = TextEditingController();
+  bool isSearchingDirectMember = false;
+  setSearching(bool val) {
+    isSearchingDirectMember = val;
+    notifyListeners();
+  }
+
+  DateTime? directMemberSelectedDate;
+  final directMemberRefferenceIdController = TextEditingController();
+  int? directMemberSelectedStatus;
+
   Future<void> getCustomerTeam() async {
     loadingTeamMembers = true;
     notifyListeners();
@@ -45,6 +56,12 @@ class TeamViewProvider extends ChangeNotifier {
         await APICacheManager().isAPICacheKeyExist(AppConstants.myTeam);
     Map? map;
     if (isOnline) {
+      var data = {
+        'query': directMemberSearchController.text,
+        'date': directMemberSelectedDate,
+        'status': directMemberSelectedStatus,
+        'referral_id': directMemberRefferenceIdController.text,
+      };
       ApiResponse apiResponse = await teamViewRepo.getTeamMember();
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
@@ -83,9 +100,9 @@ class TeamViewProvider extends ChangeNotifier {
 
         try {
           if (map['my_team'] != null && map['my_team'].isNotEmpty) {
-            customerTeam.clear();
+            customerTeamMembers.clear();
             map['my_team']
-                .forEach((e) => customerTeam.add(UserData.fromJson(e)));
+                .forEach((e) => customerTeamMembers.add(UserData.fromJson(e)));
             notifyListeners();
           }
         } catch (e) {}
@@ -209,7 +226,7 @@ class TeamViewProvider extends ChangeNotifier {
     for (var i = 0; i < Random().nextInt(50); i++) {
       users.add(GenerationAnalyzerUser(
         name: 'User $i',
-        generation: generaionID + 1,
+        generation: generaionID,
         image: Assets.appLogo_S,
         referralId: username,
       ));
@@ -375,7 +392,7 @@ class TeamViewProvider extends ChangeNotifier {
     loadingLevel = 0;
     widthLevel = 1;
     loadingId = '';
-    customerTeam.clear();
+    customerTeamMembers.clear();
 
     sendingStatus = ButtonLoadingState.idle;
     errorText = null;

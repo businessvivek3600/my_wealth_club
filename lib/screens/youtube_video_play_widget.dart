@@ -6,7 +6,7 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/database/functions.dart';
+import '/database/functions.dart';
 import '/constants/assets_constants.dart';
 import '/utils/picture_utils.dart';
 import '/utils/color.dart';
@@ -222,33 +222,30 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
 
                                 // description headline
                                 Divider(color: Colors.white),
-                                Expanded(
-                                  child: ListView(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          width30(),
-                                          Expanded(
-                                              child: bodyLargeText(
-                                                  '''Welcome To My Wealth Club
-                                Your Premier Trading Service
-                                Provider
-                                At My Wealth Club, we empower individuals to make informed decisions and unlock their true wealth potential. As a leading financial trading company you can follow our company trade opportunities and capitalise on the significant profits the company trades make.
-                                
-                                All Your Forex and Crypto Trading Essentials Under One Roof
-                                Then keep the boxes as they are except Trading Strategies and change that to Company Trade Opportunities and change Day Trader to Day Trading. Add another tick box with title Live Streamed Strategiesnk you.\n   Company Trade Ideas
-                                Our Institutional traders each week day trade company funds and make significant profits. When you join you get the change to follow these Trading opportunities yourself either on the website or our app. Imagine us informing you of every trade we are taking and then the actions taken until that trade closes. If you decide to follow our company trade opportunities you can make profits the same as our institutional trading team.''',
-                                                  context,
-                                                  useGradient: false,
-                                                  color: Colors.white70,
-                                                  maxLines: 200))
-                                        ],
-                                      ),
-                                    ],
+                                if (eventData != null &&
+                                    eventData!['webinar_desc'] != null)
+                                  Expanded(
+                                    child: ListView(
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            width30(),
+                                            Expanded(
+                                                child: bodyLargeText(
+                                                    (eventData?[
+                                                            'webinar_desc'] ??
+                                                        ''),
+                                                    context,
+                                                    useGradient: false,
+                                                    color: Colors.white70,
+                                                    maxLines: 200))
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -678,7 +675,6 @@ class PlayerProvider extends ChangeNotifier {
   bool muted = false;
   bool isPlayerReady = false;
   bool showControls = true;
-  List<String> ids = [];
 
   late Timer timer;
   Timer? controlTimer;
@@ -690,18 +686,6 @@ class PlayerProvider extends ChangeNotifier {
       }
       notifyListeners();
     });
-    ids = [
-      // 'iD9G6JqIyXE',
-      // 'j0ez9lSNdFE',
-      'ePplpyOQd74',
-      'SMO2vY2yq1Q',
-      '_WoCV4c6XOE',
-      'KmzdUe0RSJo',
-      '6jZDSSZZxjQ',
-      'p2lYr3vM_1w',
-      '7QUtEmBT_-w',
-      '34_PXCzGw1M'
-    ];
 
     controller = YoutubePlayerController(
       initialVideoId: videoId,

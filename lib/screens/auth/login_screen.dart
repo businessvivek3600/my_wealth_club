@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:action_slider/action_slider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import '/screens/drawerPages/download_pages/videos/data_manager.dart';
+import '/utils/default_logger.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/body/login_model.dart';
 import '/myapp.dart';
@@ -37,98 +40,131 @@ class _LoginScreenState extends State<LoginScreen> {
   // TextEditingController(text: 'India@151');
   bool isFinished = false;
   bool showPassword = false;
+  Map<String, dynamic> savedCredentials = {};
   @override
   void initState() {
     sl.get<AuthProvider>().getSignUpInitialData();
     super.initState();
+    _loadSavedCredentials();
+    OverlayState? overlayState = Overlay.of(context);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      globalKey;
+    });
+    _focusNode.addListener(() {
+      print('Has focus: ${_focusNode.hasFocus}');
+      if (_focusNode.hasFocus) {
+        _overlayEntry = _createOverlay();
+        overlayState.insert(_overlayEntry!);
+      } else {
+        _overlayEntry!.remove();
+      }
+    });
   }
 
+  // Load saved credentials
+  Future<void> _loadSavedCredentials() async =>
+      savedCredentials = await sl.get<AuthProvider>().getSavedCredentials();
+
+  Future<void> saveCredentials() async => await sl
+      .get<AuthProvider>()
+      .saveCredentials(_userNameController.text, _passwordController.text);
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     return GestureDetector(
       onTap: () => primaryFocus?.unfocus(),
       child: Center(
-        child: Scaffold(
-          body: Container(
-            height: height,
-            width: double.maxFinite,
-            color: mainColor,
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Center(
-                          child: Container(
-                            width: 350,
-                            // constraints: BoxConstraints(maxWidth: 500),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                height100(height * 0.1),
-                                buildHeader(height, context),
-                                height100(height * 0.05),
-                                buildForm(height),
-                                height10(),
-                                Column(
-                                  children: [
-                                    Stack(
-                                      children: [
-                                        buildLoginButton2(context),
-                                        if (sl
-                                                    .get<AuthProvider>()
-                                                    .companyInfo !=
-                                                null &&
-                                            sl
-                                                    .get<AuthProvider>()
-                                                    .companyInfo!
-                                                    .mobileIsLogin ==
-                                                '0')
-                                          Container(
-                                              color: Colors.transparent,
-                                              width: double.maxFinite,
-                                              height: 50)
-                                      ],
-                                    ),
-                                    height10(),
-                                    if (sl.get<AuthProvider>().companyInfo !=
-                                            null &&
-                                        sl
-                                                .get<AuthProvider>()
-                                                .companyInfo!
-                                                .mobileIsLogin ==
-                                            '0')
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+        child: AutofillGroup(
+          child: Scaffold(
+            body: Container(
+              height: height,
+              width: double.maxFinite,
+              color: mainColor,
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Center(
+                            child: Container(
+                              width: 350,
+                              // constraints: BoxConstraints(maxWidth: 500),
+                              child: Form(
+                                key: _formKey,
+                                child: AutofillGroup(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      height100(height * 0.1),
+                                      buildHeader(height, context),
+                                      height100(height * 0.05),
+                                      buildForm(height),
+                                      height10(),
+                                      Column(
                                         children: [
-                                          Icon(Icons.info_outline,
-                                              color: Colors.amber, size: 15),
-                                          width5(7),
-                                          capText(
-                                              'Login process is temporary disabled.',
-                                              context,
-                                              color: Colors.grey[400])
+                                          Stack(
+                                            children: [
+                                              buildLoginButton2(context),
+                                              if (sl
+                                                          .get<AuthProvider>()
+                                                          .companyInfo !=
+                                                      null &&
+                                                  sl
+                                                          .get<AuthProvider>()
+                                                          .companyInfo!
+                                                          .mobileIsLogin ==
+                                                      '0')
+                                                Container(
+                                                    color: Colors.transparent,
+                                                    width: double.maxFinite,
+                                                    height: 50)
+                                            ],
+                                          ),
+                                          height10(),
+                                          if (sl
+                                                      .get<AuthProvider>()
+                                                      .companyInfo !=
+                                                  null &&
+                                              sl
+                                                      .get<AuthProvider>()
+                                                      .companyInfo!
+                                                      .mobileIsLogin ==
+                                                  '0')
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(Icons.info_outline,
+                                                    color: Colors.amber,
+                                                    size: 15),
+                                                width5(7),
+                                                capText(
+                                                    'Login process is temporary disabled.',
+                                                    context,
+                                                    color: Colors.grey[400])
+                                              ],
+                                            )
                                         ],
-                                      )
-                                  ],
+                                      ),
+                                      height10(),
+                                      height10(),
+                                      height10(),
+                                      height10(),
+                                      buildSignUpButton(),
+                                      // height20(height * 0.1),
+                                    ],
+                                  ),
                                 ),
-                                height10(),
-                                height10(),
-                                height10(),
-                                height10(),
-                                buildSignUpButton(),
-                                // height20(height * 0.1),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -139,6 +175,38 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  final FocusNode _focusNode = FocusNode();
+  OverlayEntry? _overlayEntry;
+  GlobalKey globalKey = GlobalKey();
+  final LayerLink _layerLink = LayerLink();
+
+  OverlayEntry _createOverlay() {
+    _loadSavedCredentials();
+    RenderBox renderBox = context.findRenderObject() as RenderBox;
+    print('renderBox ${renderBox.size}');
+    print('renderBox ${renderBox.localToGlobal(Offset.zero)}');
+    print('renderBox ${renderBox.localToGlobal(Offset.zero).dy}');
+    print('Saved Credentials $savedCredentials');
+    var size = renderBox.size;
+    return OverlayEntry(
+        builder: (context) => Positioned(
+              width: _layerLink.leaderSize?.width,
+              child: CompositedTransformFollower(
+                link: _layerLink,
+                showWhenUnlinked: false,
+                offset: Offset(0.0, 50.0),
+                child: BuildAutoFillCredentialsContainer(
+                    savedCredentials: savedCredentials,
+                    onTap: (Map<String, dynamic>? val) {
+                      if (val != null) {
+                        _userNameController.text = val.keys.first;
+                        _passwordController.text = val.values.first;
+                        _overlayEntry!.remove();
+                      }
+                    }),
+              ),
+            ));
+  }
 
   ActionSlider buildLoginButton2(BuildContext context) {
     double iconSize = 40;
@@ -146,7 +214,8 @@ class _LoginScreenState extends State<LoginScreen> {
       sliderBehavior: SliderBehavior.stretch,
       rolling: true,
       height: iconSize + 10,
-      child: bodyLargeText('SWIPE TO LOGIN', context, color: Colors.black,useGradient: false),
+      child: bodyLargeText('SWIPE TO LOGIN', context,
+          color: Colors.black, useGradient: false),
       backgroundColor: Colors.white,
       toggleColor: appLogoColor.withOpacity(0.8),
       iconAlignment: Alignment.center,
@@ -173,6 +242,8 @@ class _LoginScreenState extends State<LoginScreen> {
       action: (controller) async {
         if (_formKey.currentState?.validate() ?? false) {
           controller.loading(); //starts loading animation
+          //--- trigger Password Save
+          TextInput.finishAutofillContext();
           try {
             await sl
                 .get<AuthProvider>()
@@ -185,7 +256,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller.success();
                 sl.get<DashBoardProvider>().getCustomerDashboard();
                 Future.delayed(
-                    Duration(milliseconds: 2000), () => Get.offAll(MainPage()));
+                    Duration(milliseconds: 2000),
+                    () => Get.offAll(MainPage(
+                          loginModel: LoginModel(
+                              username: _userNameController.text,
+                              password: _passwordController.text,
+                              device_id: ''),
+                        )));
               } else {
                 controller.failure();
               }
@@ -201,7 +278,6 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
-
 
   Row buildSignUpButton() {
     return Row(
@@ -224,24 +300,30 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget buildForm(double height) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        return Form(
-          key: _formKey,
-          child: Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                titleLargeText('Login', context, fontSize: 32),
-                height5(height * 0.01),
-                capText('Please sign in to continue.', context,
-                    fontSize: 15,
-                    color: Colors.white54,
-                    fontWeight: FontWeight.bold),
-                height20(height * 0.05),
-                Row(
-                  children: <Widget>[
-                    Expanded(
+        return Container(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              titleLargeText('Login', context, fontSize: 32),
+              height5(height * 0.01),
+              capText('Please sign in to continue.', context,
+                  fontSize: 15,
+                  color: Colors.white54,
+                  fontWeight: FontWeight.bold),
+              height20(height * 0.05),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: CompositedTransformTarget(
+                      link: _layerLink,
                       child: TextFormField(
+                        autofillHints: [
+                          AutofillHints.username,
+                          AutofillHints.name,
+                          AutofillHints.email,
+                        ],
+                        focusNode: _focusNode,
                         controller: _userNameController,
                         enabled: true,
                         cursorColor: Colors.white,
@@ -255,60 +337,61 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                     ),
-                  ],
-                ),
-                height10(height * 0.02),
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextFormField(
-                        controller: _passwordController,
-                        enabled: true,
-                        cursorColor: Colors.white,
-                        style: TextStyle(color: Colors.white),
-                        obscureText: !showPassword,
-                        decoration: InputDecoration(
-                            hintText: 'Password',
-                            suffixIcon: GestureDetector(
-                                onTap: () {
-                                  primaryFocus?.unfocus();
-                                  setState(() => showPassword = !showPassword);
-                                },
-                                child: Icon(
-                                  showPassword
-                                      ? Icons.visibility
-                                      : Icons.visibility_off_rounded,
-                                  color: Colors.white,
-                                ))),
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          return null;
-                        },
-                      ),
+                  ),
+                ],
+              ),
+              height10(height * 0.02),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: TextFormField(
+                      controller: _passwordController,
+                      autofillHints: [AutofillHints.password],
+                      enabled: true,
+                      cursorColor: Colors.white,
+                      style: TextStyle(color: Colors.white),
+                      obscureText: !showPassword,
+                      decoration: InputDecoration(
+                          hintText: 'Password',
+                          suffixIcon: GestureDetector(
+                              onTap: () {
+                                primaryFocus?.unfocus();
+                                setState(() => showPassword = !showPassword);
+                              },
+                              child: Icon(
+                                showPassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off_rounded,
+                                color: Colors.white,
+                              ))),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
                     ),
-                  ],
-                ),
-                height20(height * 0.01),
-                // buildCaptcha(),
-                // height20(height * 0.01),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => MyCarClub.navigatorKey.currentState
-                          ?.pushNamed(ForgotPasswordScreen.routeName),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: capText('Forgot Password?', context,
-                            color: appLogoColor),
-                      ),
-                    )
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              height20(height * 0.01),
+              // buildCaptcha(),
+              // height20(height * 0.01),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => MyCarClub.navigatorKey.currentState
+                        ?.pushNamed(ForgotPasswordScreen.routeName),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: capText('Forgot Password?', context,
+                          color: appLogoColor),
+                    ),
+                  )
+                ],
+              ),
+            ],
           ),
         );
       },
@@ -329,6 +412,108 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class BuildAutoFillCredentialsContainer extends StatefulWidget {
+  const BuildAutoFillCredentialsContainer(
+      {super.key, required this.savedCredentials, required this.onTap});
+
+  final Map<String, dynamic> savedCredentials;
+  final Function(Map<String, dynamic>?) onTap;
+
+  @override
+  State<BuildAutoFillCredentialsContainer> createState() =>
+      _BuildAutoFillCredentialsContainerState();
+}
+
+class _BuildAutoFillCredentialsContainerState
+    extends State<BuildAutoFillCredentialsContainer> {
+  Map<String, dynamic> savedCredentials = {};
+  @override
+  void initState() {
+    super.initState();
+    setState(() => savedCredentials = widget.savedCredentials);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.savedCredentials.entries.length > 2
+          ? 200
+          : widget.savedCredentials.entries.length * 70.0,
+      child: Material(
+        elevation: 5.0,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+        // color: Color.fromARGB(255, 43, 77, 87),
+        color: Colors.white,
+        child: ListView(
+          padding: EdgeInsetsDirectional.symmetric(horizontal: 20, vertical: 5),
+          children: [
+            ...savedCredentials.entries.map(
+              (e) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                      backgroundColor: appLogoColor,
+                      child: Icon(Icons.person, color: Colors.white)),
+                  title: Text(e.key, style: TextStyle(color: Colors.black)),
+                  subtitle: Text(
+                      e.value.toString().split('').map((e) => '*').join(''),
+                      style: TextStyle(color: Colors.black54)),
+                  onTap: () => widget.onTap({e.key: e.value}),
+                  trailing: TextButton(
+                    child: capText('Remove', context, color: Colors.red),
+                    onPressed: () async {
+//show alert dialog to confirm
+                      showDialog(
+                          context: context,
+                          barrierColor: Colors.white.withOpacity(0.1),
+                          builder: (context) {
+                            return AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20)),
+                              backgroundColor: Colors.black87,
+                              elevation: 10,
+                              title: titleLargeText(
+                                  'Remove Credentials', context,
+                                  useGradient: true),
+                              content: capText(
+                                  'Are you sure you want to remove this credentials?',
+                                  context),
+                              actions: [
+                                TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: capText('Cancel', context)),
+                                TextButton(
+                                    onPressed: () async {
+                                      Navigator.pop(context);
+                                      await sl
+                                          .get<AuthProvider>()
+                                          .removeCredentials(e.key)
+                                          .then((value) => setState(() =>
+                                              savedCredentials =
+                                                  widget.savedCredentials));
+                                    },
+                                    child: capText('Remove', context,
+                                        color: Colors.red)),
+                              ],
+                            );
+                          });
+
+                      // await sl
+                      //     .get<AuthProvider>()
+                      //     .removeCredentials(e.key)
+                      //     .then((value) => setState(() =>
+                      //         savedCredentials = widget.savedCredentials));
+                    },
+                  )),
+            ),
+            if (widget.savedCredentials.entries.length > 2) height100()
+          ],
+        ),
+      ),
     );
   }
 }

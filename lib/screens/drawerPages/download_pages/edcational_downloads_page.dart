@@ -1,0 +1,241 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import '/providers/GalleryProvider.dart';
+import '/utils/default_logger.dart';
+import 'package:provider/provider.dart';
+
+import '../../../constants/assets_constants.dart';
+import '../../../utils/picture_utils.dart';
+import '../../../utils/sizedbox_utils.dart';
+import '../../../utils/text.dart';
+
+class DowanloadsMainPage extends StatefulWidget {
+  const DowanloadsMainPage({super.key});
+
+  @override
+  State<DowanloadsMainPage> createState() => _DowanloadsMainPageState();
+}
+
+class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GalleryProvider>(builder: (context, provider, _) {
+      return GestureDetector(
+        onTap: () => primaryFocus?.unfocus(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text("Downloads"),
+            elevation: provider.categoryVideos.length > 0 ? null : 0,
+            actions: [
+              provider.loadingVideos
+                  ? Center(
+                      child: Container(
+                          height: 20,
+                          width: 20,
+                          margin: EdgeInsets.only(right: 10),
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 1)))
+                  : provider.videoLanguages.isNotEmpty
+                      ? buildLanguageButton(provider, context)
+                      : Container(),
+            ],
+          ),
+          body: Container(
+            height: double.maxFinite,
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: userAppBgImageProvider(context),
+                  fit: BoxFit.cover,
+                  opacity: 1),
+            ),
+            child: provider.categoryVideos.length > 0
+                ? buildVideosList(provider, context)
+                : Center(
+                    child: Text("No Videos Found",
+                        style: TextStyle(color: Colors.white)),
+                  ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Column buildLanguageButton(GalleryProvider provider, BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 30,
+          child: PopupMenuButton<String>(
+            child: Container(
+              margin: EdgeInsets.only(right: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.0),
+                  border: Border.all(color: Colors.white),
+                  borderRadius: BorderRadius.circular(5)),
+              child: Row(
+                children: [
+                  Icon(Icons.language, color: Colors.white, size: 15),
+                  width5(),
+                  capText(provider.currentVideoLanguage ?? 'English', context,
+                      color: Colors.white),
+                ],
+              ),
+            ),
+            onSelected: (String value) {
+              provider.setVideoLanguage(value);
+              provider.getVideos(false);
+            },
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            offset: Offset(0, 50),
+            itemBuilder: (BuildContext context) {
+              return provider.videoLanguages.entries
+                  .map<PopupMenuItem<String>>((MapEntry<String, String> value) {
+                return PopupMenuItem<String>(
+                    value: value.value,
+                    child: Text(value.value,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.normal)));
+              }).toList();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildVideosList(GalleryProvider provider, BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      children: [
+        ...provider.categoryVideos.map(
+          (e) => _DowloadTileWidget(),
+        ),
+      ],
+    );
+  }
+}
+
+class _DowloadTileWidget extends StatefulWidget {
+  const _DowloadTileWidget({
+    super.key,
+  });
+
+  @override
+  State<_DowloadTileWidget> createState() => _DowloadTileWidgetState();
+}
+
+class _DowloadTileWidgetState extends State<_DowloadTileWidget> {
+  String get title => "flutter_app_downloader_test_file";
+  String? fullPath;
+  static const String tag = "_DowloadTileWidget";
+  final imgUrl = "http://212.183.159.230/100MB.zip";
+  var dio = Dio();
+  ValueNotifier<bool> downloading = ValueNotifier(false);
+  ValueNotifier<String> progress = ValueNotifier("");
+  CancelToken cancelToken = CancelToken();
+  Future download2(Dio dio, String url, String savePath) async {
+    try {
+      Response response = await dio.get(url,
+          cancelToken: cancelToken,
+          onReceiveProgress: showDownloadProgress,
+          options: Options(
+              responseType: ResponseType.bytes,
+              followRedirects: false,
+              validateStatus: (status) => (status ?? 0) < 500));
+      infoLog(response.headers.toString(), tag);
+      File file = File(savePath);
+      var raf = file.openSync(mode: FileMode.write);
+      raf.writeFromSync(response.data);
+      await raf.close();
+    } catch (e) {
+      errorLog(e.toString(), tag);
+    }
+  }
+
+  void showDownloadProgress(received, total) {
+    if (total != -1) {
+      downloading.value = true;
+      progress.value = (received / total * 100).toStringAsFixed(0) + "%";
+      warningLog((received / total * 100).toStringAsFixed(0) + "%", tag);
+      if ((received / total * 100) == 100 ||
+          (received / total * 100) >= 100.0) {
+        downloading.value = false;
+        progress.value = "";
+      }
+    } else {
+      downloading.value = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(vertical: 5),
+      leading:
+          SizedBox(height: 30, width: 30, child: assetImages(Assets.appLogo_S)),
+      title: bodyLargeText('Download Item ', context, useGradient: false),
+      subtitle: Row(
+        children: [
+          Expanded(
+            child: ValueListenableBuilder(
+                valueListenable: progress,
+                builder: (context, value, child) {
+                  return progress.value.isNotEmpty
+                      ? capText(progress.value, context,
+                          color: Colors.white70, fontSize: 12)
+                      : fullPath != null
+                          ? capText(fullPath!.split('/0/').last, context,
+                              color: Colors.white70, fontSize: 8, maxLines: 3)
+                          : Container();
+                }),
+          ),
+        ],
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ValueListenableBuilder(
+              valueListenable: downloading,
+              builder: (context, value, child) {
+                return !downloading.value
+                    ? GestureDetector(
+                        onTap: () async {
+                          // var tempDir = await getTemporaryDirectory();
+                          // fullPath = tempDir.path +
+                          //     "/$title${imgUrl.split('.').last}'";
+                          // print('full path ${fullPath}');
+                          // if (fullPath != null) {
+                          //   download2(dio, imgUrl, fullPath!);
+                          // }
+                        },
+                        child: Icon(Icons.file_download, color: Colors.white),
+                      )
+                    : Container();
+              }),
+          width10(),
+          ValueListenableBuilder(
+              valueListenable: downloading,
+              builder: (context, value, child) {
+                return downloading.value
+                    ? GestureDetector(
+                        onTap: () {
+                          cancelToken.cancel();
+                          downloading.value = false;
+                        },
+                        child: Icon(CupertinoIcons.clear_circled_solid,
+                            color: Colors.white))
+                    : Container();
+              }),
+        ],
+      ),
+    );
+  }
+}

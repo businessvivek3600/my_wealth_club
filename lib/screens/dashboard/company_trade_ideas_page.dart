@@ -25,6 +25,7 @@ class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
         appBar: AppBar(
           title: titleLargeText('Company Trade Ideas', context,
               color: Colors.white, useGradient: true),
+          actions: [assetImages(Assets.appLogo_S, width: 30), width10()],
         ),
         body: Container(
           height: double.maxFinite,
@@ -220,7 +221,9 @@ class _TradeTile extends StatelessWidget {
                           width5(),
                           capText(
                             formatDate(DateTime.parse('2023-08-05 12:36:67'),
-                                'dd MMM yyyy h:m a'),
+                                    'yyyy-MM-ddTHH:mm:ss.SSS Z') +
+                                ' ' +
+                                'GMT+1',
                             context,
                             color: Color.fromARGB(255, 169, 175, 179),
                           ),
@@ -337,11 +340,13 @@ class _SignalDetailState extends State<SignalDetail> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: titleLargeText(
-          'Signal Details',
-          context,
-          color: Colors.white,
-          useGradient: true,
+        title: Row(
+          children: [
+            assetImages(Assets.eagleAi, width: 30),
+            width10(),
+            titleLargeText('EAGLE Ai', context,
+                color: Colors.white, useGradient: true),
+          ],
         ),
       ),
       body: Container(
@@ -365,6 +370,13 @@ class _SignalDetailState extends State<SignalDetail> {
                 children: [
                   Column(
                     children: [
+                      assetImages(Assets.appWebLogo, height: 50),
+                      height10(),
+                      Row(children: [
+                        Expanded(
+                            child: Container(color: Colors.white70, height: 1))
+                      ]),
+                      height10(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -380,7 +392,9 @@ class _SignalDetailState extends State<SignalDetail> {
                           width5(),
                           capText(
                             formatDate(DateTime.parse('2023-08-05 12:36:67'),
-                                'dd MMM yyyy h:m a'),
+                                    'dd MMM yyyy h:m a') +
+                                ' ' +
+                                '(GMT+1)',
                             context,
                             color: Color.fromARGB(255, 169, 175, 179),
                           ),
@@ -391,8 +405,19 @@ class _SignalDetailState extends State<SignalDetail> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           bodyLargeText('ENTRY:', context, useGradient: false),
-                          bodyLargeText('190.000', context,
-                              useGradient: false, color: appLogoColor),
+                          Row(
+                            children: [
+                              bodyLargeText('190.000', context,
+                                  useGradient: false, color: appLogoColor),
+                              width5(),
+                              GestureDetector(
+                                onTap: () => copyToClipboard('Entry: 190.000'),
+                                child: Icon(Icons.copy_all_rounded,
+                                    color: Color.fromARGB(249, 241, 224, 224),
+                                    size: 15),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       height10(),
@@ -401,8 +426,20 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('STOP LOSS:', context,
                               useGradient: false),
-                          bodyLargeText('108.500', context,
-                              useGradient: false, color: appLogoColor),
+                          Row(
+                            children: [
+                              bodyLargeText('108.500', context,
+                                  useGradient: false, color: appLogoColor),
+                              width5(),
+                              GestureDetector(
+                                onTap: () =>
+                                    copyToClipboard('Stop Loss: 190.000'),
+                                child: Icon(Icons.copy_all_rounded,
+                                    color: Color.fromARGB(249, 241, 224, 224),
+                                    size: 15),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       height10(),
@@ -411,8 +448,20 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('TAKE PROFIT 1:', context,
                               useGradient: false),
-                          bodyLargeText('109.100', context,
-                              useGradient: false, color: appLogoColor),
+                          Row(
+                            children: [
+                              bodyLargeText('109.100', context,
+                                  useGradient: false, color: appLogoColor),
+                              width5(),
+                              GestureDetector(
+                                onTap: () =>
+                                    copyToClipboard('Take Profit : 190.000'),
+                                child: Icon(Icons.copy_all_rounded,
+                                    color: Color.fromARGB(249, 241, 224, 224),
+                                    size: 15),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       height10(),
@@ -461,7 +510,7 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('STATUS:', context, useGradient: false),
                           bodyLargeText('Active', context,
-                              useGradient: false, color: appLogoColor),
+                              useGradient: false, color: Colors.green),
                         ],
                       ),
                       height30(),

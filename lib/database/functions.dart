@@ -537,3 +537,9 @@ class NoDoubleDecimalFormatter extends TextInputFormatter {
     return newValue;
   }
 }
+
+void copyToClipboard(String text, [String? message]) {
+  Clipboard.setData(ClipboardData(text: text));
+  // AdvanceToasts.showNormalElegant(context, 'Link copied successfully!',
+  Fluttertoast.showToast(msg: message ?? 'Copied to clipboard');
+}

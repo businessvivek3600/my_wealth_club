@@ -4,6 +4,8 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '/utils/default_logger.dart';
+import '/utils/sp_utils.dart';
 import '/database/functions.dart';
 import '/database/model/response/additional/signup_country_model.dart';
 import '/database/model/response/base/user_model.dart';
@@ -711,4 +713,45 @@ class AuthProvider with ChangeNotifier {
 
   void updateCommissionWithdrawal(String text, String text2, String text3,
       String text4, String text5, String text6, String text7, String text8) {}
+
+  Future<Map<String, dynamic>> getSavedCredentials() async {
+    Map<String, dynamic> list = {};
+    var sp = sl.get<SpUtil>();
+    try {
+      var data = await sp.getData(SPConstants.savedCredentials);
+      if (data != null && data.isNotEmpty) {
+        list = data;
+      }
+      successLog('getSavedCredentials success  ${list}', 'Auth Provider');
+    } catch (e) {
+      errorLog('getSavedCredentials error $e', 'Auth Provider');
+      return list;
+    }
+    return list;
+  }
+
+  Future<void> saveCredentials(String text, String text2) async {
+    Map<String, dynamic> list =
+        await sl.get<AuthProvider>().getSavedCredentials();
+    list.addAll({text: text2});
+    var sp = sl.get<SpUtil>();
+    await sp.setData(SPConstants.savedCredentials, list);
+  }
+
+  Future<Map<String, dynamic>> removeCredentials(String key) async {
+    Map<String, dynamic> list =
+        await sl.get<AuthProvider>().getSavedCredentials();
+    list.remove(key);
+    var sp = sl.get<SpUtil>();
+    await sp.setData(SPConstants.savedCredentials, list);
+    return list;
+  }
+
+  Future<void> updateCredential(String key, String pass) async {
+    Map<String, dynamic> list =
+        await sl.get<AuthProvider>().getSavedCredentials();
+    list.update(key, (value) => pass);
+    var sp = sl.get<SpUtil>();
+    await sp.setData(SPConstants.savedCredentials, list);
+  }
 }

@@ -3,9 +3,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import '/screens/drawerPages/download_pages/edcational_downloads_page.dart';
+import '../screens/dashboard/company_trade_ideas_page.dart';
 import '../screens/drawerPages/downlines/matrix_analyzer .dart';
 import '../screens/drawerPages/liquid_user_page.dart';
-import '/screens/drawerPages/downlines/geration_member/geration_member_page.dart';
+import '../screens/drawerPages/downlines/geration_member/direct_member_page.dart';
 import '../screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
 import '../constants/app_constants.dart';
@@ -84,6 +86,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            buildMasterClass(context),
+                            height5(),
+                            buildCompanyTradeIdea(context),
+                            height5(),
                             capText('Components', context,
                                 color: Colors.white70,
                                 fontWeight: FontWeight.bold),
@@ -165,6 +171,113 @@ class _CustomDrawerState extends State<CustomDrawer> {
           );
         },
       ),
+    );
+  }
+
+  GestureDetector buildCompanyTradeIdea(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Get.back();
+        Get.to(CompanyTradeIdeasPage());
+      },
+      child: Row(
+        children: [
+          titleLargeText(
+            'Company Trade Ideas',
+            context,
+            color: Colors.white70,
+            useGradient: true,
+            decoration: TextDecoration.underline,
+            fontWeight: FontWeight.bold,
+          ),
+          width5(),
+          assetLottie(Assets.tradingSignals, width: 50),
+        ],
+      ),
+    );
+  }
+
+  Column buildMasterClass(BuildContext context) {
+    double imageWidth = 30;
+    double maxWidth = 100;
+    double minWidth = 100;
+    return Column(
+      children: [
+        Row(
+          children: [
+            assetImages(Assets.classPng, width: 20),
+            width5(),
+            bodyLargeText('Master Classes', context,
+                color: Colors.white70, fontWeight: FontWeight.bold),
+          ],
+        ),
+        height10(),
+        Container(
+          // height: 70,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              width20(),
+              //
+              GestureDetector(
+                onTap: () {
+                  Get.back();
+                  Get.to(DrawerVideosMainPage());
+                },
+                child: Container(
+                  constraints:
+                      BoxConstraints(maxWidth: maxWidth, minWidth: minWidth),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: appLogoColor.withOpacity(0.8)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      assetImages(Assets.videoPng, height: imageWidth),
+                      height5(),
+                      capText('Educational\nVideos', context,
+                          color: Colors.white,
+                          textAlign: TextAlign.center,
+                          fontWeight: FontWeight.bold),
+                    ],
+                  ),
+                ),
+              ),
+              //
+              width10(),
+              //
+              GestureDetector(
+                onTap: () {
+                  Get.back();
+                  Get.to(DowanloadsMainPage());
+                },
+                child: Container(
+                  constraints:
+                      BoxConstraints(maxWidth: maxWidth, minWidth: minWidth),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: appLogoColor.withOpacity(0.8)),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      assetImages(Assets.downloadsPng, height: imageWidth),
+                      height5(),
+                      capText('Educational Downloads', context,
+                          color: Colors.white,
+                          textAlign: TextAlign.center,
+                          fontWeight: FontWeight.bold),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -329,7 +442,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           break;
 
                         case directMember:
-                          page = GenerationMemberPage();
+                          page = DirectMembersPage();
                           break;
                         case generationAnalyzer:
                           page = const GenerationAnalyzerPage();

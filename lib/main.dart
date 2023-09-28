@@ -34,6 +34,7 @@ Future<void> main() async {
   await initRepos();
   await Firebase.initializeApp();
   await configureLocalTimeZone();
+  TextInput.ensureInitialized();
   await initRepos().then((value) async {
     await sl.get<NetworkInfo>().isConnected;
     await sl.get<NotificationDatabaseHelper>().db();

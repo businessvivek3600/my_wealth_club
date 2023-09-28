@@ -23,9 +23,19 @@ class DrawerVideosMainPage extends StatefulWidget {
 class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
   void _onRefresh() async {
     await sl.get<GalleryProvider>().getVideos(true);
     _refreshController.refreshCompleted();
+  }
+
+  init() async {
+    await sl.get<GalleryProvider>().getVideos(true);
   }
 
   @override
@@ -35,7 +45,7 @@ class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
         return Scaffold(
           // backgroundColor: Colors.white.withOpacity(0.9),
           appBar: AppBar(
-            title: titleLargeText('Videos', context, useGradient: true),
+            title: titleLargeText('Master Class', context, useGradient: true),
             elevation: provider.categoryVideos.length > 0 ? null : 0,
             actions: [
               provider.loadingVideos

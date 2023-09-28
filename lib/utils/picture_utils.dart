@@ -97,11 +97,14 @@ CachedNetworkImage buildCachedNetworkImage(
         child: Stack(
           children: [
             Container(
-                padding: EdgeInsets.all(10),
+                padding: EdgeInsets.all(placeholderImg != null ? 0 : 10),
                 height: ph ?? 50,
                 width: pw ?? 100,
                 color: errorBgColor,
-                child: assetImages(placeholderImg ?? Assets.appWebLogo)),
+                child: assetImages(
+                  placeholderImg ?? Assets.appWebLogo,
+                  fit: placeholderImg != null ? BoxFit.cover : null,
+                )),
             if (errorStackChild != null) errorStackChild
           ],
         ),

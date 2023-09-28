@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
 import 'package:graphview/GraphView.dart';
-import 'package:mycarclub/database/model/response/abstract_user_model.dart';
+import '/database/model/response/abstract_user_model.dart';
 import '../../../constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';

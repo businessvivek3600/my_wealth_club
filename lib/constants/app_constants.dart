@@ -126,6 +126,7 @@ class AppConstants {
 }
 
 class SPConstants {
+  static const String savedCredentials = 'savedCredentials';
   static const String appBadge = 'appBadge';
   static const String canUpdate = 'can_update';
   static const String canRunApp = 'can_run_app';

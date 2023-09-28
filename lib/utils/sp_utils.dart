@@ -27,6 +27,16 @@ class SpUtil {
   bool exists(String key) => sharedPreferences.containsKey(key);
 
   /// set+get json data
+  Future<Map<String, dynamic>?> getData(String key) async {
+    var data = await sharedPreferences.getString(key);
+    if (data != null) {
+      return jsonDecode(data);
+    } else {
+      return null;
+    }
+  }
+
+  /// set+get json data
   Future<Map<String, dynamic>?> setData(
       String key, Map<String, dynamic>? data) async {
     if (data != null) {

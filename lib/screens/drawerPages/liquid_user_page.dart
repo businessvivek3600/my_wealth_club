@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:mycarclub/constants/assets_constants.dart';
-import 'package:mycarclub/providers/team_view_provider.dart';
-import 'package:mycarclub/utils/picture_utils.dart';
-import 'package:mycarclub/utils/sizedbox_utils.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/constants/assets_constants.dart';
+import '/providers/team_view_provider.dart';
+import '/utils/picture_utils.dart';
+import '/utils/sizedbox_utils.dart';
+import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
 import '../../sl_container.dart';

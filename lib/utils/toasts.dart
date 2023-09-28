@@ -13,12 +13,16 @@ class Toasts {
       {String? title,
       AnimationType animationType = AnimationType.fromTop}) async {
     CherryToast.success(
-            title: Text("Success",style: TextStyle( color: Colors.green,fontSize: 12)),
+            title: Text("Success",
+                style: TextStyle(color: Colors.green, fontSize: 12)),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description: Text(desc,style: TextStyle(  color: Colors.black,fontSize: 10),),
+            description: Text(
+              desc,
+              style: TextStyle(color: Colors.black, fontSize: 10),
+            ),
             animationType: animationType,
             animationDuration: Duration(milliseconds: 600),
             autoDismiss: true)
@@ -27,12 +31,18 @@ class Toasts {
 
   static showErrorNormalToast(String desc, {String? title}) async {
     CherryToast.error(
-            title: Text("Error",style: TextStyle(  color: Colors.red,fontSize: 12),),
+            title: Text(
+              "Error",
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description: Text(desc,style: TextStyle(  color: Colors.black),),
+            description: Text(
+              desc,
+              style: TextStyle(color: Colors.black),
+            ),
             animationType: AnimationType.fromRight,
             animationDuration: Duration(milliseconds: 900),
             autoDismiss: true)
@@ -41,13 +51,17 @@ class Toasts {
 
   static showWarningNormalToast(String desc, {String? title}) async {
     CherryToast.warning(
-            title:
-                Text("Ooops!",style: TextStyle(  color: Colors.red,fontSize: 12), textAlign: TextAlign.justify),
+            title: Text("Ooops!",
+                style: TextStyle(color: Colors.red, fontSize: 12),
+                textAlign: TextAlign.justify),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description: Text(desc,style: TextStyle(  color: Colors.black),),
+            description: Text(
+              desc,
+              style: TextStyle(color: Colors.black),
+            ),
             animationType: AnimationType.fromRight,
             animationDuration: Duration(milliseconds: 900),
             autoDismiss: true)
@@ -58,12 +72,17 @@ class Toasts {
       {String? title, required bool error}) async {
     print('is error $error');
     CherryToast(
-      title: Text("Error",style: TextStyle(  color: Colors.red,fontSize: 12), textAlign: TextAlign.justify),
+      title: Text("Error",
+          style: TextStyle(color: Colors.red, fontSize: 12),
+          textAlign: TextAlign.justify),
       displayTitle: true,
       displayIcon: true,
       displayCloseButton: false,
       borderRadius: 10,
-      description: Text(desc, style: TextStyle( color: Colors.black),),
+      description: Text(
+        desc,
+        style: TextStyle(color: Colors.black),
+      ),
       animationType: AnimationType.fromRight,
       animationDuration: Duration(milliseconds: 900),
       autoDismiss: true,

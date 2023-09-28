@@ -33,7 +33,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
   @override
   void dispose() {
     sl.get<TeamViewProvider>().loadingTeamMembers = false;
-    sl.get<TeamViewProvider>().customerTeam.clear();
+    sl.get<TeamViewProvider>().customerTeamMembers.clear();
     super.dispose();
   }
 
@@ -58,12 +58,12 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
           builder: (context, teamViewProvider, child) {
             return !teamViewProvider.loadingTeamMembers
                 ? (teamViewProvider.loadingTeamMembers ||
-                        teamViewProvider.customerTeam.isNotEmpty)
+                        teamViewProvider.customerTeamMembers.isNotEmpty)
                     ? ListView(
                         physics: BouncingScrollPhysics(),
                         padding: EdgeInsets.all(8),
                         children: [
-                          ...teamViewProvider.customerTeam
+                          ...teamViewProvider.customerTeamMembers
                               .map((e) => buildMember(e))
                         ],
                       )

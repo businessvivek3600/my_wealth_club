@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
+import '/utils/default_logger.dart';
 import '/constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';
@@ -52,6 +53,15 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
       curve: Curves.fastOutSlowIn,
       duration: const Duration(milliseconds: 300),
     );
+  }
+
+  scrollGeneration(int index) {
+    try {
+      Scrollable.ensureVisible(generationKeys[index].currentContext!,
+          duration: Duration(milliseconds: 700), curve: Curves.fastOutSlowIn);
+    } catch (e) {
+      errorLog(e.toString());
+    }
   }
 
   @override
@@ -126,10 +136,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
             onTap: () {
               if (provider.breadCrumbContent.length == 1) return;
               provider.setSelectedGeneration(0);
-              Scrollable.ensureVisible(
-                  generationKeys[provider.selectedGeneration].currentContext!,
-                  duration: Duration(milliseconds: 700),
-                  curve: Curves.fastOutSlowIn);
+              scrollGeneration(provider.selectedGeneration);
               provider.setBreadCrumbContent(1);
               provider.setGenerationUsers('Root');
               _animateToLast();
@@ -181,9 +188,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
         return GestureDetector(
           onTap: () {
             provider.setSelectedGeneration(0);
-            Scrollable.ensureVisible(
-                generationKeys[provider.selectedGeneration].currentContext!,
-                duration: Duration(milliseconds: 700));
+            scrollGeneration(provider.selectedGeneration);
             provider.setBreadCrumbContent(
                 provider.breadCrumbContent.length,
                 BreadCrumbContent(
@@ -250,10 +255,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
             content: capText('${user.name}', context, useGradient: true),
             onTap: () {
               provider.setSelectedGeneration(0);
-              Scrollable.ensureVisible(
-                  generationKeys[provider.selectedGeneration].currentContext!,
-                  duration: Duration(milliseconds: 700),
-                  curve: Curves.fastOutSlowIn);
+              scrollGeneration(provider.selectedGeneration);
               provider.setBreadCrumbContent(index + 1);
               provider.setGenerationUsers('${user.name}');
               _animateToLast();
@@ -290,23 +292,15 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                         index: index,
                         onCancel: (index) {
                           provider.setSelectedGeneration(0);
-                          Scrollable.ensureVisible(
-                              generationKeys[provider.selectedGeneration]
-                                  .currentContext!,
-                              duration: Duration(milliseconds: 700),
-                              curve: Curves.fastOutSlowIn);
                           provider.setGenerationUsers('Root');
+                          scrollGeneration(provider.selectedGeneration);
                         },
                         onSelect: (index) {
                           provider.setSelectedGeneration(index);
-                          Scrollable.ensureVisible(
-                              generationKeys[provider.selectedGeneration]
-                                  .currentContext!,
-                              duration: Duration(milliseconds: 700),
-                              curve: Curves.fastOutSlowIn);
                           provider.setGenerationUsers(index == 0
                               ? 'Root'
                               : '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).name}');
+                          scrollGeneration(provider.selectedGeneration);
                         },
                       ),
                     ],

@@ -19,14 +19,14 @@ import '../../../../utils/sizedbox_utils.dart';
 import '../../../../utils/text.dart';
 import '../trem_view_page.dart';
 
-class GenerationMemberPage extends StatefulWidget {
-  const GenerationMemberPage({super.key});
+class DirectMembersPage extends StatefulWidget {
+  const DirectMembersPage({super.key});
 
   @override
-  State<GenerationMemberPage> createState() => _GenerationMemberPageState();
+  State<DirectMembersPage> createState() => _DirectMembersPageState();
 }
 
-class _GenerationMemberPageState extends State<GenerationMemberPage> {
+class _DirectMembersPageState extends State<DirectMembersPage> {
   final globalKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
@@ -37,82 +37,85 @@ class _GenerationMemberPageState extends State<GenerationMemberPage> {
   @override
   void dispose() {
     sl.get<TeamViewProvider>().loadingTeamMembers = false;
-    sl.get<TeamViewProvider>().customerTeam.clear();
+    sl.get<TeamViewProvider>().customerTeamMembers.clear();
     super.dispose();
   }
 
-  final searchController = TextEditingController();
-  bool isSearching = false;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: globalKey,
-      backgroundColor: mainColor,
-      appBar: buildAppBar(context),
-      body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              image: userAppBgImageProvider(context),
-              fit: BoxFit.cover,
-              opacity: 1),
-        ),
-        child: Consumer<TeamViewProvider>(
-          builder: (context, teamViewProvider, child) {
-            return !teamViewProvider.loadingTeamMembers
-                ? (!teamViewProvider.loadingTeamMembers ||
-                        teamViewProvider.customerTeam.isNotEmpty)
-                    ? ListView(
-                        physics: BouncingScrollPhysics(),
-                        padding: EdgeInsets.all(8),
-                        children: [
-                          ...List.generate(
-                              15, (index) => _MemberTile(index: index)),
-                          ...teamViewProvider.customerTeam
-                              .map((e) => buildMember(e))
-                        ],
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+    return Consumer<TeamViewProvider>(builder: (context, provider, _) {
+      return Scaffold(
+        key: globalKey,
+        backgroundColor: mainColor,
+        appBar: buildAppBar(context, provider),
+        body: Container(
+          height: double.maxFinite,
+          width: double.maxFinite,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: userAppBgImageProvider(context),
+                fit: BoxFit.cover,
+                opacity: 1),
+          ),
+          child: Consumer<TeamViewProvider>(
+            builder: (context, teamViewProvider, child) {
+              return !teamViewProvider.loadingTeamMembers
+                  ? (!teamViewProvider.loadingTeamMembers ||
+                          teamViewProvider.customerTeamMembers.isNotEmpty)
+                      ? ListView(
+                          physics: BouncingScrollPhysics(),
+                          padding: EdgeInsets.all(8),
                           children: [
-                            ///TODO: teamMembersLottie
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                assetLottie(Assets.teamMembersLottie,
-                                    width: 200),
-                              ],
-                            ),
-                            titleLargeText(
-                                'Create your own team & join more people to enlarge your team.',
-                                context,
-                                color: Colors.white,
-                                textAlign: TextAlign.center),
-                            height20(),
-                            buildTeamBuildingReferralLink(context)
+                            ...List.generate(
+                                15, (index) => _MemberTile(index: index)),
+                            ...teamViewProvider.customerTeamMembers
+                                .map((e) => buildMember(e))
                           ],
-                        ),
-                      )
-                : Center(child: CircularProgressIndicator(color: Colors.white));
-          },
+                        )
+                      : buildEmptyList(context)
+                  : Center(
+                      child: CircularProgressIndicator(color: Colors.white));
+            },
+          ),
         ),
+      );
+    });
+  }
+
+  Padding buildEmptyList(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ///TODO: teamMembersLottie
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              assetLottie(Assets.teamMembersLottie, width: 200),
+            ],
+          ),
+          titleLargeText(
+              'Create your own team & join more people to enlarge your team.',
+              context,
+              color: Colors.white,
+              textAlign: TextAlign.center),
+          height20(),
+          buildTeamBuildingReferralLink(context)
+        ],
       ),
     );
   }
 
-  AppBar buildAppBar(BuildContext context) {
+  AppBar buildAppBar(BuildContext context, TeamViewProvider provider) {
     return AppBar(
         title: AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
-            child: isSearching
+            child: provider.isSearchingDirectMember
                 ? SizedBox(
                     height: 40,
                     child: TextField(
-                      controller: searchController,
+                      controller: provider.directMemberSearchController,
                       autofocus: true,
                       cursorColor: Colors.white,
                       textInputAction: TextInputAction.search,
@@ -126,9 +129,7 @@ class _GenerationMemberPageState extends State<GenerationMemberPage> {
                         border: InputBorder.none,
                         suffixIcon: IconButton(
                           onPressed: () {
-                            setState(() {
-                              isSearching = !isSearching;
-                            });
+                            provider.directMemberSearchController.clear();
                           },
                           icon: Icon(CupertinoIcons.clear_circled_solid,
                               color: Colors.white),
@@ -141,21 +142,19 @@ class _GenerationMemberPageState extends State<GenerationMemberPage> {
         actions: [
           AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
-            child: !isSearching
+            child: !provider.isSearchingDirectMember
                 ? IconButton(
                     onPressed: () {
-                      setState(() {
-                        isSearching = !isSearching;
-                      });
+                      provider.setSearching(!provider.isSearchingDirectMember);
                     },
                     icon: Icon(Icons.search))
                 : Transform.rotate(
                     angle: pi / 2,
                     child: IconButton(
                         onPressed: () {
-                          setState(() {
-                            isSearching = !isSearching;
-                          });
+                          provider
+                              .setSearching(!provider.isSearchingDirectMember);
+                          provider.directMemberSearchController.clear();
                         },
                         icon: Icon(Icons.u_turn_left)),
                   ),
@@ -275,6 +274,17 @@ class _FilterGenerationMemberDialogState
   DateTime? selectedDate;
   final refferenceIdController = TextEditingController();
   int? selectedStatus;
+  var provider = sl.get<TeamViewProvider>();
+
+  @override
+  void initState() {
+    super.initState();
+    selectedStatus = provider.directMemberSelectedStatus;
+    selectedDate = provider.directMemberSelectedDate;
+    refferenceIdController.text =
+        provider.directMemberRefferenceIdController.text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -463,7 +473,14 @@ class _FilterGenerationMemberDialogState
                           borderRadius: BorderRadius.circular(5)),
                     ),
                     onPressed: () {
-                      // Get.back();
+                      provider.directMemberSelectedDate = selectedDate;
+                      provider.directMemberSelectedStatus = selectedStatus;
+                      provider.directMemberRefferenceIdController.text =
+                          refferenceIdController.text;
+                      provider.getCustomerTeam();
+                      provider.directMemberSearchController.clear();
+                      provider.setSearching(false);
+                      Get.back();
                     },
                     child: capText('Apply', context,
                         color: Colors.white, fontWeight: FontWeight.bold),

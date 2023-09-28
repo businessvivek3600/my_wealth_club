@@ -1,4 +1,4 @@
-import 'package:mycarclub/screens/drawerPages/downlines/generation_analyzer.dart';
+import '/screens/drawerPages/downlines/generation_analyzer.dart';
 
 abstract class AbUser {
   String? id;

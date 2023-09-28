@@ -54,22 +54,27 @@ class Assets {
   static const aboutUs = 'about-svgrepo-com.svg';
 
   ///images
-  static const appUserBgImage = 'car-dashboard-min.jpg';
+  static const appUserBgImage = 'bgGraphic.jpg';
   static const appPlatinumUserBgImage = 'platinum-member-dashboard.jpg';
 
   static const appLogo_S = 'appLogo_s.png';
 
   static const appWebLogo = 'appLogo_l.png';
   static const appWebLogoWhite = 'appLogo_l.png';
+  static const bgGraphic = 'bgGraphic.jpg';
   static const eagleAi = 'EagleAi.png';
   static const noImage = 'no_image.jfif';
   static const offlineWifi = 'offline-5.png';
   static const imageNotFound = 'image-not-found.png';
   static const iosMobilePhone = 'ios_mobile.png';
   static const sendEmail = 'send-email.png';
+  static const classPng = 'icons8-class-64.png';
+  static const videoPng = 'icons8-video-64.png';
+  static const downloadsPng = 'icons8-downloads-64.png';
   static const forgotPass = 'forgot-pass.png';
   static const blackNoImageIcon = 'black-no-image-icon.png';
   static const whiteNoImageIcon = 'white-no-image-icon.png';
+  static const videoPlaceholder = 'videoPlaceholder.png';
   static const noVideoThumbnail = 'no_video_image.png';
   static const deActiveUser = 'deactive_user.png';
   static const mlm = 'mlm.png';

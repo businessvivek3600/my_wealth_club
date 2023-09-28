@@ -4,7 +4,7 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mycarclub/sl_container.dart';
+import '/sl_container.dart';
 import '../utils/sp_utils.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
