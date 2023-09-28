@@ -68,7 +68,7 @@ ImageProvider netImageProvider(String path,
     NetworkImage('$path');
 
 //cached Network Image
-CachedNetworkImage buildCachedNetworkImage(
+Widget buildCachedNetworkImage(
   String image, {
   double? ph,
   double? pw,
@@ -79,41 +79,45 @@ CachedNetworkImage buildCachedNetworkImage(
   Color? placeholderBgColor,
   Widget? errorStackChild,
   bool cache = true,
+  double borderRadius = 0,
 }) {
-  return CachedNetworkImage(
-    imageUrl: image,
-    fit: fit ?? BoxFit.cover,
-    placeholder: (context, url) => Center(
-        child: Container(
-            height: ph ?? 50,
-            width: pw ?? 100,
-            color: placeholderBgColor,
-            child: Center(
-                child: CircularProgressIndicator(
-                    color: appLogoColor.withOpacity(0.5))))),
-    errorWidget: (context, url, error) => Center(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: Stack(
-          children: [
-            Container(
-                padding: EdgeInsets.all(placeholderImg != null ? 0 : 10),
-                height: ph ?? 50,
-                width: pw ?? 100,
-                color: errorBgColor,
-                child: assetImages(
-                  placeholderImg ?? Assets.appWebLogo,
-                  fit: placeholderImg != null ? BoxFit.cover : null,
-                )),
-            if (errorStackChild != null) errorStackChild
-          ],
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(borderRadius),
+    child: CachedNetworkImage(
+      imageUrl: image,
+      fit: fit ?? BoxFit.cover,
+      placeholder: (context, url) => Center(
+          child: Container(
+              height: ph ?? 50,
+              width: pw ?? 100,
+              color: placeholderBgColor,
+              child: Center(
+                  child: CircularProgressIndicator(
+                      color: appLogoColor.withOpacity(0.5))))),
+      errorWidget: (context, url, error) => Center(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Stack(
+            children: [
+              Container(
+                  padding: EdgeInsets.all(placeholderImg != null ? 0 : 10),
+                  height: ph ?? 50,
+                  width: pw ?? 100,
+                  color: errorBgColor,
+                  child: assetImages(
+                    placeholderImg ?? Assets.appWebLogo,
+                    fit: placeholderImg != null ? BoxFit.cover : null,
+                  )),
+              if (errorStackChild != null) errorStackChild
+            ],
+          ),
         ),
       ),
+      cacheManager: cache
+          ? CacheManager(Config(
+              "${AppConstants.appName}${cacheFileName ?? image}",
+              stalePeriod: const Duration(days: 30)))
+          : null,
     ),
-    cacheManager: cache
-        ? CacheManager(Config(
-            "${AppConstants.appName}${cacheFileName ?? image}",
-            stalePeriod: const Duration(days: 30)))
-        : null,
   );
 }

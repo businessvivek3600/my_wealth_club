@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:mycarclub/database/functions.dart';
+import 'package:mycarclub/database/model/response/download_files_model.dart';
+import '../../../sl_container.dart';
 import '/providers/GalleryProvider.dart';
 import '/utils/default_logger.dart';
 import 'package:provider/provider.dart';
@@ -21,16 +24,27 @@ class DowanloadsMainPage extends StatefulWidget {
 
 class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
   @override
+  void initState() {
+    super.initState();
+    init();
+  }
+
+  init() async {
+    await sl.get<GalleryProvider>().getDownloadFiles(true);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<GalleryProvider>(builder: (context, provider, _) {
       return GestureDetector(
         onTap: () => primaryFocus?.unfocus(),
         child: Scaffold(
           appBar: AppBar(
-            title: Text("Downloads"),
-            elevation: provider.categoryVideos.length > 0 ? null : 0,
+            title: titleLargeText("Important Downloads", context,
+                useGradient: true),
+            elevation: provider.downloadFiles.length > 0 ? null : 0,
             actions: [
-              provider.loadingVideos
+              provider.loadingDownloadFiles
                   ? Center(
                       child: Container(
                           height: 20,
@@ -38,7 +52,7 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
                           margin: EdgeInsets.only(right: 10),
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 1)))
-                  : provider.videoLanguages.isNotEmpty
+                  : provider.filesLanguages.isNotEmpty
                       ? buildLanguageButton(provider, context)
                       : Container(),
             ],
@@ -52,12 +66,19 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
                   fit: BoxFit.cover,
                   opacity: 1),
             ),
-            child: provider.categoryVideos.length > 0
-                ? buildVideosList(provider, context)
-                : Center(
-                    child: Text("No Videos Found",
-                        style: TextStyle(color: Colors.white)),
-                  ),
+            child: provider.loadingDownloadFiles
+                ? Center(
+                    child: Container(
+                        height: 20,
+                        width: 20,
+                        margin: EdgeInsets.only(right: 10),
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 1)))
+                : provider.downloadFiles.length > 0
+                    ? buildFilesList(provider, context)
+                    : Center(
+                        child: Text("No Files Found",
+                            style: TextStyle(color: Colors.white))),
           ),
         ),
       );
@@ -82,20 +103,20 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
                 children: [
                   Icon(Icons.language, color: Colors.white, size: 15),
                   width5(),
-                  capText(provider.currentVideoLanguage ?? 'English', context,
+                  capText(provider.currentFilesLanguage ?? 'English', context,
                       color: Colors.white),
                 ],
               ),
             ),
             onSelected: (String value) {
-              provider.setVideoLanguage(value);
-              provider.getVideos(false);
+              provider.setFilesLanguage(value);
+              provider.getDownloadFiles(false);
             },
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
             offset: Offset(0, 50),
             itemBuilder: (BuildContext context) {
-              return provider.videoLanguages.entries
+              return provider.filesLanguages.entries
                   .map<PopupMenuItem<String>>((MapEntry<String, String> value) {
                 return PopupMenuItem<String>(
                     value: value.value,
@@ -111,12 +132,12 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
     );
   }
 
-  Widget buildVideosList(GalleryProvider provider, BuildContext context) {
+  Widget buildFilesList(GalleryProvider provider, BuildContext context) {
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 10),
       children: [
-        ...provider.categoryVideos.map(
-          (e) => _DowloadTileWidget(),
+        ...provider.downloadFiles.map(
+          (e) => _DowloadTileWidget(file: e),
         ),
       ],
     );
@@ -124,10 +145,8 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
 }
 
 class _DowloadTileWidget extends StatefulWidget {
-  const _DowloadTileWidget({
-    super.key,
-  });
-
+  const _DowloadTileWidget({super.key, required this.file});
+  final DownloadFilesModel file;
   @override
   State<_DowloadTileWidget> createState() => _DowloadTileWidgetState();
 }
@@ -178,64 +197,79 @@ class _DowloadTileWidgetState extends State<_DowloadTileWidget> {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 5),
-      leading:
-          SizedBox(height: 30, width: 30, child: assetImages(Assets.appLogo_S)),
-      title: bodyLargeText('Download Item ', context, useGradient: false),
-      subtitle: Row(
-        children: [
-          Expanded(
-            child: ValueListenableBuilder(
-                valueListenable: progress,
-                builder: (context, value, child) {
-                  return progress.value.isNotEmpty
-                      ? capText(progress.value, context,
-                          color: Colors.white70, fontSize: 12)
-                      : fullPath != null
-                          ? capText(fullPath!.split('/0/').last, context,
-                              color: Colors.white70, fontSize: 8, maxLines: 3)
-                          : Container();
-                }),
-          ),
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ValueListenableBuilder(
-              valueListenable: downloading,
-              builder: (context, value, child) {
-                return !downloading.value
-                    ? GestureDetector(
-                        onTap: () async {
-                          // var tempDir = await getTemporaryDirectory();
-                          // fullPath = tempDir.path +
-                          //     "/$title${imgUrl.split('.').last}'";
-                          // print('full path ${fullPath}');
-                          // if (fullPath != null) {
-                          //   download2(dio, imgUrl, fullPath!);
-                          // }
-                        },
-                        child: Icon(Icons.file_download, color: Colors.white),
-                      )
-                    : Container();
-              }),
-          width10(),
-          ValueListenableBuilder(
-              valueListenable: downloading,
-              builder: (context, value, child) {
-                return downloading.value
-                    ? GestureDetector(
-                        onTap: () {
-                          cancelToken.cancel();
-                          downloading.value = false;
-                        },
-                        child: Icon(CupertinoIcons.clear_circled_solid,
-                            color: Colors.white))
-                    : Container();
-              }),
-        ],
-      ),
-    );
+        dense: true,
+        onTap: () => launchTheLink(widget.file.link ?? ''),
+        contentPadding: EdgeInsets.symmetric(vertical: 5),
+        leading: SizedBox(
+            width: 50,
+            child: buildCachedNetworkImage(
+              widget.file.image ?? '',
+              placeholderImg: Assets.appLogo_S,
+              ph: 50,
+              pw: 50,
+              borderRadius: 5,
+              // fit: BoxFit.cover,
+            )),
+        title:
+            bodyLargeText(widget.file.text ?? '', context, useGradient: false),
+        // subtitle: Row(
+        //   children: [
+        //     Expanded(
+        //       child: ValueListenableBuilder(
+        //           valueListenable: progress,
+        //           builder: (context, value, child) {
+        //             return progress.value.isNotEmpty
+        //                 ? capText(progress.value, context,
+        //                     color: Colors.white70, fontSize: 12)
+        //                 : fullPath != null
+        //                     ? capText(fullPath!.split('/0/').last, context,
+        //                         color: Colors.white70, fontSize: 8, maxLines: 3)
+        //                     : Container();
+        //           }),
+        //     ),
+        //   ],
+        // ),
+
+        trailing: Icon(Icons.file_download_rounded, color: Colors.white)
+
+        // trailing: Row(
+        //   mainAxisSize: MainAxisSize.min,
+        //   children: [
+        //     ValueListenableBuilder(
+        //         valueListenable: downloading,
+        //         builder: (context, value, child) {
+        //           return !downloading.value
+        //               ? GestureDetector(
+        //                   onTap: () async {
+        //                     // var tempDir = await getTemporaryDirectory();
+        //                     // fullPath = tempDir.path +
+        //                     //     "/$title${imgUrl.split('.').last}'";
+        //                     // print('full path ${fullPath}');
+        //                     // if (fullPath != null) {
+        //                     //   download2(dio, imgUrl, fullPath!);
+        //                     // }
+        //                   },
+        //                   child: Icon(Icons.file_download, color: Colors.white),
+        //                 )
+        //               : Container();
+        //         }),
+        //     width10(),
+        //     ValueListenableBuilder(
+        //         valueListenable: downloading,
+        //         builder: (context, value, child) {
+        //           return downloading.value
+        //               ? GestureDetector(
+        //                   onTap: () {
+        //                     cancelToken.cancel();
+        //                     downloading.value = false;
+        //                   },
+        //                   child: Icon(CupertinoIcons.clear_circled_solid,
+        //                       color: Colors.white))
+        //               : Container();
+        //         }),
+        //   ],
+        // ),
+
+        );
   }
 }

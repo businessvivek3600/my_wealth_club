@@ -33,6 +33,17 @@ class GalleryRepo {
     }
   }
 
+  Future<ApiResponse> getImportantDownloads(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient
+          .post(AppConstants.getImportantDownloads, token: true, data: data);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
 //
   Future<ApiResponse> galleryVideos(Map<String, String> map) async {
     try {

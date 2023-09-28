@@ -4,6 +4,7 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/cupertino.dart';
+import '../database/model/response/download_files_model.dart';
 import '/sl_container.dart';
 import '../utils/sp_utils.dart';
 import '/constants/app_constants.dart';
@@ -209,27 +210,12 @@ class GalleryProvider extends ChangeNotifier {
               .entries
               .toList()
               .forEach((e) => videoLanguages.addAll({e.key: e.value}));
-
-          // videoLanguages = map['language_array'];
           notifyListeners();
         }
 
         infoLog("categoryVideos  ${categoryVideos.length}");
       } catch (e) {
         print(' getVideos videoData error $e');
-      }
-      try {
-        if (map['language_array'] != null && map['language_array'].isNotEmpty) {
-          videoLanguages.clear();
-          map['language_array']
-              .entries
-              .toList()
-              .forEach((e) => videoLanguages.addAll({e.key: e.value}));
-          // videoLanguages = map['language_array'];
-          notifyListeners();
-        }
-      } catch (e) {
-        print('getVideos  language_array error $e');
       }
     }
     loadingVideos = false;
@@ -265,6 +251,110 @@ class GalleryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+//file downloads
+
+  bool loadingDownloadFiles = false;
+  List<DownloadFilesModel> downloadFiles = [];
+  Map<String, String> filesLanguages = {};
+  Future<void> getDownloadFiles(bool videoPage) async {
+    Map? map;
+    loadingDownloadFiles = !videoPage;
+    notifyListeners();
+    bool cacheExist = await APICacheManager()
+        .isAPICacheKeyExist(AppConstants.getImportantDownloads);
+    try {
+      if (isOnline) {
+        ApiResponse apiResponse = await galleryRepo
+            .getImportantDownloads({'lng': getFilesLanguage() ?? 'english'});
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          map = apiResponse.response!.data;
+          bool status = false;
+          try {
+            status = map?["status"];
+            if (map?['is_logged_in'] == 0) {
+              logOut();
+            }
+          } catch (e) {}
+          try {
+            if (status && map != null) {
+              try {
+                var cacheModel = APICacheDBModel(
+                    key: AppConstants.getImportantDownloads,
+                    syncData: jsonEncode(map));
+                await APICacheManager().addCacheData(cacheModel);
+              } catch (e) {}
+            }
+          } catch (e) {
+            print('getImportantDownloads online hit failed \n $e');
+          }
+        } else if (!isOnline && cacheExist) {
+          var cacheData = (await APICacheManager()
+                  .getCacheData(AppConstants.getImportantDownloads))
+              .syncData;
+          map = jsonDecode(cacheData);
+        } else {
+          print('getImportantDownloads not online not cache exist ');
+        }
+      } else {
+        Toasts.showWarningNormalToast('You are offline');
+      }
+    } catch (e) {
+      print('getImportantDownloads failed ${e}');
+    }
+    if (map != null) {
+      try {
+        downloadFiles.clear();
+        if (map['files'] != null && map['files'].isNotEmpty) {
+          map['files'].forEach((e) {
+            infoLog("getImportantDownloads  ${e}");
+            var file = DownloadFilesModel.fromJson(e);
+            file.image = (map!['base_url'] ?? '') + (file.image ?? '');
+            downloadFiles.add(file);
+          });
+          notifyListeners();
+        }
+        try {
+          if (map['language_array'] != null &&
+              map['language_array'].isNotEmpty) {
+            filesLanguages.clear();
+            map['language_array']
+                .entries
+                .toList()
+                .forEach((e) => filesLanguages.addAll({e.key: e.value}));
+            notifyListeners();
+          }
+        } catch (e) {
+          errorLog('getImportantDownloads language_array error $e',
+              'GalleryProvider');
+        }
+        infoLog(
+            "getImportantDownloads  filesLanguages ${filesLanguages.length}");
+      } catch (e) {
+        print(' getImportantDownloads videoData error $e');
+      }
+    }
+    loadingDownloadFiles = false;
+    notifyListeners();
+  }
+
+  String? currentFilesLanguage;
+
+  String? getFilesLanguage() {
+    var sp = sl.get<SpUtil>();
+    currentFilesLanguage = sp.getString(SPConstants.filesLanguage);
+    notifyListeners();
+    return currentFilesLanguage;
+  }
+
+  setFilesLanguage(String language) async {
+    var sp = sl.get<SpUtil>();
+    await sp.setString(SPConstants.filesLanguage, language);
+
+    currentFilesLanguage = language;
+    notifyListeners();
+  }
+
   clear() {
     thumbnails.clear();
     images.clear();
@@ -275,5 +365,10 @@ class GalleryProvider extends ChangeNotifier {
     loadingVideos = false;
     currentCategoryModel = null;
     currentVideo = null;
+    currentVideoLanguage = null;
+    loadingDownloadFiles = false;
+    downloadFiles.clear();
+    filesLanguages.clear();
+    currentFilesLanguage = null;
   }
 }

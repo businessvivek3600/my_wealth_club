@@ -95,6 +95,7 @@ class AppConstants {
   static const String gallery = 'gallery';
   static const String galleryDetail = 'gallery_detail';
   static const String galleryVideos = 'get-videos';
+  static const String getImportantDownloads = 'get-important-downloads';
 
   /// TODO: Support
   static const String support = 'support';
@@ -139,6 +140,7 @@ class SPConstants {
   static const String pptLink = 'pptLink';
   static const String videoLink = 'videoLink';
   static const String videoLanguage = 'videoLanguage';
+  static const String filesLanguage = 'filesLanguage';
 
   static const String ratingScheduleDate = 'RatingScheduleDate';
 
