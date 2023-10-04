@@ -10,6 +10,7 @@ class UserData {
   String? customerName;
   String? salesActive;
   String? salesActiveDate;
+  String? first_active_date;
   String? binaryStatus;
   String? bsCheck;
   String? binaryPer;
@@ -134,6 +135,7 @@ class UserData {
   String? mybizzWithdraw;
   String? bizzcareerAccess;
   String? bizzcareerExpireDate;
+  String? expiryDate;
   String? loginToken;
   String? fcmToken;
   String? deviceId;
@@ -183,6 +185,8 @@ class UserData {
     this.customerName,
     this.salesActive,
     this.salesActiveDate,
+    this.first_active_date,
+    this.expiryDate,
     this.binaryStatus,
     this.bsCheck,
     this.binaryPer,
@@ -359,6 +363,8 @@ class UserData {
       customerName = json['customer_name'];
       salesActive = json['sales_active'];
       salesActiveDate = json['sales_active_date'];
+      first_active_date = json['first_active_date'];
+      expiryDate = json['expire_date'];
       binaryStatus = json['binary_status'];
       bsCheck = json['bs_check'];
       binaryPer = json['binary_per'];
@@ -543,6 +549,8 @@ class UserData {
     data['customer_name'] = this.customerName;
     data['sales_active'] = this.salesActive;
     data['sales_active_date'] = this.salesActiveDate;
+    data['first_active_date'] = this.first_active_date;
+    data['expire_date'] = this.expiryDate;
     data['binary_status'] = this.binaryStatus;
     data['bs_check'] = this.bsCheck;
     data['binary_per'] = this.binaryPer;

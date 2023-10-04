@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/providers/web_view_provider.dart';
+import 'package:mycarclub/screens/drawerPages/event_tickets/event_tickets_page.dart';
 import '/screens/youtube_video_play_widget.dart';
 import 'package:video_player/video_player.dart';
 import '/database/my_notification_setup.dart';
@@ -121,6 +123,8 @@ class _MyCarClubState extends State<MyCarClub> {
           ChangeNotifierProvider(
               create: (context) => sl.get<CardPaymentProvider>()),
           ChangeNotifierProvider(create: (context) => sl.get<PlayerProvider>()),
+          ChangeNotifierProvider(
+              create: (context) => sl.get<WebViewProvider>()),
         ],
         child: Builder(builder: (context) {
           errorLog('time3 $time', 'timer---');
@@ -141,6 +145,7 @@ class _MyCarClubState extends State<MyCarClub> {
               MainPage.routeName: (_) => MainPage(),
               LoginScreen.routeName: (_) => LoginScreen(),
               InboxScreen.routeName: (_) => InboxScreen(),
+              EventTicketsPage.routeName: (_) => EventTicketsPage(),
               ForgotPasswordScreen.routeName: (_) => ForgotPasswordScreen(),
               UpdateAppPage.routeName: (_) => UpdateAppPage(),
               SubscriptionPage.routeName: (_) => SubscriptionPage(),

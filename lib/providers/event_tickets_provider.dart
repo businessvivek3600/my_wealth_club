@@ -17,7 +17,7 @@ import '../database/repositories/event_tickets_repo.dart';
 class EventTicketsProvider extends ChangeNotifier {
   final EventTicketRepo eventTicketRepo;
   EventTicketsProvider({required this.eventTicketRepo});
-  List<EventTickets> myEvents = [];
+  List<EventTickets> eventsList = [];
   List<EventTicketsRequests> ticketRequests = [];
   Map<String, dynamic> paymentTypes = {};
   double walletBalance = 0.0;
@@ -70,8 +70,8 @@ class EventTicketsProvider extends ChangeNotifier {
               map['events'] != false &&
               map['events'].isNotEmpty) {
             map['events'].forEach((e) => _events.add(EventTickets.fromJson(e)));
-            myEvents.clear();
-            myEvents = _events;
+            eventsList.clear();
+            eventsList = _events;
             notifyListeners();
           }
         } catch (e) {
@@ -159,7 +159,7 @@ class EventTicketsProvider extends ChangeNotifier {
       required String event_id}) async {
     try {
       if (isOnline) {
-        showLoading(userRootNavigator: true);
+        showLoading(useRootNavigator: true);
         ApiResponse apiResponse = await eventTicketRepo.buyTicketSubmit({
           'event_id': event_id,
           'amount': amount,
@@ -201,7 +201,7 @@ class EventTicketsProvider extends ChangeNotifier {
   }
 
   clear() {
-    myEvents.clear();
+    eventsList.clear();
     ticketRequests.clear();
     paymentTypes.clear();
     amountController.clear();

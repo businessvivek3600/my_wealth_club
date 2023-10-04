@@ -67,13 +67,7 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
                   opacity: 1),
             ),
             child: provider.loadingDownloadFiles
-                ? Center(
-                    child: Container(
-                        height: 20,
-                        width: 20,
-                        margin: EdgeInsets.only(right: 10),
-                        child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 1)))
+                ? Center(child: CircularProgressIndicator(color: Colors.white))
                 : provider.downloadFiles.length > 0
                     ? buildFilesList(provider, context)
                     : Center(

@@ -207,7 +207,7 @@ class CashWalletProvider extends ChangeNotifier {
   Future<void> coinPaymentSubmit(String paymentType) async {
     try {
       if (isOnline) {
-        showLoading(userRootNavigator: true);
+        showLoading(useRootNavigator: true);
         ApiResponse apiResponse = await cashWalletRepo.coinPaymentSubmit({
           'payment_type': paymentType,
           'amount': amountController.text,
@@ -249,7 +249,7 @@ class CashWalletProvider extends ChangeNotifier {
   Future<void> transferCashToOther(String user, String amount) async {
     try {
       if (isOnline) {
-        showLoading(userRootNavigator: true);
+        showLoading(useRootNavigator: true);
         ApiResponse apiResponse = await cashWalletRepo
             .transferCashToOther({'username': user, 'amount': amount});
         Get.back();

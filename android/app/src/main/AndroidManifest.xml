@@ -58,10 +58,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="tycbm-alternate.app.link" />
-                <data android:scheme="https" android:host="tycbm.app.link" />
-                <data android:scheme="https" android:host="tycbm-alternate.test-app.linkk" />
-                <data android:scheme="https" android:host="tycbm.test-app.link" />
+                <data android:scheme="https" android:host="g0jyw-alternate.app.link" />
+                <data android:scheme="https" android:host="g0jyw.app.link" />
+                <data android:scheme="https" android:host="g0jyw-alternate.test-app.link" />
+                <data android:scheme="https" android:host="g0jyw.test-app.link" />
             </intent-filter>
 
             <intent-filter>
@@ -77,8 +77,8 @@
         </activity>
 
        <!--    branch io-->
-       <meta-data android:name="io.branch.sdk.BranchKey" android:value="key_live_lrdjQ0TDkksZCsrP3B5HFdemzBlZ8Jcl" />
-       <meta-data android:name="io.branch.sdk.BranchKey.test" android:value="key_test_cuneM0Krcfw5CECS5qXLOboeuqfZ9QlB" />
+       <meta-data android:name="io.branch.sdk.BranchKey" android:value="key_live_hslxnJYp1Pb7gKnEqh0ZgedhtrgI7CKm" />
+       <meta-data android:name="io.branch.sdk.BranchKey.test" android:value="key_test_cCasbR1e6QjWiSaBFgXXshhizvcT1ANv" />
        <meta-data android:name="io.branch.sdk.TestMode" android:value="false" />
        <meta-data android:name="branch_enable_log" android:value="true" />
 

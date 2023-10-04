@@ -151,19 +151,20 @@ class _BuyEventTicketState extends State<BuyEventTicket>
             ),
           ),
           Positioned(
-              bottom: 10,
-              right: 10,
-              child: Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: appLogoColor),
-                child: GestureDetector(
-                    onTap: () => removeOverlay(),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child:
-                          Icon(Icons.zoom_in_map_rounded, color: Colors.white),
-                    )),
-              ))
+            bottom: 10,
+            right: 10,
+            child: Container(
+              decoration:
+                  BoxDecoration(shape: BoxShape.circle, color: appLogoColor),
+              child: GestureDetector(
+                onTap: () => removeOverlay(),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Icon(Icons.zoom_in_map_rounded, color: Colors.white),
+                ),
+              ),
+            ),
+          )
         ],
       );
     });

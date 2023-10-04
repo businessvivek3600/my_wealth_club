@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:graphview/GraphView.dart';
@@ -41,6 +42,15 @@ class _MyTreeViewPageState extends State<MyTreeViewPage> {
       ..siblingSeparation = 5
       ..levelSeparation = 20
       ..orientation = SugiyamaConfiguration.DEFAULT_ORIENTATION;
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+  }
+
+  @override
+  void dispose() {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+    super.dispose();
   }
 
   @override

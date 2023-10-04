@@ -36,6 +36,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'database/dio/dio/logging_interceptor.dart';
 import 'database/repositories/support_repo.dart';
+import 'providers/web_view_provider.dart';
 
 final sl = GetIt.I;
 Future<void> initRepos() async {
@@ -154,6 +155,9 @@ Future<void> initRepos() async {
   }
   if (!sl.isRegistered<PlayerProvider>()) {
     sl.registerLazySingleton(() => PlayerProvider());
+  }
+  if (!sl.isRegistered<WebViewProvider>()) {
+    sl.registerLazySingleton(() => WebViewProvider());
   }
 
   // External

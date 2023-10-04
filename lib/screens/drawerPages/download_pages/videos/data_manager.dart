@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:mycarclub/screens/drawerPages/subscription/subscription_page.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/sl_container.dart';
@@ -121,18 +122,26 @@ Future<String> getUrlString(url, BuildContext context) async {
 
 showAlertDialog(BuildContext context) {
   AwesomeDialog(
-          dialogType: DialogType.error,
-          context: context,
-          headerAnimationLoop: false,
-          title: 'Error',
-          desc: 'This video can\'t be played.\nSome thing went wrong!',
-          bodyHeaderDistance: 0,
-          padding: EdgeInsets.zero,
-          customHeader:
-              Container(child: Icon(Icons.error, size: 40, color: Colors.red)),
-          btnOkText: 'Okay',
-          btnOkOnPress: () {})
-      .show();
+      dialogType: DialogType.error,
+      context: context,
+      headerAnimationLoop: false,
+      title: 'Error',
+      desc: 'You don\'t have any subscription.\nPlease add a subscription.',
+      // desc: 'This video can\'t be played.\nSome thing went wrong!',
+      bodyHeaderDistance: 0,
+      padding: EdgeInsets.zero,
+      customHeader:
+          Container(child: Icon(Icons.error, size: 40, color: Colors.red)),
+      btnOkText: 'Subscribe Now',
+      btnCancelText: 'Later',
+      btnCancelOnPress: () {},
+      btnOkOnPress: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    SubscriptionPage(initPurchaseDialog: true)));
+      }).show();
   // AlertDialog alert = AlertDialog(
   //   title: const Text("Alert"),
   //   content: const Text("Some thing wrong with this url"),

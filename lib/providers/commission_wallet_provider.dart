@@ -209,7 +209,7 @@ class CommissionWalletProvider extends ChangeNotifier {
     // notifyListeners();
     try {
       if (isOnline) {
-        showLoading(userRootNavigator: true);
+        showLoading(useRootNavigator: true);
         ApiResponse apiResponse =
             await commissionWalletRepo.commissionWithdrawRequestSubmit({
           'wallet_type': walletType,

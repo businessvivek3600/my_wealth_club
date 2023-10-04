@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/model/response/trade_idea_model.dart';
+import 'package:provider/provider.dart';
+import '../../providers/dashboard_provider.dart';
+import '../../sl_container.dart';
 import '/constants/assets_constants.dart';
 import '/utils/color.dart';
 import '/database/functions.dart';
@@ -19,40 +25,99 @@ class CompanyTradeIdeasPage extends StatefulWidget {
 }
 
 class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
+  var provider = sl.get<DashBoardProvider>();
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    provider.getTradeIdea();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() => _loadMore(sl.get<DashBoardProvider>()));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    provider.tradeIdeaPage = 0;
+    provider.tradeIdeas.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: titleLargeText('Company Trade Ideas', context,
-              color: Colors.white, useGradient: true),
-          actions: [assetImages(Assets.appLogo_S, width: 30), width10()],
-        ),
-        body: Container(
-          height: double.maxFinite,
-          width: double.maxFinite,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-                image: userAppBgImageProvider(context),
-                fit: BoxFit.cover,
-                opacity: 1),
+    return Consumer<DashBoardProvider>(builder: (context, provider, _) {
+      return Scaffold(
+          appBar: AppBar(
+            title: titleLargeText('Company Trade Ideas', context,
+                color: Colors.white, useGradient: true),
+            actions: [assetImages(Assets.appLogo_S, width: 30), width10()],
           ),
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            itemCount: 10,
-            itemBuilder: (context, index) {
-              return _TradeTile(index: index);
-            },
-          ),
-        ));
+          body: Container(
+            height: double.maxFinite,
+            width: double.maxFinite,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: userAppBgImageProvider(context),
+                  fit: BoxFit.cover,
+                  opacity: 1),
+            ),
+            child: RefreshIndicator(
+              onRefresh: _refresh,
+              child: ListView(
+                controller: _scrollController,
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                children: [
+                  ...provider.tradeIdeas
+                      .map((trade) => _TradeTile(trade: trade)),
+                  if (provider.loadingTradeIdeas)
+                    Container(
+                        padding: const EdgeInsets.all(20),
+                        height: provider.tradeIdeas.length == 0
+                            ? Get.height -
+                                kToolbarHeight -
+                                kBottomNavigationBarHeight
+                            : 100,
+                        child: const Center(
+                            child: CircularProgressIndicator(
+                                color: Colors.white))),
+                ],
+              ),
+            ),
+          ));
+    });
+  }
+
+  Future<bool> _loadMore(DashBoardProvider provider) async {
+    if (_scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent &&
+        _scrollController.position.userScrollDirection ==
+            ScrollDirection.reverse &&
+        !provider.loadingTradeIdeas) {
+      bool isFinished = provider.tradeIdeas.length == provider.totalTradeIdeas;
+      if (isFinished) {
+        Fluttertoast.showToast(msg: "No more data");
+        return false;
+      }
+      print("my trade ,onLoadMore");
+      await provider.getTradeIdea();
+    }
+    return true;
+  }
+
+  Future<void> _refresh() async {
+    print("my Incomes ,onRefresh");
+    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
+    provider.tradeIdeaPage = 0;
+    await provider.getTradeIdea();
   }
 }
 
 class _TradeTile extends StatelessWidget {
   _TradeTile({
     super.key,
-    required this.index,
+    required this.trade,
   });
-  final int index;
+  final TradeIdeaModel trade;
   final controller = FlipCardController();
   flip() {
     controller.flipcard();
@@ -66,7 +131,7 @@ class _TradeTile extends StatelessWidget {
       child: Stack(
         children: [
           GestureDetector(
-            onTap: () => Get.to(() => SignalDetail()),
+            onTap: () => Get.to(() => SignalDetail(trade: trade)),
             // onDoubleTap: () => Get.to(() => SignalDetail()),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(5),
@@ -77,7 +142,7 @@ class _TradeTile extends StatelessWidget {
                 rotateSide: RotateSide.left,
                 // enableController: false,
                 onTapFlipping: false,
-                frontWidget: frontCard(bColor, context, tColor),
+                frontWidget: frontCard(trade, bColor, context, tColor),
                 backWidget: backCard(bColor, context, tColor),
               ),
             ),
@@ -174,7 +239,8 @@ class _TradeTile extends StatelessWidget {
     );
   }
 
-  Stack frontCard(Color bColor, BuildContext context, Color tColor) {
+  Stack frontCard(
+      TradeIdeaModel trade, Color bColor, BuildContext context, Color tColor) {
     return Stack(
       children: [
         Container(
@@ -198,7 +264,7 @@ class _TradeTile extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          titleLargeText('USD/JPY', context,
+                          titleLargeText(trade.market ?? '', context,
                               color: tColor, useGradient: true, fontSize: 23),
                           width5(),
                           SpinKitPulse(
@@ -208,27 +274,33 @@ class _TradeTile extends StatelessWidget {
                         ],
                       ),
                       width5(),
-                      titleLargeText('190.000', context, color: appLogoColor),
+                      titleLargeText(
+                          double.parse(trade.entry ?? '0').toStringAsFixed(2),
+                          context,
+                          color: appLogoColor),
                     ],
                   ),
                   height10(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          assetImages(Assets.candleStick, width: 15),
-                          width5(),
-                          capText(
-                            formatDate(DateTime.parse('2023-08-05 12:36:67'),
-                                    'yyyy-MM-ddTHH:mm:ss.SSS Z') +
-                                ' ' +
-                                'GMT+1',
-                            context,
-                            color: Color.fromARGB(255, 169, 175, 179),
-                          ),
-                        ],
-                      ),
+                      if (trade.date != null && trade.time != null)
+                        Row(
+                          children: [
+                            assetImages(Assets.candleStick, width: 15),
+                            width5(),
+                            capText(
+                              formatDate(
+                                      DateTime.parse(
+                                          trade.date! + ' ' + trade.time!),
+                                      'dd MMM yyyy hh:mm:ss a') +
+                                  '  ' +
+                                  '(GMT+1)',
+                              context,
+                              color: Color.fromARGB(255, 169, 175, 179),
+                            ),
+                          ],
+                        ),
                       width10(),
                       Row(
                         children: [
@@ -237,7 +309,8 @@ class _TradeTile extends StatelessWidget {
                               size: 15),
                           width5(),
                           capText(
-                            '109.678',
+                            double.parse(trade.stopLoss ?? '0')
+                                .toStringAsFixed(2),
                             context,
                             color: Color.fromARGB(249, 241, 224, 224),
                           ),
@@ -261,10 +334,10 @@ class _TradeTile extends StatelessWidget {
             return Container(
               width: 5,
               decoration: BoxDecoration(
-                  color: index % 3 == 0 ? color1 : color2,
+                  color: trade.status == '1' ? color1 : color2,
                   boxShadow: [
                     BoxShadow(
-                      color: index % 3 == 0 ? color1 : color2,
+                      color: trade.status == '1' ? color1 : color2,
                       spreadRadius: 1,
                       blurRadius: 50,
                       offset: Offset(0, 0.5), // changes position of shadow
@@ -331,6 +404,8 @@ class CustomClipPathTopContainerOne extends CustomClipper<Path> {
 }
 
 class SignalDetail extends StatefulWidget {
+  SignalDetail({super.key, required this.trade});
+  final TradeIdeaModel trade;
   @override
   _SignalDetailState createState() => _SignalDetailState();
 }
@@ -338,6 +413,8 @@ class SignalDetail extends StatefulWidget {
 class _SignalDetailState extends State<SignalDetail> {
   @override
   Widget build(BuildContext context) {
+    bool active = widget.trade.status == '1';
+    bool isBuy = (widget.trade.direction ?? '').toLowerCase() == 'buy';
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -380,26 +457,31 @@ class _SignalDetailState extends State<SignalDetail> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          titleLargeText(' USD/JPY', context,
+                          titleLargeText(widget.trade.market ?? '', context,
                               useGradient: true, fontSize: 23),
                         ],
                       ),
                       height10(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          assetImages(Assets.candleStick, width: 15),
-                          width5(),
-                          capText(
-                            formatDate(DateTime.parse('2023-08-05 12:36:67'),
-                                    'dd MMM yyyy h:m a') +
-                                ' ' +
-                                '(GMT+1)',
-                            context,
-                            color: Color.fromARGB(255, 169, 175, 179),
-                          ),
-                        ],
-                      ),
+                      if (widget.trade.date != null &&
+                          widget.trade.time != null)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            assetImages(Assets.candleStick, width: 15),
+                            width5(),
+                            capText(
+                              formatDate(
+                                      DateTime.parse(widget.trade.date! +
+                                          ' ' +
+                                          widget.trade.time!),
+                                      'dd MMM yyyy hh:mm:ss a') +
+                                  '  ' +
+                                  '(GMT+1)',
+                              context,
+                              color: Color.fromARGB(255, 169, 175, 179),
+                            ),
+                          ],
+                        ),
                       height20(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -407,11 +489,16 @@ class _SignalDetailState extends State<SignalDetail> {
                           bodyLargeText('ENTRY:', context, useGradient: false),
                           Row(
                             children: [
-                              bodyLargeText('190.000', context,
-                                  useGradient: false, color: appLogoColor),
+                              bodyLargeText(
+                                  double.parse(widget.trade.entry ?? '0')
+                                      .toStringAsFixed(2),
+                                  context,
+                                  useGradient: false,
+                                  color: appLogoColor),
                               width5(),
                               GestureDetector(
-                                onTap: () => copyToClipboard('Entry: 190.000'),
+                                onTap: () => copyToClipboard(
+                                    'Entry: ${double.parse(widget.trade.entry ?? '0').toStringAsFixed(2)}'),
                                 child: Icon(Icons.copy_all_rounded,
                                     color: Color.fromARGB(249, 241, 224, 224),
                                     size: 15),
@@ -428,12 +515,16 @@ class _SignalDetailState extends State<SignalDetail> {
                               useGradient: false),
                           Row(
                             children: [
-                              bodyLargeText('108.500', context,
-                                  useGradient: false, color: appLogoColor),
+                              bodyLargeText(
+                                  double.parse(widget.trade.stopLoss ?? '0')
+                                      .toStringAsFixed(2),
+                                  context,
+                                  useGradient: false,
+                                  color: appLogoColor),
                               width5(),
                               GestureDetector(
-                                onTap: () =>
-                                    copyToClipboard('Stop Loss: 190.000'),
+                                onTap: () => copyToClipboard(
+                                    'Stop Loss: ${double.parse(widget.trade.stopLoss ?? '0').toStringAsFixed(2)}'),
                                 child: Icon(Icons.copy_all_rounded,
                                     color: Color.fromARGB(249, 241, 224, 224),
                                     size: 15),
@@ -450,12 +541,16 @@ class _SignalDetailState extends State<SignalDetail> {
                               useGradient: false),
                           Row(
                             children: [
-                              bodyLargeText('109.100', context,
-                                  useGradient: false, color: appLogoColor),
+                              bodyLargeText(
+                                  double.parse(widget.trade.tP1 ?? '0')
+                                      .toStringAsFixed(2),
+                                  context,
+                                  useGradient: false,
+                                  color: appLogoColor),
                               width5(),
                               GestureDetector(
-                                onTap: () =>
-                                    copyToClipboard('Take Profit : 190.000'),
+                                onTap: () => copyToClipboard(
+                                    'Take Profit : ${double.parse(widget.trade.tP1 ?? '0').toStringAsFixed(2)}'),
                                 child: Icon(Icons.copy_all_rounded,
                                     color: Color.fromARGB(249, 241, 224, 224),
                                     size: 15),
@@ -470,8 +565,12 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('TAKE PROFIT 2:', context,
                               useGradient: false),
-                          bodyLargeText('109.400', context,
-                              useGradient: false, color: appLogoColor),
+                          bodyLargeText(
+                              double.parse(widget.trade.tP2 ?? '0')
+                                  .toStringAsFixed(2),
+                              context,
+                              useGradient: false,
+                              color: appLogoColor),
                         ],
                       ),
                       height10(),
@@ -480,8 +579,12 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('TAKE PROFIT 3:', context,
                               useGradient: false),
-                          bodyLargeText('109.700', context,
-                              useGradient: false, color: appLogoColor),
+                          bodyLargeText(
+                              double.parse(widget.trade.tP3 ?? '0')
+                                  .toStringAsFixed(2),
+                              context,
+                              useGradient: false,
+                              color: appLogoColor),
                         ],
                       ),
                       height10(),
@@ -490,8 +593,12 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('TAKE PROFIT 4:', context,
                               useGradient: false),
-                          bodyLargeText('110.000', context,
-                              useGradient: false, color: appLogoColor),
+                          bodyLargeText(
+                              double.parse(widget.trade.tP4 ?? '0')
+                                  .toStringAsFixed(2),
+                              context,
+                              useGradient: false,
+                              color: appLogoColor),
                         ],
                       ),
                       height10(),
@@ -500,8 +607,12 @@ class _SignalDetailState extends State<SignalDetail> {
                         children: [
                           bodyLargeText('TAKE PROFIT 5:', context,
                               useGradient: false),
-                          bodyLargeText('110.000', context,
-                              useGradient: false, color: appLogoColor),
+                          bodyLargeText(
+                              double.parse(widget.trade.tP5 ?? '0')
+                                  .toStringAsFixed(2),
+                              context,
+                              useGradient: false,
+                              color: appLogoColor),
                         ],
                       ),
                       height10(),
@@ -509,23 +620,25 @@ class _SignalDetailState extends State<SignalDetail> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           bodyLargeText('STATUS:', context, useGradient: false),
-                          bodyLargeText('Active', context,
-                              useGradient: false, color: Colors.green),
+                          bodyLargeText(
+                              active ? 'Active' : 'De-Active', context,
+                              useGradient: false,
+                              color: active ? Colors.green : Colors.red),
                         ],
                       ),
                       height30(),
                       bodyMedText('Updates', context,
                           decoration: TextDecoration.underline),
                       height10(),
-                      capText('New update from market', context,
+                      capText(widget.trade.updates ?? '', context,
                           color: Color.fromARGB(255, 169, 175, 179)),
                     ],
                   ),
 
                   // up down arrow signal
                   Positioned(
-                    child: assetSvg(Assets.arrowOut,
-                        color: Colors.green, width: 30),
+                    child: assetSvg(isBuy ? Assets.arrowOut : Assets.arrowIn,
+                        color: isBuy ? Colors.green : Colors.red, width: 30),
                     right: 0,
                     top: 0,
                   ),

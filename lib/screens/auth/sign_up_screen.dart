@@ -56,6 +56,7 @@ class _SignUpScreenState extends State<SignUpScreen>
   bool haveReferer = false;
   bool acceptedTerms = false;
   bool acceptedDisclaimer = false;
+  bool above18 = false;
 
   var provider = sl.get<AuthProvider>();
   @override
@@ -267,6 +268,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                 contentPadding: EdgeInsets.all(0),
               ),
               height20(height * 0.01),
+
+              //placement id
+              /*
               fieldTitle('Placement Id'),
               Row(
                 children: <Widget>[
@@ -294,6 +298,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+*/
               fieldTitle('Username'),
               Row(
                 children: <Widget>[
@@ -361,6 +366,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+              //last name
+              /*
               Row(
                 children: [
                   Expanded(
@@ -394,12 +401,14 @@ class _SignUpScreenState extends State<SignUpScreen>
                             ),
                           ],
                         ),
+                        height20(height * 0.01),
+                      
                       ],
                     ),
                   ),
                 ],
               ),
-              height20(height * 0.01),
+              */
               fieldTitle('Password'),
               Row(
                 children: <Widget>[
@@ -425,6 +434,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+              //confirm password
+              /*
               fieldTitle('Confirm Password'),
               Row(
                 children: <Widget>[
@@ -453,6 +464,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+              */
+              //country
+              /*
               CompositedTransformTarget(
                 link: this._layerLink,
                 child: GestureDetector(
@@ -526,6 +540,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+              */
+              //phone
+              /*
               fieldTitle('Mobile No.'),
               Row(
                 children: <Widget>[
@@ -545,6 +562,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+              */
+
               fieldTitle('Email'),
               Row(
                 children: <Widget>[
@@ -576,6 +595,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                 ],
               ),
               height20(height * 0.01),
+              //terms and condition
               Row(
                 children: [
                   Checkbox(
@@ -621,6 +641,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ))
                 ],
               ),
+              // disclaimer
               Row(
                 children: [
                   Checkbox(
@@ -666,6 +687,39 @@ class _SignUpScreenState extends State<SignUpScreen>
                   ))
                 ],
               ),
+
+              // above 18
+              Row(
+                children: [
+                  Checkbox(
+                    value: above18,
+                    side: BorderSide(color: Colors.white),
+                    shape: RoundedRectangleBorder(
+                        side: BorderSide(color: Colors.white70),
+                        borderRadius: BorderRadius.circular(5)),
+                    checkColor: appLogoColor,
+                    activeColor: Colors.white,
+                    onChanged: (val) => setState(() => above18 = !above18),
+                  ),
+                  width10(),
+                  Expanded(
+                      child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                              text:
+                                  "I am over 18 years old and I agree to the terms and conditions.",
+                              children: []),
+                        ),
+                      ),
+                    ],
+                  ))
+                ],
+              ),
+
+              //register button
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -687,19 +741,18 @@ class _SignUpScreenState extends State<SignUpScreen>
                                               username: _userNameController.text
                                                   .trim(),
                                               fName: _firstNameController.text,
-                                              lName: _lastNameController.text,
+                                              lName: '',
                                               spassword:
                                                   _passwordController.text,
                                               confirm_password:
                                                   _confirmPasswordController
                                                       .text,
-                                              phone: _phoneController.text,
+                                              phone: '',
                                               email: _emailController.text,
                                               sponser_username:
                                                   _sUserNameController.text,
-                                              placement_username:
-                                                  _pUserNameController.text,
-                                              country_code: signUpCountry?.id,
+                                              placement_username: '',
+                                              country_code: '',
                                               device_id: '24wrr',
                                             ));
                                         // _formKey.currentState?.validate();

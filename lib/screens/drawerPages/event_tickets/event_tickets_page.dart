@@ -28,6 +28,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 class EventTicketsPage extends StatefulWidget {
   const EventTicketsPage({Key? key}) : super(key: key);
+  static const String routeName = '/eventTicketsPage';
 
   @override
   State<EventTicketsPage> createState() => _EventTicketsPageState();
@@ -48,6 +49,12 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
   }
 
   @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Color tColor = Colors.white;
     return Consumer<EventTicketsProvider>(
@@ -63,7 +70,7 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                 image: DecorationImage(
                     image: userAppBgImageProvider(context),
                     fit: BoxFit.cover,
-                    opacity: 0.5)),
+                    opacity: 1)),
             child: SmartRefresher(
               enablePullDown: true,
               enablePullUp: false,
@@ -94,7 +101,7 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                       child: Container(
                     height: Get.height * 0.3,
                     child: (provider.loadingMyTickets ||
-                            provider.myEvents.isNotEmpty)
+                            provider.eventsList.isNotEmpty)
                         // ? buildEventsList(provider)
                         ? EventCards()
                         : buildNoEvents(context),
@@ -295,7 +302,7 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
       scrollDirection: Axis.horizontal,
       children: <Widget>[
         if (!provider.loadingMyTickets)
-          ...provider.myEvents.map((e) => GestureDetector(
+          ...provider.eventsList.map((e) => GestureDetector(
                 onTap: () {
                   provider.buyEventTicketsRequest(e.id ?? '');
                   Get.to(BuyEventTicket(event: e));
@@ -304,9 +311,8 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                 //   tag: '${e.eventName}+${e.eventBanner}',
                 child: Container(
                   margin: EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
+                  decoration:
+                      BoxDecoration(borderRadius: BorderRadius.circular(5)),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(5),
                     child: Stack(
@@ -401,7 +407,7 @@ class EventCards extends StatelessWidget {
         return CarouselSlider(
             items: <Widget>[
               if (!provider.loadingMyTickets)
-                ...provider.myEvents.map((e) => GestureDetector(
+                ...provider.eventsList.map((e) => GestureDetector(
                     onTap: () =>
                         checkServiceEnableORDisable('mobile_is_event', () {
                           provider.buyEventTicketsRequest(e.id ?? '');
@@ -487,6 +493,9 @@ class EventDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     print(request.toJson());
     return Scaffold(
+      appBar: AppBar(
+        title: bodyLargeText(request.name ?? '', context),
+      ),
       body: ListView(
         padding: EdgeInsets.zero,
         children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/utils/app_default_loading.dart';
 import '/database/functions.dart';
 import '/database/model/response/subscription_history_model.dart';
 import '/providers/auth_provider.dart';
@@ -9,7 +10,6 @@ import '/screens/drawerPages/subscription/subscription_requests_history_page.dar
 import '/sl_container.dart';
 import 'package:provider/provider.dart';
 
-import '../../../constants/assets_constants.dart';
 import '../../../utils/color.dart';
 import '../../../utils/sizedbox_utils.dart';
 import '../../../utils/picture_utils.dart';
@@ -29,10 +29,17 @@ class SubscriptionPage extends StatefulWidget {
 class _SubscriptionPageState extends State<SubscriptionPage> {
   @override
   void initState() {
+    // if (widget.initPurchaseDialog) {
+    //   showLoading(context: context, dismissable: true);
+    // }
     sl.get<SubscriptionProvider>().getSubscription(false).then((value) {
       if (widget.initPurchaseDialog) {
-        Get.dialog(const SubscriptionPurchaseDialog(),
-            barrierColor: Colors.transparent);
+        // hideLoading(context: context);
+        showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => SubscriptionPurchaseDialog());
       }
     });
     super.initState();
@@ -88,8 +95,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                         child: ElevatedButton(
                             onPressed: () => checkServiceEnableORDisable(
                                     'mobile_is_subscription', () {
-                                  Get.dialog(
-                                      const SubscriptionPurchaseDialog());
+                                  showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder: (_) =>
+                                          SubscriptionPurchaseDialog());
+                                  // Get.dialog(
+                                  //     const SubscriptionPurchaseDialog());
                                 }),
                             child: Text('Purchase')),
                       ),
@@ -112,18 +125,24 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  Get.dialog(const SubscriptionPurchaseDialog(),
-                      // enterBottomSheetDuration: const Duration(milliseconds: 200),
-                      // enableDrag: false,
-                      barrierColor: Colors.transparent
-                      // isDismissible: false,
-                      );
+                  showBottomSheet(
+                      context: context,
+                      builder: (_) => Container(
+                            height: 300,
+                            color: Colors.white,
+                          ));
+                  // Get.bottomSheet(const SubscriptionPurchaseDialog(),
+                  // enterBottomSheetDuration: const Duration(milliseconds: 200),
+                  // enableDrag: false,
+                  // isScrollControlled: true,
+                  // barrierColor: Colors.transparent
+                  // isDismissible: false,
+                  // );
                 },
-                style:
-                    ElevatedButton.styleFrom(backgroundColor: appLogoColor),
+                style: ElevatedButton.styleFrom(backgroundColor: appLogoColor),
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 30.0),
-                  child: Text('Purchase'),
+                  child: Text('Purchasee'),
                 )),
           ],
         ));
@@ -134,38 +153,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       sliver: (!provider.loadingSub && provider.history.isEmpty)
-          ? SliverToBoxAdapter(
-              child: SizedBox(
-                height: Get.height - kToolbarHeight * 4,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    titleLargeText(
-                        'You have not purchased any subscription.', context,
-                        textAlign: TextAlign.center),
-                    height10(),
-                    bodyLargeText('Please explore our products', context),
-                    height10(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 30),
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  Get.dialog(
-                                      const SubscriptionPurchaseDialog());
-                                },
-                                child: Text('Purchase')),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            )
+          ? buildEmptyList()
           : SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -178,124 +166,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: !provider.loadingSub
-                          ? ExpansionTile(
-                              title: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  titleLargeText(
-                                      '$currency_icon${history.packageAmount}',
-                                      context),
-                                  width20(),
-                                  Expanded(
-                                    child: bodyLargeText(
-                                      (history.packageName ?? ''),
-                                      context,
-                                      textAlign: TextAlign.end,
-                                      // style: TextStyle(
-                                      //     fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              subtitle: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: <Widget>[
-                                  capText(
-                                    DateFormat().add_yMMMEd().format(
-                                        DateTime.parse(
-                                            history.createdAt ?? '')),
-                                    context,
-                                    textAlign: TextAlign.center,
-                                    // style: TextStyle(
-                                    //     fontWeight: FontWeight.bold),
-                                  ),
-                                  width20(),
-                                  capText(
-                                    DateFormat().add_jm().format(DateTime.parse(
-                                        history.createdAt ?? '')),
-                                    context,
-                                    textAlign: TextAlign.center,
-                                    // style: TextStyle(
-                                    //     fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              collapsedBackgroundColor: Colors.white24,
-                              backgroundColor: Colors.white24,
-                              iconColor: Colors.white,
-                              textColor: Colors.white,
-                              collapsedTextColor: Colors.white54,
-                              collapsedIconColor: Colors.white,
-                              // initiallyExpanded: true,
-                              children: [
-                                Container(
-                                  // height: 100,
-                                  width: double.maxFinite,
-                                  padding: EdgeInsets.all(8),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white10,
-                                    borderRadius: BorderRadius.only(
-                                      bottomLeft: Radius.circular(10),
-                                      bottomRight: Radius.circular(10),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: bodyLargeText(
-                                              '${history.packageName ?? ''}',
-                                              context,
-                                              // color: index % 2 == 0
-                                              //     ? yearlyPackColor
-                                              //     : monthlyPackColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      // titleLargeText('\$35', context),
-                                      height5(),
-                                      Row(
-                                        children: [
-                                          capText('Order ID:', context),
-                                          width10(),
-                                          capText(
-                                              history.invoiceId ??
-                                                  history.stripeInvNo ??
-                                                  '',
-                                              context,
-                                              fontWeight: FontWeight.bold),
-                                        ],
-                                      ),
-                                      height5(),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: bodyLargeText(
-                                              history.paymentType ?? '',
-                                              context,
-                                              // color: history.packageName != 'Monthly Pack'
-                                              //     ? yearlyPackColor
-                                              //     : monthlyPackColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            )
+                          ? buildListItem(currency_icon, history, context)
                           : Skeleton(
                               height: 50,
                               width: double.maxFinite,
-                              textColor: Colors.white54,
-                            ),
+                              textColor: Colors.white54),
                     ),
                   );
                 },
@@ -375,6 +250,153 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
+  ExpansionTile buildListItem(
+      String currency_icon, SubscriptionHistory history, BuildContext context) {
+    return ExpansionTile(
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          titleLargeText('$currency_icon${history.packageAmount}', context),
+          width20(),
+          Expanded(
+            child: bodyLargeText(
+              (history.packageName ?? ''),
+              context,
+              textAlign: TextAlign.end,
+              // style: TextStyle(
+              //     fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      subtitle: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          capText(
+            DateFormat()
+                .add_yMMMEd()
+                .format(DateTime.parse(history.createdAt ?? '')),
+            context,
+            textAlign: TextAlign.center,
+            // style: TextStyle(
+            //     fontWeight: FontWeight.bold),
+          ),
+          width20(),
+          capText(
+            DateFormat()
+                .add_jm()
+                .format(DateTime.parse(history.createdAt ?? '')),
+            context,
+            textAlign: TextAlign.center,
+            // style: TextStyle(
+            //     fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      collapsedBackgroundColor: Colors.white24,
+      backgroundColor: Colors.white24,
+      iconColor: Colors.white,
+      textColor: Colors.white,
+      collapsedTextColor: Colors.white54,
+      collapsedIconColor: Colors.white,
+      // initiallyExpanded: true,
+      children: [
+        Container(
+          // height: 100,
+          width: double.maxFinite,
+          padding: EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Colors.white10,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: bodyLargeText(
+                      '${history.packageName ?? ''}',
+                      context,
+                      // color: index % 2 == 0
+                      //     ? yearlyPackColor
+                      //     : monthlyPackColor,
+                    ),
+                  ),
+                ],
+              ),
+              // titleLargeText('\$35', context),
+              height5(),
+              Row(
+                children: [
+                  capText('Order ID:', context),
+                  width10(),
+                  capText(
+                      history.invoiceId ?? history.stripeInvNo ?? '', context,
+                      fontWeight: FontWeight.bold),
+                ],
+              ),
+              height5(),
+              Row(
+                children: [
+                  Expanded(
+                    child: bodyLargeText(
+                      history.paymentType ?? '',
+                      context,
+                      // color: history.packageName != 'Monthly Pack'
+                      //     ? yearlyPackColor
+                      //     : monthlyPackColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  SliverToBoxAdapter buildEmptyList() {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: Get.height - kToolbarHeight * 4,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            titleLargeText('You have not purchased any subscription.', context,
+                textAlign: TextAlign.center),
+            height10(),
+            bodyLargeText('Please explore our products', context),
+            height10(),
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 30),
+                    child: ElevatedButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (_) => SubscriptionPurchaseDialog());
+                        },
+                        child: Text('Purchase')),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   SliverAppBar buildSliverAppBar(Size size) {
     return SliverAppBar(
       snap: false,
@@ -401,6 +423,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 ),
                 style: ElevatedButton.styleFrom(
                   // backgroundColor: appLogoColor,
+                  backgroundColor: Colors.transparent,
                   padding: EdgeInsets.all(0),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),

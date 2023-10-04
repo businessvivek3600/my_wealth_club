@@ -81,11 +81,10 @@ class _CommissionWalletPageState extends State<CommissionWalletPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             //TODO: dataNotFound
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(
-            //       horizontal: 30.0),
-            //   child: assetLottie(Assets.dataNotFound),
-            // ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30.0),
+              child: assetLottie(Assets.dataNotFound),
+            ),
             titleLargeText('Records not found', context)
           ],
         ),

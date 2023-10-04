@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/app_web_view_page.dart';
+import 'package:mycarclub/utils/default_logger.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
@@ -12,9 +13,7 @@ import '/database/model/response/subscription_history_model.dart';
 import '/database/model/response/subscription_package_model.dart';
 import '/database/model/response/subscription_request_history_model.dart';
 import '/database/repositories/subscription_repo.dart';
-import '/myapp.dart';
 import '/providers/auth_provider.dart';
-import '/screens/auth/login_screen.dart';
 import '/screens/card_form/card_form_widget.dart';
 import '/sl_container.dart';
 import '/utils/app_default_loading.dart';
@@ -174,9 +173,9 @@ class SubscriptionProvider extends ChangeNotifier {
   TextEditingController typeController = TextEditingController();
   TextEditingController voucherController = TextEditingController();
   SubscriptionPackage? selectedPackage;
-  String? selectedTypeKey;
+  String? selectedPaymentTypeKey;
   setSelectedTypeKey(val) {
-    selectedTypeKey = val;
+    selectedPaymentTypeKey = val;
     notifyListeners();
   }
 
@@ -186,9 +185,10 @@ class SubscriptionProvider extends ChangeNotifier {
         showLoading();
         ApiResponse apiResponse = await subscriptionRepo.buySubscription({
           "package": '${selectedPackage?.packageId ?? ' '}',
-          "payment_type": selectedTypeKey ?? '',
+          "payment_type": selectedPaymentTypeKey ?? '',
           "epin_code": voucherController.text
         });
+        infoLog('buySubscription online hit  ${apiResponse.response?.data}');
         Get.back();
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
@@ -221,16 +221,31 @@ class SubscriptionProvider extends ChangeNotifier {
             }
             if (status) {
               Get.back();
-              if (redirectUrl != null) {
-                launchTheLink(redirectUrl);
-                Get.back();
-                // Get.back();
+              if (redirectUrl != '') {
+                var res = await Get.to(WebViewExample(
+                  url: redirectUrl,
+                  allowBack: false,
+                  allowCopy: false,
+                  conditions: [
+                    'https://mywealthclub.com/api/customer/card-subscription-request-status'
+                  ],
+                  onResponse: (res) {
+                    print('request url matched <res> $res');
+                    Get.back();
+                    hitPaymentResponse(res);
+                    // getVoucherList(false);
+                  },
+                ));
+                errorLog('redirect result from webview $res');
+                // launchTheLink(redirectUrl!);
               }
-              if (orderId != null) {
-                Get.to(CardFormWidget(
-                    subscriptionPackage: package, orderId: orderId));
+              //else if (orderId != null) {
+              //   Get.to(CardFormWidget(
+              //       subscriptionPackage: package, orderId: orderId));
+              // }
+              else {
+                Toasts.showSuccessNormalToast(message.split('.').first);
               }
-              Toasts.showSuccessNormalToast(message.split('.').first);
             } else {
               Toasts.showErrorNormalToast(message.split('.').first);
             }
@@ -252,6 +267,45 @@ class SubscriptionProvider extends ChangeNotifier {
     Get.back();
   }
 
+  Future<void> hitPaymentResponse(url) async {
+    try {
+      if (isOnline) {
+        showLoading(dismissable: true);
+        ApiResponse apiResponse =
+            await subscriptionRepo.hitPaymentResponse(url);
+        infoLog(
+            'create subscription hitPaymentResponse: ${apiResponse.response?.data}');
+        Get.back();
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          Map map = apiResponse.response!.data;
+          bool status = false;
+          String message = '';
+          try {
+            status = map["status"];
+            if (map['is_logged_in'] == 0) {
+              logOut();
+            }
+          } catch (e) {}
+          try {
+            message = map["message"] ?? '';
+          } catch (e) {}
+
+          if (status) {
+            await getSubscription(false);
+            Get.back();
+          } else {
+            Toasts.showErrorNormalToast(message);
+          }
+        }
+      } else {
+        Toasts.showWarningNormalToast('You are offline');
+      }
+    } catch (e) {
+      print('createVoucherSubmit failed ${e}');
+    }
+  }
+
   ///TODO: Stripe Payment
 
   clear() {
@@ -267,6 +321,6 @@ class SubscriptionProvider extends ChangeNotifier {
     typeController = TextEditingController();
     voucherController = TextEditingController();
     selectedPackage = null;
-    selectedTypeKey = null;
+    selectedPaymentTypeKey = null;
   }
 }

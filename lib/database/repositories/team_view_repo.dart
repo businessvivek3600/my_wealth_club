@@ -25,10 +25,22 @@ class TeamViewRepo {
   }
 
   ///get team member
-  Future<ApiResponse> getTeamMember() async {
+  Future<ApiResponse> getTeamMember(Map<String, String> map) async {
     try {
       Response response =
-          await dioClient.post(AppConstants.myTeam, token: true);
+          await dioClient.post(AppConstants.myTeam, token: true, data: map);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  ///get directMember
+  Future<ApiResponse> directMember(Map<String, String> map) async {
+    try {
+      Response response = await dioClient.post(AppConstants.directMember,
+          token: true, data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -64,6 +76,17 @@ class TeamViewRepo {
   Future<ApiResponse> liquidUser(Map<String, dynamic> data) async {
     try {
       Response response = await dioClient.post(AppConstants.liquidUser,
+          token: true, data: data);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  /// liquidUserAutoPlace
+  Future<ApiResponse> liquidUserAutoPlace(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient.post(AppConstants.liquidUserAutoPlace,
           token: true, data: data);
       return ApiResponse.withSuccess(response);
     } catch (e) {

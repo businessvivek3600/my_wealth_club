@@ -2,6 +2,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/videos_model.dart';
 import '/providers/GalleryProvider.dart';
@@ -19,10 +20,14 @@ import 'data_manager.dart';
 
 class CustomOrientationPlayer extends StatefulWidget {
   CustomOrientationPlayer(
-      {Key? key, required this.videos, required this.videoIndex})
+      {Key? key,
+      required this.videos,
+      required this.videoIndex,
+      this.showCategoriesButton = false})
       : super(key: key);
   final List<CategoryVideo> videos;
   final int videoIndex;
+  final bool showCategoriesButton;
   @override
   _CustomOrientationPlayerState createState() =>
       _CustomOrientationPlayerState();
@@ -76,40 +81,50 @@ class _CustomOrientationPlayerState extends State<CustomOrientationPlayer> {
       builder: (context, provider, child) {
         var playIndex = widget.videos.indexOf(provider.currentVideo!);
         return Scaffold(
-          appBar: AppBar(title: Text(provider.currentVideo?.title ?? '')),
-          body: SafeArea(
-            child: Column(
-              children: [
-                !loading
-                    ? buildPlayerWidget()
-                    : Container(
-                        height: 200,
-                        width: double.maxFinite,
-                        child: Center(child: CircularProgressIndicator())),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        height10(),
-                        bodyLargeText(
-                            provider.currentVideo?.title ?? "", context,
-                            color: Colors.black),
-                        height5(),
-                        bodyMedText(provider.currentCategoryModel?.header ?? "",
-                            context,
-                            color: Colors.black, fontWeight: FontWeight.w500),
-                        height10(),
-                        buildList(provider, context, playIndex),
-                      ],
+            appBar: AppBar(title: Text(provider.currentVideo?.title ?? '')),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  !loading
+                      ? buildPlayerWidget()
+                      : Container(
+                          height: 200,
+                          width: double.maxFinite,
+                          child: Center(child: CircularProgressIndicator())),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          height10(),
+                          bodyLargeText(
+                              provider.currentVideo?.title ?? "", context,
+                              color: Colors.black),
+                          height5(),
+                          bodyMedText(
+                              provider.currentCategoryModel?.header ?? "",
+                              context,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500),
+                          height10(),
+                          buildList(provider, context, playIndex),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
+            floatingActionButton: FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DrawerVideosMainPage()));
+              },
+              label: capText('All Videos', context, color: Colors.white),
+            ));
       },
     );
   }

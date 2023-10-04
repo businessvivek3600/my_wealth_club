@@ -4,8 +4,9 @@ class WebinarEventModel {
   String? webinarDesc;
   String? webinarTime;
   String? webinarId;
+  String? vimeoWebinarId;
   String? status;
-  Null? webinarChat;
+  String? webinarChat;
   String? createdAt;
   String? updatedAt;
 
@@ -15,6 +16,7 @@ class WebinarEventModel {
       this.webinarDesc,
       this.webinarTime,
       this.webinarId,
+      this.vimeoWebinarId,
       this.status,
       this.webinarChat,
       this.createdAt,
@@ -26,6 +28,7 @@ class WebinarEventModel {
     webinarDesc = json['webinar_desc'];
     webinarTime = json['webinar_time'];
     webinarId = json['webinar_id'];
+    vimeoWebinarId = json['vimeo_webinar_id'];
     status = json['status'];
     webinarChat = json['webinar_chat'];
     createdAt = json['created_at'];
@@ -39,6 +42,7 @@ class WebinarEventModel {
     data['webinar_desc'] = this.webinarDesc;
     data['webinar_time'] = this.webinarTime;
     data['webinar_id'] = this.webinarId;
+    data['vimeo_webinar_id'] = this.vimeoWebinarId;
     data['status'] = this.status;
     data['webinar_chat'] = this.webinarChat;
     data['created_at'] = this.createdAt;

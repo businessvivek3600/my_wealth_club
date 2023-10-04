@@ -38,7 +38,6 @@ dependencies:
   google_fonts: ^4.0.4
   visibility_detector: ^0.4.0+2
   pin_input_text_field: ^4.5.0
-  flutter_fancy_tree_view: ^1.1.1
   pull_to_refresh: ^2.0.0
   carousel_slider: ^4.2.1
   coupon_uikit: ^0.2.0
@@ -109,6 +108,11 @@ dependencies:
   flutter_rounded_date_picker: ^3.0.4
   toggle_switch: ^2.1.0
   flutter_breadcrumb: ^1.0.1
+  loadmore: ^2.1.0
+  swipeable_tile: ^2.0.0+3
+  banner_carousel: ^1.2.1
+  flutter_fancy_tree_view: ^1.1.1
+  path_drawing: ^1.0.1
 
 
 

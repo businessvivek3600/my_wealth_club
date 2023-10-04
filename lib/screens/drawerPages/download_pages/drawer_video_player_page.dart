@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mycarclub/utils/default_logger.dart';
+import 'package:mycarclub/utils/text.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/providers/dashboard_provider.dart';
@@ -11,7 +13,10 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/services.dart';
 
 class DrawerVideoScreen extends StatefulWidget {
-  const DrawerVideoScreen({Key? key}) : super(key: key);
+  const DrawerVideoScreen({Key? key, required this.title, required this.url})
+      : super(key: key);
+  final String title;
+  final String url;
 
   @override
   State<DrawerVideoScreen> createState() => _DrawerVideoScreenState();
@@ -23,8 +28,7 @@ class _DrawerVideoScreenState extends State<DrawerVideoScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(
-        sl.get<DashBoardProvider>().videoLink ?? '')
+    _controller = VideoPlayerController.network(widget.url)
       ..initialize().then((_) {
         // _controller.play();
         setState(() {});
@@ -44,12 +48,13 @@ class _DrawerVideoScreenState extends State<DrawerVideoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    infoLog('video url ${widget.url}');
     return Consumer<GalleryProvider>(
       builder: (context, provider, child) {
         return Scaffold(
           // backgroundColor: isOnline ? Colors.white : mainColor,
           appBar: AppBar(
-            title: Text('Promotion Video'),
+            title: titleLargeText(widget.title, context, useGradient: true),
           ),
           body: Container(
             height: double.maxFinite,

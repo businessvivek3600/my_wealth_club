@@ -5,6 +5,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/widgets/show_custom_dialog.dart';
+import '../../utils/app_default_loading.dart';
 import '/screens/drawerPages/download_pages/videos/data_manager.dart';
 import '/utils/default_logger.dart';
 import '/constants/assets_constants.dart';
@@ -104,52 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       height100(height * 0.05),
                                       buildForm(height),
                                       height10(),
-                                      Column(
-                                        children: [
-                                          Stack(
-                                            children: [
-                                              buildLoginButton2(context),
-                                              if (sl
-                                                          .get<AuthProvider>()
-                                                          .companyInfo !=
-                                                      null &&
-                                                  sl
-                                                          .get<AuthProvider>()
-                                                          .companyInfo!
-                                                          .mobileIsLogin ==
-                                                      '0')
-                                                Container(
-                                                    color: Colors.transparent,
-                                                    width: double.maxFinite,
-                                                    height: 50)
-                                            ],
-                                          ),
-                                          height10(),
-                                          if (sl
-                                                      .get<AuthProvider>()
-                                                      .companyInfo !=
-                                                  null &&
-                                              sl
-                                                      .get<AuthProvider>()
-                                                      .companyInfo!
-                                                      .mobileIsLogin ==
-                                                  '0')
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Icon(Icons.info_outline,
-                                                    color: Colors.amber,
-                                                    size: 15),
-                                                width5(7),
-                                                capText(
-                                                    'Login process is temporary disabled.',
-                                                    context,
-                                                    color: Colors.grey[400])
-                                              ],
-                                            )
-                                        ],
-                                      ),
+                                      buildLoginButton(context),
                                       height10(),
                                       height10(),
                                       height10(),
@@ -172,6 +129,50 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Column buildLoginButton(BuildContext context) {
+    bool isLoginDisabled = sl.get<AuthProvider>().companyInfo != null &&
+        sl.get<AuthProvider>().companyInfo!.mobileIsLogin == '0';
+    return Column(
+      children: [
+        Stack(
+          children: [
+            GestureDetector(
+              onTap: _login,
+              // label: !isLoginDisabled
+              //     ? loaderWidget(radius: 8)
+              //     : Icon(Icons.arrow_forward_rounded,
+              //         color: Colors.white, size: 20),
+              child: assetImages(Assets.loginToMWC, width: 250),
+              // child: titleLargeText(
+              //   'Login',
+              //   context,
+              //   color: Colors.white,
+              //   useGradient: false,
+              // ),
+            ),
+            // buildLoginButton2(context),
+            if (isLoginDisabled)
+              Container(
+                  color: Colors.transparent,
+                  width: double.maxFinite,
+                  height: 50)
+          ],
+        ),
+        height10(),
+        if (isLoginDisabled)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.info_outline, color: Colors.amber, size: 15),
+              width5(7),
+              capText('Login process is temporary disabled.', context,
+                  color: Colors.grey[400])
+            ],
+          )
+      ],
     );
   }
 
@@ -413,6 +414,47 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ],
     );
+  }
+
+  void _login() async {
+    primaryFocus?.unfocus();
+    if (_formKey.currentState?.validate() ?? false) {
+      //--- trigger Password Save
+      TextInput.finishAutofillContext();
+      try {
+        showLoading(dismissable: true);
+        await sl
+            .get<AuthProvider>()
+            .login(LoginModel(
+                username: _userNameController.text,
+                password: _passwordController.text,
+                device_id: ''))
+            .then((value) {
+          print('Login Value ${value != true}');
+          Get.back();
+          if (value) {
+            sl.get<DashBoardProvider>().getCustomerDashboard();
+            Future.delayed(
+                Duration(seconds: 3),
+                () => Toasts.showSuccessNormalToast(
+                    'You have logged in Successfully',
+                    title:
+                        'Welcome ${sl.get<AuthProvider>().userData.customerName ?? ''}'));
+            Future.delayed(
+                Duration(milliseconds: 000),
+                () => Get.offAll(MainPage(
+                      loginModel: LoginModel(
+                          username: _userNameController.text,
+                          password: _passwordController.text,
+                          device_id: ''),
+                    )));
+          }
+        });
+      } catch (e) {
+        Get.back();
+        Toasts.showErrorNormalToast('Something went wrong!');
+      }
+    }
   }
 }
 

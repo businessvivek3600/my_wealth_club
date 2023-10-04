@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:banner_carousel/banner_carousel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
@@ -10,6 +14,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import '/database/model/response/videos_model.dart';
+import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
+import '/screens/drawerPages/event_tickets/buy_ticket_Page.dart';
+import '../../providers/event_tickets_provider.dart';
 import '/database/model/body/login_model.dart';
 import '../../database/model/response/yt_video_model.dart';
 import '/screens/dashboard/company_trade_ideas_page.dart';
@@ -87,6 +95,7 @@ class _MainPageState extends State<MainPage>
     authProvider.getSignUpInitialData();
     sl.get<CashWalletProvider>().getCoinPaymentFundRequest(false);
     galleryProvider.getGalleryData(false);
+    sl.get<EventTicketsProvider>().getEventTickets(true);
     galleryProvider.getVideos(false);
     canShowNextDashPopUPBool.addListener(() {});
     super.initState();
@@ -192,6 +201,8 @@ class _MainPageState extends State<MainPage>
     // .then((value) => showDashboardInitialPopUp(dashboardProvider, context));
     sl.get<NotificationProvider>().getUnRead();
     sl.get<SubscriptionProvider>().getSubscription();
+    authProvider.getSignUpInitialData();
+    sl.get<EventTicketsProvider>().getEventTickets(true);
     galleryProvider.getGalleryData(false);
     galleryProvider.getVideos(false);
     _refreshController.refreshCompleted();
@@ -248,6 +259,8 @@ class _MainPageState extends State<MainPage>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
+                                          buildAccountStatistics(
+                                              context, authProvider),
                                           _buildTeamBuildingReferralLink(
                                               context, dashBoardProvider),
                                           height10(),
@@ -264,7 +277,7 @@ class _MainPageState extends State<MainPage>
                                           // Trading view,
                                           buildTradingViewWidget(
                                               context, size, dashBoardProvider),
-                                          height10(),
+                                          // height10(),
                                           // platinum member logo
 
                                           // Upcommin Events,
@@ -289,13 +302,16 @@ class _MainPageState extends State<MainPage>
                                           //   child: buildPlatinumMemberLogo(
                                           //       dashBoardProvider),
                                           // ),
-                                          buildSubscriptionStatusBar(
-                                              context, dashBoardProvider),
-                                          height30(),
+                                          // buildSubscriptionStatusBar(
+                                          //     context, dashBoardProvider),
+                                          // height30(),
                                         ],
                                       ),
-                                      buildSubscriptionHistory(
-                                          context, size, dashBoardProvider),
+                                      buildSubscriptionHistory(context, size,
+                                          dashBoardProvider, authProvider),
+                                      height20(),
+                                      // Accademic Video
+                                      buildAccademicVideo(context),
                                       height20(),
                                       // buildCardFeatureListview(
                                       //     context, size, dashBoardProvider),
@@ -305,6 +321,8 @@ class _MainPageState extends State<MainPage>
                                       ...buildTargetProgressCards(
                                           dashBoardProvider),
                                       ...buildTiers(context, dashBoardProvider),
+                                      height20(),
+                                      buildEventsTicketCard(context),
                                       height100(),
                                     ],
                                   ),
@@ -327,6 +345,129 @@ class _MainPageState extends State<MainPage>
           },
         );
       },
+    );
+  }
+
+  Widget buildEventsTicketCard(BuildContext context) {
+    return Consumer<EventTicketsProvider>(
+        builder: (context, eventTicketsProvider, _) =>
+            !eventTicketsProvider.loadingMyTickets
+                ? Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          UiCategoryTitleContainer(
+                              child: bodyLargeText('Events', context)),
+
+                          /*
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: GestureDetector(
+                      onTap: () {
+                        Get.to(EventTicketsPage());
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                            // color: Colors.white,
+                            borderRadius: BorderRadius.circular(30)),
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            bodyMedText(
+                              'View All',
+                              context,
+                            ),
+                            Icon(Icons.keyboard_arrow_right_rounded,
+                                color: Colors.white)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                */
+                        ],
+                      ),
+                      height20(),
+                      /*
+              Card(
+                  margin: EdgeInsets.symmetric(horizontal: 8),
+                  color: Colors.white24,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  child: buildCachedNetworkImage(
+                      'https://mywealthclub.com/assets/images/ticket-img/my-wealth-club-launch-event.jpg',
+                      ph: 400,
+                      pw: Get.width)),
+                      */
+                      if (eventTicketsProvider.eventsList.isNotEmpty)
+                        _EventsSliderWidget(
+                            listBanners: eventTicketsProvider.eventsList
+                                .map((e) => BannerModel(
+                                    imagePath: e.eventBanner ?? '',
+                                    id: e.id.toString()))
+                                .toList()),
+                    ],
+                  )
+                : SizedBox());
+  }
+
+  Widget buildAccademicVideo(BuildContext context) {
+    return _MainPageAccademicVideoList();
+  }
+
+  Padding buildAccountStatistics(
+      BuildContext context, AuthProvider authProvider) {
+    String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+    return Padding(
+      padding: const EdgeInsetsDirectional.symmetric(vertical: 16),
+      child: GridView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsetsDirectional.symmetric(horizontal: 8),
+          shrinkWrap: true,
+          scrollDirection: Axis.vertical,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 2,
+          ),
+          children: [
+            _buildStatisticsGridViewItem(
+                context, 'Commission Balance', 567890, currency_icon),
+            _buildStatisticsGridViewItem(
+                context, 'Cash Balance', 456, currency_icon),
+            _buildStatisticsGridViewItem(
+                context, 'Total Member', 5890, currency_icon),
+            _buildStatisticsGridViewItem(
+                context, 'Total Active Member', 0, currency_icon),
+          ]),
+    );
+  }
+
+  Container _buildStatisticsGridViewItem(
+      BuildContext context, String title, double value, String icon) {
+    return Container(
+      // height: 100,
+      // width: 100,
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: bColor,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          bodyLargeText(title, context,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              useGradient: false),
+          height10(),
+          titleLargeText('$icon ${value.toStringAsFixed(2)}', context,
+              useGradient: true, color: Colors.white),
+        ],
+      ),
     );
   }
 
@@ -361,7 +502,6 @@ class _MainPageState extends State<MainPage>
 
   Column buildUpcomingEvents(
       BuildContext context, Size size, DashBoardProvider dashBoardProvider) {
-    String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -660,7 +800,6 @@ class _MainPageState extends State<MainPage>
             dashBoardProvider.activities.isNotEmpty
         ? Column(
             children: [
-              height30(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -675,16 +814,13 @@ class _MainPageState extends State<MainPage>
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                            // color: Colors.white,
+                            color: Colors.transparent,
                             borderRadius: BorderRadius.circular(30)),
                         padding: const EdgeInsets.symmetric(vertical: 3),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            bodyMedText(
-                              'View All',
-                              context,
-                            ),
+                            bodyMedText('View All', context),
                             Icon(Icons.keyboard_arrow_right_rounded,
                                 color: Colors.white)
                           ],
@@ -703,416 +839,243 @@ class _MainPageState extends State<MainPage>
                   child: CommissionActivityHistoryList(
                       activities:
                           getFirstFourElements(dashboardProvider.activities))),
-              /*Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                height: size.height *
-                        0.09 *
-                        (dashBoardProvider.activities.length < 4
-                            ? dashBoardProvider.activities.length
-                            : 4) +
-                    36,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white, width: 1),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16, horizontal: 5),
-                  child: ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: dashBoardProvider.activities.length > 4
-                          ? 4
-                          : dashBoardProvider.activities.length,
-                      itemBuilder: (context, i) {
-                        var activity = dashBoardProvider.activities[i];
-                        bool isLast = (dashBoardProvider.activities.length > 4
-                                ? i < 3
-                                : (dashBoardProvider.activities.length - 1) <
-                                    3) &&
-                            (dashBoardProvider.activities.length - 1 != i);
-                        return SizedBox(
-                          height: size.height * 0.09,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Column(
-                                children: [
-                                  !dashBoardProvider.loadingDash
-                                      ? Container(
-                                          width: 45,
-                                          padding: const EdgeInsets.all(5),
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            color:
-                                                appLogoColor.withOpacity(0.2),
-                                          ),
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                child: capText(
-                                                    '${DateFormat('MMM dd yyyy').format(DateTime.parse(activity.createdAt ?? ''))}',
-                                                    context,
-                                                    fontSize: 10,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
-                                                    textAlign:
-                                                        TextAlign.center),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : Skeleton(
-                                          width: 45,
-                                          height: 45,
-                                          style: SkeletonStyle.circle,
-                                          textColor: Colors.white70,
-                                        ),
-                                  if (isLast)
-                                    Expanded(
-                                      child: LayoutBuilder(
-                                          builder: (context, constraints) {
-                                        var dh = 3.0;
-                                        var dg = 1.0;
-                                        var count =
-                                            constraints.maxHeight ~/ (dh + dg);
-
-                                        return Column(
-                                          children: [
-                                            for (int i = 0; i < count; i++)
-                                              Container(
-                                                height: dh,
-                                                width: 3,
-                                                color: i % 2 == 0
-                                                    ? Colors.transparent
-                                                    : Colors.red,
-                                              ),
-                                          ],
-                                        );
-                                      }),
-                                    ),
-                                ],
-                              ),
-                              width10(),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    dashBoardProvider.loadingDash
-                                        ? Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Skeleton(
-                                                height: 15,
-                                                textColor: Colors.white70,
-                                                borderRadius:
-                                                    BorderRadius.circular(3),
-                                              ),
-                                              height5(),
-                                              Skeleton(
-                                                height: 15,
-                                                width: 100,
-                                                textColor: Colors.white70,
-                                                borderRadius:
-                                                    BorderRadius.circular(3),
-                                              ),
-                                            ],
-                                          )
-                                        : Expanded(
-                                            child: bodyLargeText(
-                                              parseHtmlString(
-                                                  activity.note ?? ''),
-                                              context,
-                                              overflow: TextOverflow.ellipsis,
-                                              fontWeight: FontWeight.normal,
-                                              textAlign: TextAlign.start,
-                                            ),
-                                          ),
-                                    height20(),
-                                  ],
-                                ),
-                              ),
-                              width10(),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  dashBoardProvider.loadingDash
-                                      ? Skeleton(
-                                          height: 20,
-                                          width: 50,
-                                          textColor: Colors.white70,
-                                          style: SkeletonStyle.box,
-                                          borderRadius:
-                                              BorderRadius.circular(15),
-                                        )
-                                      : Builder(builder: (context) {
-                                          bool credited = double.parse(
-                                                  activity.credit ?? '0') >
-                                              double.parse(
-                                                  activity.debit ?? '0');
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                              color: credited
-                                                  ? Colors.green[500]
-                                                  : Colors.red[500]!,
-                                              borderRadius:
-                                                  BorderRadius.circular(30),
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 3),
-                                            child: bodyMedText(
-                                              credited ? 'Credit' : 'Debit',
-                                              context,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                              ),
-                                            ),
-                                          );
-                                        }),
-                                  height10(),
-                                  capText(
-                                    '${DateFormat().add_jm().format(DateTime.parse(activity.createdAt ?? ''))}',
-                                    context,
-                                    fontSize: 8,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                ),
-              ),*/
             ],
           )
         : SizedBox();
   }
 
-  Column buildSubscriptionHistory(
-      BuildContext context, Size size, DashBoardProvider dashBoardProvider) {
+  Column buildSubscriptionHistory(BuildContext context, Size size,
+      DashBoardProvider dashBoardProvider, AuthProvider authProvider) {
     String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+
+    bool showList =
+        !dashBoardProvider.loadingDash && dashBoardProvider.hasSubscription;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         UiCategoryTitleContainer(
             child: bodyLargeText('SUBSCRIPTION HISTORY', context)),
-        SizedBox(
-          height: 200,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: (!dashBoardProvider.loadingDash &&
-                        !dashBoardProvider.hasSubscription)
-                    ? Container(
-                        margin: EdgeInsets.all(16),
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.white,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            bodyLargeText(
-                                "You don't have any subscription yet.", context,
-                                color: appLogoColor,
-                                useGradient: false,
-                                fontSize: 17,
-                                textAlign: TextAlign.center),
-                            GestureDetector(
-                              onTap: () => Get.to(SubscriptionPage()),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 15, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: appLogoColor,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: bodyMedText(
-                                  'Add Subscriptions',
-                                  context,
-                                  color: Colors.white,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
+        AnimatedContainer(
+          duration: Duration(milliseconds: 500),
+          height: dashBoardProvider.loadingDash
+              ? 130
+              : dashBoardProvider.hasSubscription
+                  ? 200
+                  : null,
+          child: !showList
+              ? Container(
+                  width: double.maxFinite,
+                  constraints: BoxConstraints(maxWidth: size.width),
+                  margin: EdgeInsetsDirectional.only(
+                      start: 8, end: 8, top: 10, bottom: 0),
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    // color: Colors.white,
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: LayoutBuilder(builder: (context, bound) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        bodyLargeText(
+                            "You don't have any subscription yet.", context,
+                            color: Colors.white,
+                            useGradient: false,
+                            fontSize: 17,
+                            textAlign: TextAlign.center),
+                        height20(),
+                        GestureDetector(
+                          onTap: () => Get.to(
+                              SubscriptionPage(initPurchaseDialog: true)),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 15, vertical: 10),
+                            decoration: BoxDecoration(
+                              // color: appLogoColor,
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(color: appLogoColor, width: 2),
                             ),
-                          ],
+                            child: capText(
+                              'Add Subscriptions',
+                              context,
+                              color: Colors.white,
+                              textAlign: TextAlign.center,
+                              useGradient: true,
+                            ),
+                          ),
                         ),
-                      )
-                    : ListView(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        scrollDirection: Axis.horizontal,
-                        children: [
-                          if (!dashBoardProvider.loadingDash &&
-                              dashBoardProvider.hasSubscription)
-                            ...dashBoardProvider.subscriptionPacks
-                                .map((pack) => Builder(builder: (context) {
-                                      // return Container(
-                                      //   margin:
-                                      //       EdgeInsets.only(right: 10, top: 10),
-                                      //   child: buildCachedNetworkImage(
-                                      //       'https://mywealthclub.com/assets/customer-panel/img/product/usd-monthly-pack-1.png'),
-                                      // );
-                                      return Container(
-                                        width: size.width * 0.4,
-                                        margin: EdgeInsets.only(
-                                            right: pack != 4 ? 10 : 0),
-                                        child: Container(
-                                          width: size.width * 0.5,
-                                          margin: EdgeInsets.only(
-                                              top: size.height * 0.02),
+                      ],
+                    );
+                  }),
+                )
+              : ListView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    if (!dashBoardProvider.loadingDash &&
+                        dashBoardProvider.hasSubscription)
+                      ...dashBoardProvider.subscriptionPacks
+                          .map((pack) => Builder(builder: (context) {
+                                // return Container(
+                                //   margin:
+                                //       EdgeInsets.only(right: 10, top: 10),
+                                //   child: buildCachedNetworkImage(
+                                //       'https://mywealthclub.com/assets/customer-panel/img/product/usd-monthly-pack-1.png'),
+                                // );
+                                return Container(
+                                  width: size.width * 0.4,
+                                  margin: EdgeInsets.only(
+                                      right: pack != 4 ? 10 : 0),
+                                  child: Container(
+                                    width: size.width * 0.5,
+                                    margin: EdgeInsets.only(
+                                        top: size.height * 0.02),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          //suggest gradient here
+                                          Colors.white,
+                                          Colors.white,
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.only(
+                                        topLeft: Radius.circular(10),
+                                        topRight: Radius.circular(100),
+                                        bottomLeft: Radius.circular(10),
+                                        bottomRight: Radius.circular(10),
+                                      ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                            color: Colors.black12,
+                                            spreadRadius: 5,
+                                            blurRadius: 5)
+                                      ],
+                                    ),
+                                    padding: EdgeInsets.all(10),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceAround,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
                                           decoration: BoxDecoration(
-                                            gradient: LinearGradient(
-                                              colors: [
-                                                //suggest gradient here
-                                                Colors.white,
-                                                Colors.white,
-                                              ],
-                                              begin: Alignment.topLeft,
-                                              end: Alignment.bottomRight,
-                                            ),
-                                            borderRadius: BorderRadius.only(
-                                              topLeft: Radius.circular(10),
-                                              topRight: Radius.circular(100),
-                                              bottomLeft: Radius.circular(10),
-                                              bottomRight: Radius.circular(10),
-                                            ),
+                                            color:
+                                                appLogoColor.withOpacity(0.7),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                             boxShadow: const [
                                               BoxShadow(
-                                                  color: Colors.black12,
-                                                  spreadRadius: 5,
-                                                  blurRadius: 5)
+                                                color: Colors.black12,
+                                                spreadRadius: 5,
+                                                blurRadius: 15,
+                                              )
                                             ],
                                           ),
                                           padding: EdgeInsets.all(10),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: appLogoColor
-                                                      .withOpacity(0.7),
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  boxShadow: const [
-                                                    BoxShadow(
-                                                      color: Colors.black12,
-                                                      spreadRadius: 5,
-                                                      blurRadius: 15,
-                                                    )
-                                                  ],
-                                                ),
-                                                padding: EdgeInsets.all(10),
-                                                child: titleLargeText(
-                                                    '$currency_icon${pack.payableAmt ?? ''}',
-                                                    context,
-                                                    color: Colors.white,
-                                                    useGradient: false),
-                                              ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.center,
-                                                children: [
-                                                  titleLargeText(
-                                                      pack.packageName ?? '',
-                                                      context,
-                                                      color: Colors.black,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      useGradient: false),
-                                                  height5(),
-                                                  bodyLargeText(
-                                                      pack.paymentType ?? '',
-                                                      context,
-                                                      color: Colors.black,
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      useGradient: false),
-                                                ],
-                                              ),
-                                              capText(
-                                                  '${DateFormat().add_yMMMEd().add_jm().format(DateTime.parse(pack.createdAt ?? ''))}',
-                                                  context,
-                                                  color: Colors.black,
-                                                  textAlign: TextAlign.center),
-                                            ],
-                                          ),
+                                          child: titleLargeText(
+                                              '$currency_icon${pack.payableAmt ?? ''}',
+                                              context,
+                                              color: Colors.white,
+                                              useGradient: false),
                                         ),
-                                      );
-                                    }))
-                                .toList(),
-                          if (dashBoardProvider.loadingDash)
-                            ...[1, 2, 3, 4].map(
-                              (e) => Container(
-                                width: size.width * 0.8,
-                                margin: EdgeInsets.only(right: e != 4 ? 10 : 0),
-                                child: Stack(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                          top: size.height * 0.07),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(20),
-                                        child: Skeleton(
-                                          width: size.width * 0.8,
-                                          textColor: Colors.white70,
-                                          height: double.maxFinite,
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            titleLargeText(
+                                                pack.packageName ?? '', context,
+                                                color: Colors.black,
+                                                textAlign: TextAlign.center,
+                                                useGradient: false),
+                                            height5(),
+                                            bodyLargeText(
+                                                pack.paymentType ?? '', context,
+                                                color: Colors.black,
+                                                textAlign: TextAlign.center,
+                                                useGradient: false),
+                                          ],
                                         ),
-                                      ),
+                                        capText(
+                                            '${DateFormat().add_yMMMEd().add_jm().format(DateTime.parse(pack.createdAt ?? ''))}',
+                                            context,
+                                            color: Colors.black,
+                                            textAlign: TextAlign.center),
+                                      ],
                                     ),
-                                    Positioned(
-                                      top: size.height * 0.02,
-                                      left: 0,
-                                      right: 0,
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Container(
-                                          height: size.height * 0.1,
-                                          width: size.width * 0.3,
-                                          decoration: BoxDecoration(
-                                              color:
-                                                  Colors.white.withOpacity(0.9),
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              boxShadow: const [
-                                                BoxShadow(
-                                                    color: Colors.black,
-                                                    spreadRadius: 0,
-                                                    blurRadius: 5,
-                                                    offset: Offset(0, 0))
-                                              ]),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                                  ),
+                                );
+                              }))
+                          .toList(),
+                    if (dashBoardProvider.loadingDash)
+                      ...[1, 2, 3, 4].map(
+                        (e) => Container(
+                          width: size.width * 0.8,
+                          margin: EdgeInsets.only(right: e != 4 ? 10 : 0),
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding:
+                                    EdgeInsets.only(top: size.height * 0.07),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Skeleton(
+                                    width: size.width * 0.8,
+                                    textColor: Colors.white70,
+                                    height: double.maxFinite,
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
+                              Positioned(
+                                top: size.height * 0.02,
+                                left: 0,
+                                right: 0,
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Container(
+                                    height: size.height * 0.1,
+                                    width: size.width * 0.3,
+                                    decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                              color: Colors.black,
+                                              spreadRadius: 0,
+                                              blurRadius: 5,
+                                              offset: Offset(0, 0))
+                                        ]),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-              ),
-            ],
-          ),
-        )
+                  ],
+                ),
+        ),
+        buildSubscriptionStatusBar(context, dashBoardProvider, authProvider),
       ],
     );
   }
 
-  Container buildSubscriptionStatusBar(
-      BuildContext context, DashBoardProvider dashBoardProvider) {
+  Container buildSubscriptionStatusBar(BuildContext context,
+      DashBoardProvider dashBoardProvider, AuthProvider authProvider) {
+    DateTime? expiryDate;
+    try {
+      expiryDate = DateTime.parse(authProvider.userData.expiryDate ?? '');
+    } catch (e) {
+      expiryDate = null;
+    }
     return (dashBoardProvider.loadingDash || dashBoardProvider.subscriptionVal)
         ? Container(
             padding: const EdgeInsets.all(8),
@@ -1125,15 +1088,37 @@ class _MainPageState extends State<MainPage>
                       if (dashBoardProvider.subscriptionVal)
                         Column(
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: capText(
-                                    'Your Monthly package will be expired after ${dashBoardProvider.sub_expire_days} Day, Upgrade your subscription to keep trading',
-                                    context,
-                                  ),
-                                ),
-                              ],
+                            RichText(
+                              text: TextSpan(
+                                  text: 'Your subscription will expire on',
+                                  children: [
+                                    if (expiryDate != null)
+                                      TextSpan(
+                                          text:
+                                              ' ${formatDate(expiryDate, 'dd MMMM yyyy')} ',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold)),
+                                    TextSpan(
+                                      text: '. ',
+                                    ),
+                                    TextSpan(
+                                      text: 'Upgrade Now',
+                                      style: TextStyle(
+                                          color: appLogoColor,
+                                          decoration: TextDecoration.underline,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                      recognizer: TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Get.to(SubscriptionPage(
+                                              initPurchaseDialog: true));
+                                        },
+                                    ),
+                                    TextSpan(
+                                      text: ' to keep trading.',
+                                    ),
+                                  ]),
                             ),
                             height10(),
                             Stack(
@@ -1148,7 +1133,8 @@ class _MainPageState extends State<MainPage>
                                     changeColorValue: 100,
                                     changeProgressColor: appLogoColor,
                                     backgroundColor: Colors.white30,
-                                    progressColor: appLogoColor,
+                                    progressColor:
+                                        Color.fromARGB(255, 153, 233, 156),
                                     animatedDuration:
                                         const Duration(milliseconds: 300),
                                     direction: Axis.horizontal,
@@ -1201,7 +1187,7 @@ class _MainPageState extends State<MainPage>
                         Skeleton(
                           height: 20,
                           width: double.maxFinite,
-                          textColor: appLogoColor.withOpacity(0.8),
+                          textColor: Color.fromARGB(255, 78, 112, 78),
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ],
@@ -1446,7 +1432,7 @@ class _MainPageState extends State<MainPage>
         [
           dashBoardProvider.achievedReward != null
               ? dashBoardProvider.achievedReward!.image
-              : 'https://mycarclub.com/assets/customer-panel/img/reward/not-achieved.png',
+              : 'https://mywealthclub.com/assets/customer-panel/img/reward/rank-image-0.png',
           'Achieved',
           dashBoardProvider.hasRewardsAchieved,
         ],
@@ -1566,6 +1552,262 @@ class _MainPageState extends State<MainPage>
         ],
       ),
     );
+  }
+}
+
+class _EventsSliderWidget extends StatefulWidget {
+  _EventsSliderWidget({super.key, required this.listBanners});
+  List<BannerModel> listBanners;
+
+  @override
+  State<_EventsSliderWidget> createState() => _EventsSliderWidgetState();
+}
+
+class _EventsSliderWidgetState extends State<_EventsSliderWidget> {
+  late PageController pageController;
+  int currentIndex = 0;
+  late Timer timer;
+  @override
+  void initState() {
+    super.initState();
+    pageController = PageController(initialPage: currentIndex);
+    if (widget.listBanners.length > 1) {
+      timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+        currentIndex < widget.listBanners.length - 1
+            ? currentIndex++
+            : currentIndex = 0;
+        pageController.animateToPage(
+          currentIndex,
+          duration: Duration(milliseconds: 350),
+          curve: Curves.easeIn,
+        );
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    pageController.dispose();
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print('listBanners: ${widget.listBanners.length}');
+    print(widget.listBanners[0].imagePath);
+
+    /// Carousel Customized
+    return BannerCarousel(
+      // banners: widget.listBanners,
+      customizedBanners: [
+        ...widget.listBanners.map((e) {
+          return GestureDetector(
+            onTap: () {
+              sl.get<EventTicketsProvider>().buyEventTicketsRequest(e.id);
+              Get.to(BuyEventTicket(
+                  event: sl
+                      .get<EventTicketsProvider>()
+                      .eventsList
+                      .firstWhere((element) => element.id == e.id)));
+            },
+            child: Container(
+              width: double.maxFinite,
+              height: 500,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: buildCachedNetworkImage(
+                  e.imagePath,
+                  // 'https://mywealthclub.com/assets/images/ticket-img/my-wealth-club-launch-event.jpg',
+                  pw: double.maxFinite,
+                  ph: 500,
+                  errorBgColor: Colors.white10,
+                  placeholderBgColor: Colors.white10,
+                  errorStackChild: Container(),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ],
+      customizedIndicators: IndicatorModel.animation(
+          width: 7, height: 7, spaceBetween: 2, widthAnimation: 15),
+      height: 500,
+      activeColor: appLogoColor,
+      disableColor: Colors.white,
+      animation: true,
+      borderRadius: 10,
+      onTap: (id) {
+        Get.to(BuyEventTicket(
+            event: sl
+                .get<EventTicketsProvider>()
+                .eventsList
+                .firstWhere((element) => element.id == id)));
+      },
+      width: double.maxFinite,
+      indicatorBottom: false,
+      pageController: pageController,
+    );
+
+    return Container(
+      padding: EdgeInsetsDirectional.symmetric(horizontal: 10),
+      child: CarouselSlider(
+        options: CarouselOptions(
+          height: 600.0,
+          autoPlay: true,
+          autoPlayInterval: Duration(seconds: 5),
+          autoPlayAnimationDuration: Duration(milliseconds: 800),
+          autoPlayCurve: Curves.fastOutSlowIn,
+          pauseAutoPlayOnTouch: false,
+          viewportFraction: 1,
+          enlargeCenterPage: true,
+          onPageChanged: (index, reason) {
+            // setState(() {
+            //   _current = index;
+            // });
+          },
+        ),
+        items: [1, 2, 3, 4, 5].map((i) {
+          return Builder(
+            builder: (BuildContext context) {
+              return Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: buildCachedNetworkImage(
+                    'https://mywealthclub.com/assets/images/ticket-img/my-wealth-club-launch-event.jpg',
+                    borderRadius: 10,
+                  ));
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _MainPageAccademicVideoList extends StatelessWidget {
+  const _MainPageAccademicVideoList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GalleryProvider>(builder: (context, provider, _) {
+      bool showList = provider.categoryVideos.isNotEmpty &&
+          provider.categoryVideos[0].videoList!.isNotEmpty;
+      return Container(
+        // color: Colors.tealAccent.withOpacity(0.1),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                Row(
+                  children: [
+                    UiCategoryTitleContainer(
+                        child:
+                            bodyLargeText('Master Class'.capitalize!, context)),
+                  ],
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: GestureDetector(
+                    onTap: () => Get.to(DrawerVideosMainPage()),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          bodyMedText(
+                            'View All',
+                            context,
+                          ),
+                          Icon(Icons.keyboard_arrow_right_rounded,
+                              color: Colors.white)
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            //build video list
+            height10(),
+            AnimatedContainer(
+              duration: Duration(milliseconds: 500),
+              height: provider.loadingVideos
+                  ? 150
+                  : showList
+                      ? 150
+                      : null,
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                scrollDirection: Axis.horizontal,
+                children: [
+                  if (!provider.loadingVideos && showList)
+                    ...provider.categoryVideos[0].videoList!.map((video) {
+                      var i =
+                          provider.categoryVideos[0].videoList!.indexOf(video);
+                      return Container(
+                        margin: const EdgeInsetsDirectional.only(end: 8),
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: bColor,
+                          border: Border.all(
+                              color: appLogoColor.withOpacity(0.9), width: 1),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: AccademicVideoCard(
+                          category: provider.categoryVideos[0],
+                          video: video,
+                          i: i,
+                          showBorder: false,
+                          showCategories: false,
+                          border: Border.all(color: appLogoColor, width: 1),
+                          textColor: Colors.white,
+                          loading: false,
+                        ),
+                      );
+                    }),
+                  if (provider.loadingVideos)
+                    ...List.generate(
+                        5,
+                        (index) => Container(
+                              margin: const EdgeInsetsDirectional.only(end: 8),
+                              padding: const EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                color: bColor,
+                                border: Border.all(
+                                    color: appLogoColor.withOpacity(0.9),
+                                    width: 1),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: AccademicVideoCard(
+                                category: VideoCategoryModel(),
+                                video: CategoryVideo(),
+                                i: index,
+                                showBorder: false,
+                                showCategories: false,
+                                border:
+                                    Border.all(color: appLogoColor, width: 1),
+                                textColor: Colors.white,
+                                loading: true,
+                              ),
+                            )),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
 
@@ -2541,7 +2783,7 @@ class MainPageRewardImageCard extends StatelessWidget {
                             ),
                           ),
                           errorWidget: (context, url, error) =>
-                              assetImages(Assets.noImage),
+                              assetImages(Assets.noImage, width: 200),
                           cacheManager: CacheManager(Config(
                               "${AppConstants.appID}_$title",
                               stalePeriod: const Duration(days: 7))),

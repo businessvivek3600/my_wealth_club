@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/model/response/videos_model.dart';
+import 'package:mycarclub/utils/default_logger.dart';
+import 'package:mycarclub/utils/skeleton.dart';
 import '/constants/assets_constants.dart';
 import '/providers/GalleryProvider.dart';
 import '/screens/drawerPages/download_pages/videos/player.dart';
@@ -199,131 +202,16 @@ class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
                 ),
                 height10(),
                 Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
                     ...category.videoList!.map((video) {
                       var i = category.videoList!.indexOf(video);
-                      return GestureDetector(
-                        onTap: () {
-                          provider.setCategoryModel(category);
-                          provider.setCurrentVideo(video);
-                          Get.to(CustomOrientationPlayer(
-                              videos: category.videoList!, videoIndex: i));
-
-                          // Get.to(VimeoPlayerWidget(
-                          //     url: video.videoUrl ?? ''));
-                          // Get.to(DummyPlayer(
-                          //     url: video.videoUrl ?? ''));
-                        },
-                        child: Container(
-                          // color: Colors.red,
-                          padding: EdgeInsets.only(
-                              right: i % 2 == 0 ? 10 : 0.0, bottom: 10),
-
-                          child: Column(
-                            children: [
-                              Stack(
-                                children: [
-                                  Container(
-                                    // height: (Get.width - 20-10) / 2,
-                                    height: 100,
-                                    width: (Get.width - 20 - 10) / 2,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(5),
-                                      color: Colors.white70,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 10,
-                                          spreadRadius: 5,
-                                        )
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(5),
-                                      child: buildCachedNetworkImage(
-                                        video.videoBanner ?? '',
-                                        fit: BoxFit.cover,
-                                        placeholderImg: Assets.noVideoThumbnail,
-                                        pw: 80,
-                                        ph: 100,
-                                      ),
-                                    ),
-                                  ),
-                                  Positioned(
-                                      bottom: 10,
-                                      right: 10,
-                                      child: GestureDetector(
-                                        onTap: () {},
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              shape: BoxShape.circle,
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.white30,
-                                                  blurRadius: 10,
-                                                  spreadRadius: 5,
-                                                )
-                                              ]),
-                                          child: Icon(Icons.play_arrow_rounded,
-                                              color: appLogoColor),
-                                        ),
-                                      )),
-                                  // Positioned(
-                                  //     child: Container(
-                                  //   width: (Get.width - 20-10) / 2,
-                                  //   padding: EdgeInsets.all(3),
-                                  //   decoration: BoxDecoration(
-                                  //       color: Colors.white30,
-                                  //       boxShadow: [
-                                  //         BoxShadow(
-                                  //           color: Colors.black12,
-                                  //           blurRadius: 1,
-                                  //           spreadRadius: 1,
-                                  //         )
-                                  //       ],
-                                  //       borderRadius: BorderRadius.only(
-                                  //           topLeft: Radius.circular(5),
-                                  //           topRight: Radius.circular(5))),
-                                  //   child: Row(
-                                  //     children: [
-                                  //       Expanded(
-                                  //         child: capText(
-                                  //             'Introduction to Trading dfh tion to Trading ',
-                                  //             context),
-                                  //       ),
-                                  //     ],
-                                  //   ),
-                                  // )),
-                                ],
-                              ),
-                              height5(),
-                              Container(
-                                width: (Get.width - 20 - 10) / 2,
-                                padding: EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                    color: Colors.white10,
-                                    boxShadow: [
-                                      // BoxShadow(
-                                      //   color: Colors.black.withOpacity(0.05),
-                                      // blurRadius: 1,
-                                      // spreadRadius: 1,
-                                      // )
-                                    ],
-                                    borderRadius: BorderRadius.circular(5)),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: capText(video.title ?? "", context,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                      return AccademicVideoCard(
+                        category: category,
+                        video: video,
+                        i: i,
+                        showBorder: false,
                       );
                     }),
                   ],
@@ -332,6 +220,185 @@ class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
             ),
           );
         });
+  }
+}
+
+class AccademicVideoCard extends StatelessWidget {
+  const AccademicVideoCard({
+    super.key,
+    required this.category,
+    required this.i,
+    required this.video,
+    this.showBorder = false,
+    this.height = 140,
+    this.width,
+    this.border,
+    this.textColor = Colors.black,
+    this.showCategories = false,
+    this.loading = false,
+  });
+
+  final VideoCategoryModel category;
+  final CategoryVideo video;
+  final int i;
+  final bool showBorder;
+  final double height;
+  final double? width;
+  final Border? border;
+  final Color textColor;
+  final bool showCategories;
+  final bool loading;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GalleryProvider>(builder: (context, provider, child) {
+      double pd = showBorder ? 5 : 0;
+      double margin = showBorder ? 0 : 0;
+      double w = width ?? (Get.width - 20 - 10 - (2 * pd)) / 2;
+      var h = height + 2 * pd;
+      return Container(
+        height: h,
+        decoration: BoxDecoration(
+            border:
+                showBorder ? (border ?? Border.all(color: appLogoColor)) : null,
+            borderRadius: BorderRadius.circular(5)),
+        padding: EdgeInsets.all(pd),
+        margin: EdgeInsets.only(bottom: margin),
+        child: GestureDetector(
+          onTap: loading
+              ? null
+              : () {
+                  provider.setCategoryModel(category);
+                  provider.setCurrentVideo(video);
+                  Get.to(CustomOrientationPlayer(
+                      videos: category.videoList!,
+                      videoIndex: i,
+                      showCategoriesButton: showCategories));
+                  // Get.to(VimeoPlayerWidget(
+                  //     url: video.videoUrl ?? ''));
+                  // Get.to(DummyPlayer(
+                  //     url: video.videoUrl ?? ''));
+                },
+          child: Container(
+            // color: Colors.red,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Stack(
+                  children: [
+                    Container(
+                      // height: (Get.width - 20-10) / 2,
+                      height: 100,
+                      width: w,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white70,
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 10,
+                              spreadRadius: 5)
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(5),
+                        child: loading
+                            ? SkeletonText(height: 100)
+                            : buildCachedNetworkImage(
+                                video.videoBanner ?? '',
+                                fit: BoxFit.cover,
+                                placeholderImg: Assets.noVideoThumbnail,
+                                pw: 80,
+                                ph: 100,
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white30,
+                                  blurRadius: 10,
+                                  spreadRadius: 5,
+                                )
+                              ]),
+                          child: Icon(Icons.play_arrow_rounded,
+                              color: appLogoColor),
+                        )),
+                    // Positioned(
+                    //     child: Container(
+                    //   width: (Get.width - 20-10) / 2,
+                    //   padding: EdgeInsets.all(3),
+                    //   decoration: BoxDecoration(
+                    //       color: Colors.white30,
+                    //       boxShadow: [
+                    //         BoxShadow(
+                    //           color: Colors.black12,
+                    //           blurRadius: 1,
+                    //           spreadRadius: 1,
+                    //         )
+                    //       ],
+                    //       borderRadius: BorderRadius.only(
+                    //           topLeft: Radius.circular(5),
+                    //           topRight: Radius.circular(5))),
+                    //   child: Row(
+                    //     children: [
+                    //       Expanded(
+                    //         child: capText(
+                    //             'Introduction to Trading dfh tion to Trading ',
+                    //             context),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // )),
+                  ],
+                ),
+                Spacer(),
+                Container(
+                  width: w,
+                  padding: EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                      // color: Colors.white10,
+                      boxShadow: [
+                        // BoxShadow(
+                        //   color: Colors.black.withOpacity(0.05),
+                        // blurRadius: 1,
+                        // spreadRadius: 1,
+                        // )
+                      ],
+                      borderRadius: BorderRadius.circular(2)),
+                  child: loading
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Skeleton(
+                                height: 10,
+                                textColor: Colors.white.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(2)),
+                            height5(),
+                            Skeleton(
+                                height: 10,
+                                width: w * 0.8,
+                                textColor: Colors.white.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(2)),
+                          ],
+                        )
+                      : capText(video.title ?? "", context,
+                          color: textColor,
+                          fontWeight: FontWeight.w500,
+                          maxLines: 2),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 }
 

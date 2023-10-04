@@ -3,21 +3,25 @@ import 'package:get/get.dart';
 import '/constants/assets_constants.dart';
 import '/utils/picture_utils.dart';
 
-showLoading({bool? userRootNavigator}) async {
+showLoading(
+    {BuildContext? context,
+    bool? useRootNavigator,
+    bool dismissable = false}) async {
   showDialog(
-    context: Get.context!,
-    useRootNavigator: userRootNavigator ?? false,
-    barrierDismissible: false,
-    builder: (context) => WillPopScope(
-      onWillPop: () async => false,
-      child: Container(
-        color: Colors.transparent,
-        margin: EdgeInsets.symmetric(
-            horizontal: Get.width * 0.2, vertical: Get.height * 0.3),
-        child: Center(child: assetRive(Assets.appDefaultLoading)),
-      ),
+    context: context ?? Get.context!,
+    useRootNavigator: useRootNavigator ?? true,
+    barrierDismissible: dismissable,
+    builder: (context) => Container(
+      color: Colors.transparent,
+      margin: EdgeInsets.symmetric(
+          horizontal: Get.width * 0.2, vertical: Get.height * 0.3),
+      child: Center(child: assetRive(Assets.appDefaultLoading)),
     ),
   );
+}
+
+hideLoading({required BuildContext context}) {
+  Navigator.of(context).pop();
 }
 
 appDefaultPlainLoading({double? height, double? width}) => Container(

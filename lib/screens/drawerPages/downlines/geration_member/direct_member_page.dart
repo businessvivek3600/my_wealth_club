@@ -2,7 +2,9 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -28,17 +30,59 @@ class DirectMembersPage extends StatefulWidget {
 
 class _DirectMembersPageState extends State<DirectMembersPage> {
   final globalKey = GlobalKey<ScaffoldState>();
+  var provider = sl.get<TeamViewProvider>();
+  late ScrollController _scrollController;
+
   @override
   void initState() {
-    sl.get<TeamViewProvider>().getCustomerTeam();
     super.initState();
+    provider.directMemberSearchController = TextEditingController();
+    provider.setSearchingDirectMembers(false);
+    provider.getDirectMembers();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() => _loadMore(sl.get<TeamViewProvider>()));
   }
 
   @override
   void dispose() {
-    sl.get<TeamViewProvider>().loadingTeamMembers = false;
-    sl.get<TeamViewProvider>().customerTeamMembers.clear();
+    provider.directMemberPage = 0;
+    provider.loadingDirectMembers = false;
+    provider.totalDirectMembers = 0;
+    provider.directMemberSelectedStatus = null;
+    provider.isSearchingDirectMember = false;
+    provider.directMemberSearchController.clear();
+    provider.directMembers.clear();
+    _scrollController
+        .removeListener(() => _loadMore(sl.get<TeamViewProvider>()));
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<bool> _loadMore(TeamViewProvider provider) async {
+    print(
+        "my trade ,onLoadMore ${_scrollController.position.pixels} ${_scrollController.position.maxScrollExtent}");
+    if (_scrollController.position.pixels ==
+            (_scrollController.position.maxScrollExtent) &&
+        _scrollController.position.userScrollDirection ==
+            ScrollDirection.reverse &&
+        !provider.loadingDirectMembers) {
+      bool isFinished =
+          provider.directMembers.length == provider.totalDirectMembers;
+      if (isFinished) {
+        Fluttertoast.showToast(msg: "No more data");
+        return false;
+      }
+      print("my trade ,onLoadMore");
+      await provider.getDirectMembers();
+    }
+    return true;
+  }
+
+  Future<void> _refresh() async {
+    print("my Incomes ,onRefresh");
+    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
+    provider.directMemberPage = 0;
+    await provider.getDirectMembers();
   }
 
   @override
@@ -59,22 +103,43 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
           ),
           child: Consumer<TeamViewProvider>(
             builder: (context, teamViewProvider, child) {
-              return !teamViewProvider.loadingTeamMembers
-                  ? (!teamViewProvider.loadingTeamMembers ||
-                          teamViewProvider.customerTeamMembers.isNotEmpty)
-                      ? ListView(
-                          physics: BouncingScrollPhysics(),
-                          padding: EdgeInsets.all(8),
-                          children: [
-                            ...List.generate(
-                                15, (index) => _MemberTile(index: index)),
-                            ...teamViewProvider.customerTeamMembers
-                                .map((e) => buildMember(e))
-                          ],
-                        )
-                      : buildEmptyList(context)
-                  : Center(
-                      child: CircularProgressIndicator(color: Colors.white));
+              return provider.loadingDirectMembers ||
+                      provider.directMembers.isNotEmpty
+                  ? Column(
+                      children: [
+                        Expanded(
+                          child: provider.directMembers.isNotEmpty
+                              ? RefreshIndicator(
+                                  onRefresh: _refresh,
+                                  child: ListView(
+                                    controller: _scrollController,
+                                    physics: BouncingScrollPhysics(),
+                                    padding: EdgeInsets.all(8),
+                                    children: [
+                                      ...teamViewProvider.directMembers
+                                          .map((e) => _MemberTile(user: e)),
+                                    ],
+                                  ),
+                                )
+                              : Center(
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white)),
+                        ),
+                        if (provider.loadingDirectMembers &&
+                            provider.directMemberPage != 0)
+                          Container(
+                              padding: const EdgeInsets.all(20),
+                              height: provider.directMembers.length == 0
+                                  ? Get.height -
+                                      kToolbarHeight -
+                                      kBottomNavigationBarHeight
+                                  : 100,
+                              child: const Center(
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white))),
+                      ],
+                    )
+                  : buildEmptyList(context);
             },
           ),
         ),
@@ -135,25 +200,46 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                               color: Colors.white),
                         ),
                       ),
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) {
+                          provider.directMemberPage = 0;
+                          provider.directMemberSelectedStatus = null;
+                          provider.loadingDirectMembers = true;
+                          provider.getDirectMembers();
+                        }
+                      },
                     ),
                   )
-                : titleLargeText('Generation Members', context,
-                    useGradient: true)),
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      titleLargeText('Direct Members', context,
+                          useGradient: true),
+                      height5(),
+                      capText(
+                          'Total: ${provider.totalDirectMembers.toString()}',
+                          context,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 10),
+                    ],
+                  )),
         actions: [
           AnimatedSwitcher(
             duration: Duration(milliseconds: 500),
             child: !provider.isSearchingDirectMember
                 ? IconButton(
                     onPressed: () {
-                      provider.setSearching(!provider.isSearchingDirectMember);
+                      provider.setSearchingDirectMembers(
+                          !provider.isSearchingDirectMember);
                     },
                     icon: Icon(Icons.search))
                 : Transform.rotate(
                     angle: pi / 2,
                     child: IconButton(
                         onPressed: () {
-                          provider
-                              .setSearching(!provider.isSearchingDirectMember);
+                          provider.setSearchingDirectMembers(
+                              !provider.isSearchingDirectMember);
                           provider.directMemberSearchController.clear();
                         },
                         icon: Icon(Icons.u_turn_left)),
@@ -383,15 +469,15 @@ class _FilterGenerationMemberDialogState
                         inactiveBgColor: Colors.white10,
                         inactiveFgColor: Colors.white,
                         totalSwitches: 2,
-                        labels: ['Active', 'De-actve'],
+                        labels: ['Active', 'De-actve'].reversed.toList(),
                         icons: [
                           Icons.airplanemode_active_rounded,
                           Icons.airplanemode_inactive_rounded
-                        ],
+                        ].reversed.toList(),
                         activeBgColors: [
                           [Colors.green, appLogoColor],
                           [appLogoColor, Colors.red]
-                        ],
+                        ].reversed.toList(),
                         onToggle: (index) {
                           setState(() {
                             selectedStatus = index;
@@ -477,9 +563,12 @@ class _FilterGenerationMemberDialogState
                       provider.directMemberSelectedStatus = selectedStatus;
                       provider.directMemberRefferenceIdController.text =
                           refferenceIdController.text;
-                      provider.getCustomerTeam();
+                      provider.directMemberPage = 0;
+                      provider.directMembers.clear();
+                      provider.loadingDirectMembers = true;
+                      provider.getDirectMembers();
                       provider.directMemberSearchController.clear();
-                      provider.setSearching(false);
+                      provider.setSearchingDirectMembers(false);
                       Get.back();
                     },
                     child: capText('Apply', context,
@@ -497,15 +586,12 @@ class _FilterGenerationMemberDialogState
 }
 
 class _MemberTile extends StatelessWidget {
-  const _MemberTile({
-    super.key,
-    required this.index,
-  });
-  final int index;
+  _MemberTile({super.key, required this.user});
 
+  final UserData user;
   @override
   Widget build(BuildContext context) {
-    bool active = index % 3 == 0;
+    bool active = user.salesActive == '1';
     return Container(
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.only(bottom: 10),
@@ -534,12 +620,12 @@ class _MemberTile extends StatelessWidget {
                       children: [
                         Expanded(
                           child: bodyLargeText(
-                              ('Rammu kaka').capitalize!, context,
+                              (user.customerName ?? '').capitalize!, context,
                               color: Colors.black),
                         ),
                         width5(),
                         capText(
-                          '(MMgg343Hs4)',
+                          '(${user.username ?? ''})',
                           context,
                           color: Colors.white70,
                           fontWeight: FontWeight.w500,
@@ -561,9 +647,9 @@ class _MemberTile extends StatelessWidget {
                             color: active ? Colors.green : Colors.red,
                             fontWeight: FontWeight.w500),
                         width5(),
-                        if (active)
+                        if (active && user.first_active_date != null)
                           capText(
-                            '( ${formatDate(DateTime.now(), 'dd MMM yyyy h:m a')} )',
+                            '( ${formatDate(DateTime.parse(user.first_active_date!), 'dd MMM yyyy h:m a')} )',
                             context,
                             color: fadeTextColor,
                           ),
@@ -586,7 +672,7 @@ class _MemberTile extends StatelessWidget {
                   capText('Referred By:', context,
                       color: fadeTextColor, fontWeight: FontWeight.w500),
                   capText(
-                    'Mangarua',
+                    '${user.directSponserUsername ?? ''}',
                     context,
                     color: fadeTextColor,
                   ),
@@ -604,11 +690,12 @@ class _MemberTile extends StatelessWidget {
                 children: [
                   capText('Date of Joining:', context,
                       color: fadeTextColor, fontWeight: FontWeight.w500),
-                  capText(
-                    '${formatDate(DateTime.now(), 'dd MMM yyyy h:m a')}',
-                    context,
-                    color: fadeTextColor,
-                  ),
+                  if (user.createdAt != null)
+                    capText(
+                      '${formatDate(DateTime.parse(user.createdAt!), 'dd MMM yyyy h:m a')}',
+                      context,
+                      color: fadeTextColor,
+                    ),
                 ],
               ),
             ],

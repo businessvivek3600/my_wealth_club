@@ -25,14 +25,14 @@ import 'package:provider/provider.dart';
 
 import '../../dashboard/main_page.dart';
 
-class VoucherPage extends StatefulWidget {
-  const VoucherPage({Key? key}) : super(key: key);
+class GiftVoucherPage extends StatefulWidget {
+  const GiftVoucherPage({Key? key}) : super(key: key);
 
   @override
-  State<VoucherPage> createState() => _VoucherPageState();
+  State<GiftVoucherPage> createState() => _GiftVoucherPageState();
 }
 
-class _VoucherPageState extends State<VoucherPage> {
+class _GiftVoucherPageState extends State<GiftVoucherPage> {
   var provider = sl.get<VoucherProvider>();
   @override
   void initState() {
@@ -94,7 +94,8 @@ class _VoucherPageState extends State<VoucherPage> {
                         height: !provider.loadingVoucher &&
                                 provider.packages.isEmpty
                             ? Get.height * 0.3
-                            : Get.height * 0.4,
+                            : Get.height * 0.3,
+                        width: double.maxFinite,
                         child: (provider.loadingVoucher ||
                                 provider.packages.isNotEmpty)
                             ? Column(
@@ -371,125 +372,6 @@ class _VoucherPageState extends State<VoucherPage> {
             ),
           )),
     );
-    return ClipPath(
-      clipper: TicketPassClipper(position: Get.width * 0.2, holeRadius: 30),
-      child: Container(
-        // height: 180,
-        margin: EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(15)),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                children: [
-                  height10(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          titleLargeText(e.packageName ?? '', context,
-                              color: textColor),
-                          width10(),
-                          bodyMedText(
-                              '($currency_icon${double.parse(e.packageAmt ?? '0').toStringAsFixed(2)})',
-                              context,
-                              color: textColor),
-                        ],
-                      ),
-                      bodyLargeText('Renewal', context, color: Colors.green),
-                    ],
-                  ),
-                  height10(),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     bodyLargeText('Allotted By:', context,
-                  //         color: textColor),
-                  //     bodyLargeText('MySelf', context,
-                  //         color: Colors.blue),
-                  //   ],
-                  // ),
-                  // height10(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      bodyLargeText('Used By:', context, color: textColor),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          bodyLargeText(e.usedBy ?? 'Not Yet', context,
-                              color: e.usedBy != null ? bColor : textColor),
-                          if (e.updatedAt != null)
-                            capText(
-                                DateFormat()
-                                    .add_yMMMd()
-                                    .add_jm()
-                                    .format(DateTime.parse(e.updatedAt ?? '')),
-                                context,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black54),
-                        ],
-                      ),
-                    ],
-                  ),
-                  height10(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      bodyLargeText('Created At:', context, color: textColor),
-                      if (e.createdAt != null)
-                        bodyLargeText(
-                            DateFormat()
-                                .add_yMMMd()
-                                .add_jm()
-                                .format(DateTime.parse(e.createdAt ?? "")),
-                            context,
-                            color: Colors.black54),
-                    ],
-                  ),
-                  height10(),
-                ],
-              ),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                    ),
-                    child: ElevatedButton(
-                        onPressed: !used
-                            ? () {
-                                Clipboard.setData(
-                                        ClipboardData(text: e.epin ?? ''))
-                                    .then((value) => Fluttertoast.showToast(
-                                        msg: 'Voucher code copied!'));
-                              }
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: bColor,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10))),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            titleLargeText(e.epin ?? '', context),
-                            width10(),
-                            Icon(Icons.copy_rounded)
-                          ],
-                        )),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Padding buildBottomButton(BuildContext context) {
@@ -523,7 +405,7 @@ class _VoucherPageState extends State<VoucherPage> {
     return showModalBottomSheet(
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        barrierColor: Colors.white54,
+        barrierColor: Colors.white24,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20), topLeft: Radius.circular(20))),
@@ -554,7 +436,6 @@ class VoucherCarousel extends StatelessWidget {
     return Consumer<VoucherProvider>(
       builder: (context, provider, child) {
         print('gift voucher packages length ${provider.packages.length}');
-
         return CarouselSlider(
             carouselController: provider.carouselController,
             items: <Widget>[
@@ -565,10 +446,12 @@ class VoucherCarousel extends StatelessWidget {
                       // Get.to(BuyEventTicket(event: e));
                     },
                     child: ClipRRect(
+                        // width: 300,
                         borderRadius: BorderRadius.circular(5),
                         child: Stack(children: [
                           CachedNetworkImage(
                             imageUrl: package.giftImg ?? '',
+                            fit: BoxFit.cover,
                             placeholder: (context, url) => SizedBox(
                                 height: 150,
                                 width: 100,
@@ -582,9 +465,8 @@ class VoucherCarousel extends StatelessWidget {
                                   assetImages(Assets.noImage, fit: BoxFit.fill),
                             ),
                             cacheManager: CacheManager(Config(
-                              "${AppConstants.appID}_${package.giftImg ?? 'package.giftImg${package.name ?? ''}'}",
-                              stalePeriod: const Duration(days: 7),
-                            )),
+                                "${AppConstants.appID}_${package.giftImg ?? 'package.giftImg${package.name ?? ''}'}",
+                                stalePeriod: const Duration(days: 7))),
                           ),
                         ])))),
               if (provider.loadingVoucher)
@@ -596,7 +478,8 @@ class VoucherCarousel extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10))))
             ],
             options: CarouselOptions(
-                viewportFraction: 0.5,
+                height: 180,
+                viewportFraction: 0.8,
                 initialPage: 0,
                 enableInfiniteScroll: false,
                 reverse: false,
@@ -605,7 +488,7 @@ class VoucherCarousel extends StatelessWidget {
                 autoPlayAnimationDuration: Duration(milliseconds: 800),
                 autoPlayCurve: Curves.fastOutSlowIn,
                 enlargeCenterPage: true,
-                enlargeFactor: 0.3,
+                // enlargeFactor: 0.3,
                 // onPageChanged: callbackFunction,
                 scrollDirection: Axis.horizontal,
                 onPageChanged: (page, reason) {

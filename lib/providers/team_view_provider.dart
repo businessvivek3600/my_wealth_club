@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:animated_tree_view/animated_tree_view.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
@@ -7,9 +6,10 @@ import 'package:api_cache_manager/utils/cache_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../database/model/response/abstract_user_model.dart';
+import '../database/model/response/base/error_response.dart';
+import '../utils/toasts.dart';
 import '/screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
-import '../constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
 import '/database/model/response/base/user_model.dart';
@@ -38,16 +38,8 @@ class TeamViewProvider extends ChangeNotifier {
 
   bool loadingTeamMembers = false;
   List<UserData> customerTeamMembers = [];
-  final directMemberSearchController = TextEditingController();
-  bool isSearchingDirectMember = false;
-  setSearching(bool val) {
-    isSearchingDirectMember = val;
-    notifyListeners();
-  }
-
-  DateTime? directMemberSelectedDate;
-  final directMemberRefferenceIdController = TextEditingController();
-  int? directMemberSelectedStatus;
+  int totalTeamMembers = 0;
+  int teamMemberPage = 0;
 
   Future<void> getCustomerTeam() async {
     loadingTeamMembers = true;
@@ -56,13 +48,8 @@ class TeamViewProvider extends ChangeNotifier {
         await APICacheManager().isAPICacheKeyExist(AppConstants.myTeam);
     Map? map;
     if (isOnline) {
-      var data = {
-        'query': directMemberSearchController.text,
-        'date': directMemberSelectedDate,
-        'status': directMemberSelectedStatus,
-        'referral_id': directMemberRefferenceIdController.text,
-      };
-      ApiResponse apiResponse = await teamViewRepo.getTeamMember();
+      ApiResponse apiResponse =
+          await teamViewRepo.getTeamMember({'page': teamMemberPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
@@ -99,10 +86,12 @@ class TeamViewProvider extends ChangeNotifier {
         } catch (e) {}
 
         try {
-          if (map['my_team'] != null && map['my_team'].isNotEmpty) {
+          if (map['data'] != null && map['data'].isNotEmpty) {
             customerTeamMembers.clear();
-            map['my_team']
+            map['data']
                 .forEach((e) => customerTeamMembers.add(UserData.fromJson(e)));
+            totalTeamMembers = int.parse(map['total'] ?? '0');
+            teamMemberPage++;
             notifyListeners();
           }
         } catch (e) {}
@@ -182,15 +171,104 @@ class TeamViewProvider extends ChangeNotifier {
     return status;
   }
 
+//direct team
+  DateTime? directMemberSelectedDate;
+  final directMemberRefferenceIdController = TextEditingController();
+  int? directMemberSelectedStatus;
+  late TextEditingController directMemberSearchController;
+  bool isSearchingDirectMember = false;
+  setSearchingDirectMembers(bool val) {
+    isSearchingDirectMember = val;
+    notifyListeners();
+  }
+
+  List<UserData> directMembers = [];
+  bool loadingDirectMembers = true;
+  int totalDirectMembers = 0;
+  int directMemberPage = 0;
+  Future<List<UserData>> getDirectMembers() async {
+    loadingDirectMembers = true;
+    notifyListeners();
+    List<UserData> _directMember = [];
+    Map? map;
+
+    bool isIncomeActivityCacheExist =
+        await APICacheManager().isAPICacheKeyExist(AppConstants.directMember);
+    if (isOnline) {
+      ApiResponse apiResponse = await teamViewRepo.directMember({
+        'page': directMemberPage.toString(),
+        'status': (directMemberSelectedStatus ?? '').toString(),
+        'search': directMemberSearchController.text,
+      });
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        bool status = false;
+        map = apiResponse.response!.data;
+        try {
+          status = map?["status"];
+        } catch (e) {}
+        if (status && directMemberPage == 0) {
+          try {
+            var cacheModel = APICacheDBModel(
+                key: AppConstants.directMember, syncData: jsonEncode(map));
+            await APICacheManager().addCacheData(cacheModel);
+          } catch (e) {}
+        }
+        notifyListeners();
+      } else {
+        String errorMessage = "";
+        if (apiResponse.error is String) {
+          errorMessage = apiResponse.error.toString();
+        } else {
+          ErrorResponse errorResponse = apiResponse.error;
+          errorMessage = errorResponse.errors[0].message;
+        }
+        errorLog('error message from directMember ${errorMessage}');
+        Toasts.showErrorNormalToast(errorMessage);
+      }
+    } else if (!isOnline && isIncomeActivityCacheExist) {
+      try {
+        if (directMemberPage == 0) {
+          var data =
+              (await APICacheManager().getCacheData(AppConstants.directMember))
+                  .syncData;
+          map = jsonDecode(data);
+        }
+        warningLog('directMember cache hit $map');
+      } catch (e) {
+        errorLog('directMember cache hit failed! $e');
+      }
+    } else {
+      Toasts.showWarningNormalToast('You are offline!');
+    }
+    if (map != null) {
+      try {
+        totalDirectMembers = int.parse(map['total'] ?? '0');
+        if (map['data'] != null && map['data'] is List) {
+          map['data'].forEach((e) => _directMember.add(UserData.fromJson(e)));
+          if (directMemberPage == 0) {
+            directMembers.clear();
+            directMembers = _directMember;
+          } else {
+            directMembers.addAll(_directMember);
+          }
+          directMemberPage++;
+        }
+      } catch (e) {
+        errorLog('directMember error $e');
+      }
+    }
+    loadingDirectMembers = false;
+    notifyListeners();
+    return _directMember;
+  }
+
   ///generationAnalyzer
   List<BreadCrumbContent> breadCrumbContent = [];
   setBreadCrumbContent(int index, [BreadCrumbContent? content]) async {
     loadingGUsers = ButtonLoadingState.loading;
     notifyListeners();
     await Future.delayed(const Duration(seconds: 1));
-    errorLog(
-        'setBreadCrumbContent  ${index} ${breadCrumbContent.length - 1}  replace: ${breadCrumbContent.length - 1 <= index}',
-        'index out of range');
     if (content != null) {
       if (breadCrumbContent.isEmpty) {
         breadCrumbContent.insert(index, content);
@@ -214,25 +292,26 @@ class TeamViewProvider extends ChangeNotifier {
     loadingGUsers = ButtonLoadingState.loading;
     notifyListeners();
     gUsers.clear();
-    gUsers.addAll(generateRandomUsers(username, selectedGeneration));
-    await getGenerationAnalyzer(username);
+    // gUsers.addAll(generateRandomUsers(username, selectedGeneration));
+    gUsers.addAll(await getGenerationAnalyzer(username, selectedGeneration));
+    // await getGenerationAnalyzer(username, selectedGeneration);
     await Future.delayed(const Duration(seconds: 1))
         .then((value) => loadingGUsers = ButtonLoadingState.completed);
     notifyListeners();
   }
 
-  generateRandomUsers(String username, int generaionID) {
-    List<GenerationAnalyzerUser> users = [];
-    for (var i = 0; i < Random().nextInt(50); i++) {
-      users.add(GenerationAnalyzerUser(
-        name: 'User $i',
-        generation: generaionID,
-        image: Assets.appLogo_S,
-        referralId: username,
-      ));
-    }
-    return users;
-  }
+  // generateRandomUsers(String username, int generaionID) {
+  //   List<GenerationAnalyzerUser> users = [];
+  //   for (var i = 0; i < Random().nextInt(50); i++) {
+  //     users.add(GenerationAnalyzerUser(
+  //       name: 'User $i',
+  //       generation: generaionID,
+  //       image: Assets.appLogo_S,
+  //       referralId: username,
+  //     ));
+  //   }
+  //   return users;
+  // }
 
   int selectedGeneration = 0;
   setSelectedGeneration(int val) {
@@ -240,14 +319,30 @@ class TeamViewProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool isSearchingGUsers = false;
+  late TextEditingController generationAnalyzerSearchController;
+  setSearchingGUsers(bool val) {
+    isSearchingGUsers = val;
+    notifyListeners();
+  }
+
+  int generationAnalyzerPage = 0;
+  int totalGUsers = 0;
+  int levelMemberCount = 0;
+  bool loadingGenerationAnalyzer = false;
+
   Future<List<GenerationAnalyzerUser>> getGenerationAnalyzer(
-      String username) async {
+      String username, int selectedGeneration) async {
     List<GenerationAnalyzerUser> gUsers = [];
+    loadingGenerationAnalyzer = true;
+    notifyListeners();
     if (isOnline) {
       try {
         var data = {
           'username': username,
-          'generation': selectedGeneration,
+          'level': selectedGeneration.toString(),
+          'page': generationAnalyzerPage.toString(),
+          'search': generationAnalyzerSearchController.text,
         };
         print('getGenerationAnalyzer post data: $data');
         ApiResponse apiResponse =
@@ -264,12 +359,17 @@ class TeamViewProvider extends ChangeNotifier {
           } catch (e) {}
           if (status) {
             try {
-              if (map['user'] != null) {
-                // gUser.clear();
-                // map['user'].forEach((e) {
-                //   gUser.add(GenerationAnalyzerUser.fromJson(e));
-                // });
-                // notifyListeners();
+              if (map['levelMember'] != null) {
+                gUsers.clear();
+                map['levelMember'].forEach((e) {
+                  gUsers.add(GenerationAnalyzerUser.fromJson(e));
+                });
+                totalGUsers = int.parse(map['total'] ?? '0');
+                levelMemberCount = int.parse(map['levelMemberCount'] ?? '0');
+
+                generationAnalyzerPage++;
+
+                notifyListeners();
               }
             } catch (e) {}
           }
@@ -278,6 +378,8 @@ class TeamViewProvider extends ChangeNotifier {
     } else {
       Fluttertoast.showToast(msg: 'No internet connection');
     }
+    loadingGenerationAnalyzer = false;
+    notifyListeners();
     return gUsers;
   }
 
@@ -339,6 +441,79 @@ class TeamViewProvider extends ChangeNotifier {
     }
     loadingLoquidUser = false;
     notifyListeners();
+  }
+
+  //place user
+  ButtonLoadingState placeUserStatus = ButtonLoadingState.idle;
+  String? placeUserErrorText;
+  Future<bool> placeUser({
+    Function(String? msg)? onError,
+    Function(String? msg)? onSuccess,
+    required String leg,
+    required String placementId,
+    required String customerId,
+  }) async {
+    bool status = false;
+
+    Map? map;
+    Map<String, dynamic> data = {
+      "leg": leg,
+      'customer_id': customerId,
+      'placement_id': placementId
+    };
+    print('placeUser post data: $data');
+    try {
+      if (isOnline) {
+        placeUserStatus = ButtonLoadingState.loading;
+        placeUserErrorText = '';
+        notifyListeners();
+        ApiResponse apiResponse = await teamViewRepo.liquidUserAutoPlace(data);
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          map = apiResponse.response!.data;
+          try {
+            status = map?["status"] ?? false;
+            if (map?['is_logged_in'] == 0) {
+              logOut();
+            }
+            if (status) {
+              try {
+                placeUserStatus = ButtonLoadingState.completed;
+                placeUserErrorText = map?['message'];
+                status = true;
+                if (onSuccess != null) onSuccess(placeUserErrorText);
+                notifyListeners();
+              } catch (e) {}
+            } else {
+              placeUserStatus = ButtonLoadingState.failed;
+              placeUserErrorText = map?['message'];
+            }
+          } catch (e) {
+            placeUserStatus = ButtonLoadingState.failed;
+            placeUserErrorText = 'failed message';
+          }
+        }
+      } else {
+        placeUserStatus = ButtonLoadingState.failed;
+        placeUserErrorText = 'failed message';
+      }
+    } catch (e) {
+      await Future.delayed(const Duration(seconds: 1));
+      placeUserStatus = ButtonLoadingState.failed;
+      placeUserErrorText = 'Some thing went wrong!';
+    }
+    notifyListeners();
+
+    if (onError != null &&
+        placeUserErrorText != null &&
+        placeUserStatus == ButtonLoadingState.failed) {
+      onError(placeUserErrorText);
+    }
+    await Future.delayed(const Duration(seconds: 1));
+    placeUserStatus = ButtonLoadingState.idle;
+    placeUserErrorText = null;
+    notifyListeners();
+    return status;
   }
 
 // get matrix user api

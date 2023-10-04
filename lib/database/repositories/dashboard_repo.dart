@@ -23,6 +23,17 @@ class DashboardRepo {
     }
   }
 
+  ///:tradeIdeas
+  Future<ApiResponse> tradeIdeas(Map<String, String> map) async {
+    try {
+      Response response =
+          await dioClient.post(AppConstants.tradeIdeas, token: true, data: map);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
   ///:Registration
   Future<ApiResponse> getDownloadsData() async {
     try {
@@ -71,12 +82,26 @@ class DashboardRepo {
     }
   }
 
+  ///income activity
+  Future<ApiResponse> myIncomeActivity(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient.post(AppConstants.myIncomeActivity,
+          token: true, data: data);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
   String getPDFLink() => sharedPreferences.getString(SPConstants.pdfLink) ?? "";
 
   String getPPTLink() => sharedPreferences.getString(SPConstants.pptLink) ?? "";
 
-  String getVideoLink() =>
-      sharedPreferences.getString(SPConstants.videoLink) ?? "";
+  String getPromoVideoLink() =>
+      sharedPreferences.getString(SPConstants.promoVideoLink) ?? "";
+  String getIntroVideoLink() =>
+      sharedPreferences.getString(SPConstants.introVideoLink) ?? "";
 
   void setPDFLink(String id) async =>
       await sharedPreferences.setString(SPConstants.pdfLink, id);
@@ -84,8 +109,11 @@ class DashboardRepo {
   void setPPTLink(String id) async =>
       await sharedPreferences.setString(SPConstants.pptLink, id);
 
-  void setVideoLink(String id) async =>
-      await sharedPreferences.setString(SPConstants.videoLink, id);
+  void setPromotionalVideoLink(String id) async =>
+      await sharedPreferences.setString(SPConstants.promoVideoLink, id);
+
+  void setIntroVideoLink(String id) async =>
+      await sharedPreferences.setString(SPConstants.introVideoLink, id);
 
   Future<bool> clearSharedData() async {
     sharedPreferences.remove(SPConstants.userToken);

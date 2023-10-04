@@ -61,9 +61,10 @@ class Assets {
 
   static const appWebLogo = 'appLogo_l.png';
   static const appWebLogoWhite = 'appLogo_l.png';
+  static const loginToMWC = 'login-to-mwc.png';
   static const bgGraphic = 'bgGraphic.jpg';
   static const eagleAi = 'EagleAi.png';
-  static const noImage = 'no_image.jfif';
+  static const noImage = 'appLogo_l.png';
   static const offlineWifi = 'offline-5.png';
   static const imageNotFound = 'image-not-found.png';
   static const iosMobilePhone = 'ios_mobile.png';

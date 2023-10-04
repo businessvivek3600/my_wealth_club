@@ -13,7 +13,7 @@ class Toasts {
       {String? title,
       AnimationType animationType = AnimationType.fromTop}) async {
     CherryToast.success(
-            title: Text("Success",
+            title: Text(title ?? "Success",
                 style: TextStyle(color: Colors.green, fontSize: 12)),
             displayTitle: true,
             displayIcon: true,
@@ -32,17 +32,15 @@ class Toasts {
   static showErrorNormalToast(String desc, {String? title}) async {
     CherryToast.error(
             title: Text(
-              "Error",
+              title ?? "Error",
               style: TextStyle(color: Colors.red, fontSize: 12),
             ),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description: Text(
-              desc,
-              style: TextStyle(color: Colors.black),
-            ),
+            description:
+                Text(desc, style: TextStyle(color: Colors.black, fontSize: 10)),
             animationType: AnimationType.fromRight,
             animationDuration: Duration(milliseconds: 900),
             autoDismiss: true)
@@ -51,17 +49,15 @@ class Toasts {
 
   static showWarningNormalToast(String desc, {String? title}) async {
     CherryToast.warning(
-            title: Text("Ooops!",
+            title: Text(title ?? "Ooops!",
                 style: TextStyle(color: Colors.red, fontSize: 12),
                 textAlign: TextAlign.justify),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description: Text(
-              desc,
-              style: TextStyle(color: Colors.black),
-            ),
+            description:
+                Text(desc, style: TextStyle(color: Colors.black, fontSize: 10)),
             animationType: AnimationType.fromRight,
             animationDuration: Duration(milliseconds: 900),
             autoDismiss: true)
@@ -72,17 +68,15 @@ class Toasts {
       {String? title, required bool error}) async {
     print('is error $error');
     CherryToast(
-      title: Text("Error",
+      title: Text(title ?? "Error",
           style: TextStyle(color: Colors.red, fontSize: 12),
           textAlign: TextAlign.justify),
       displayTitle: true,
       displayIcon: true,
       displayCloseButton: false,
       borderRadius: 10,
-      description: Text(
-        desc,
-        style: TextStyle(color: Colors.black),
-      ),
+      description:
+          Text(desc, style: TextStyle(color: Colors.black, fontSize: 10)),
       animationType: AnimationType.fromRight,
       animationDuration: Duration(milliseconds: 900),
       autoDismiss: true,
@@ -110,15 +104,10 @@ class Toasts {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (showIcon && !showImage)
-                  Row(
-                    children: [
-                      Icon(
-                        icon ?? Icons.face,
-                        color: Colors.white,
-                      ),
-                      width10(),
-                    ],
-                  ),
+                  Row(children: [
+                    Icon(icon ?? Icons.face, color: Colors.white),
+                    width10()
+                  ]),
                 if (showImage && !showIcon)
                   Row(
                     children: [
@@ -129,10 +118,8 @@ class Toasts {
                       width10(),
                     ],
                   ),
-                Text(
-                  text,
-                  style: TextStyle(color: Colors.white, fontSize: 16.0),
-                )
+                Text(text,
+                    style: TextStyle(color: Colors.white, fontSize: 16.0))
               ],
             ),
           ),

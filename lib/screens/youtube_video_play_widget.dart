@@ -273,7 +273,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                 buildCustomProgressBarWidget(provider),
 
               /// progress bar and full screen button
-              if (provider.controller.value.isFullScreen && Platform.isIOS)
+              if (provider.controller.value.isFullScreen)
                 buildFullScreenCloseWidget(provider),
 
               // ///play button
@@ -481,16 +481,18 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
         ));
   }
 
-  Positioned buildCutomThumbnailWidget(PlayerProvider provide) {
+  Positioned buildCutomThumbnailWidget(PlayerProvider provider) {
     return Positioned(
         top: 0,
         right: 0,
         bottom: 0,
         left: 0,
         child: Visibility(
-          visible: provider.timer.tick < 5,
+          visible: provider.controller.value.isPlaying &&
+              provider.controller.value.position.inSeconds < 4,
           child: AnimatedOpacity(
-            opacity: provider.timer.tick < 4 ? 1.0 : 0.0,
+            opacity:
+                provider.controller.value.position.inSeconds < 4 ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 4000),
             child: Container(
               decoration: BoxDecoration(

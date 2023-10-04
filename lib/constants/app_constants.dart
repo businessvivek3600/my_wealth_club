@@ -2,6 +2,7 @@ class AppConstants {
   // static const String authorizationToken = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
   static const String authorizationToken = 'MyWealthClub@741852963';
   static const String baseUrlTest = 'https://api.mywealthclub.com/api/';
+  static const String siteUrl = 'https://mywealthclub.com/';
   static const String baseUrl = 'https://mywealthclub.com/api/';
   static const String appName = 'My Wealth Club';
 
@@ -28,6 +29,7 @@ class AppConstants {
 
   //dashboard
   static const String customerDashboard = 'customer_dashboard';
+  static const String tradeIdeas = 'customer/company-trade-idea';
   static const String changePlacement = 'change-placement';
   static const String cardDetails = 'customer/card-detail';
   static const String cardDetailsSubmit = 'customer/card-detail-submit';
@@ -44,12 +46,15 @@ class AppConstants {
 
   // team
   static const String myTeam = 'customer/my-team';
+  static const String directMember = 'customer/my-direct';
   static const String getDownLines = 'customer/get-customer-downline';
   static const String customerTeam = 'customer/team-view';
   static const String sendInboxMessageToUser = 'send-inbox-message-to-user';
   static const String getGenerationAnalyzer = 'customer/generation-analyzer';
 
   static const String liquidUser = 'customer/liquid-user';
+  static const String liquidUserAutoPlace =
+      'customer/auto-place-user-in-matrix';
   static const String matrixAnalyzer = 'customer/matrix-analyzer';
 
   //voucher
@@ -73,6 +78,7 @@ class AppConstants {
       'myWallet/commission-to-cash-transfer-submit';
 
   ///cash wallet
+  static const String myIncomeActivity = 'myWallet/my-incomes';
   static const String cashWallet = 'myWallet/cash-wallet';
   static const String getCoinPaymentFundRequest =
       'myWallet/coinpayment-fund-request';
@@ -85,19 +91,20 @@ class AppConstants {
       'myWallet/card-fund-request-submit';
   static const String cashWalletCardPaymentFundSubmit =
       'myWallet/stripe-payment-fund-submit';
-  //TODO: cash wallet Card payment submit
+
+  //: cash wallet Card payment submit
   static const String getNGCashWalletFundRequest =
       'myWallet/add-fund-from-ng-cash-wallet';
   static const String addFundFromNGCashWalletFundSubmit =
       'myWallet/add-fund-from-ng-cash-wallet-submit';
 
-  /// TODO: gallery
+  /// : gallery
   static const String gallery = 'gallery';
   static const String galleryDetail = 'gallery_detail';
   static const String galleryVideos = 'get-videos';
   static const String getImportantDownloads = 'get-important-downloads';
 
-  /// TODO: Support
+  /// : Support
   static const String support = 'support';
   static const String newTicket = 'new-ticket';
   static const String newTicketSubmit = 'new-ticket-submit';
@@ -138,7 +145,8 @@ class SPConstants {
 
   static const String pdfLink = 'pdfLink';
   static const String pptLink = 'pptLink';
-  static const String videoLink = 'videoLink';
+  static const String promoVideoLink = 'videoLink';
+  static const String introVideoLink = 'introVideoLink';
   static const String videoLanguage = 'videoLanguage';
   static const String filesLanguage = 'filesLanguage';
 

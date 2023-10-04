@@ -5,6 +5,7 @@ import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import '../utils/app_web_view_page.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
@@ -142,12 +143,13 @@ class VoucherProvider extends ChangeNotifier {
       String sale_type = ''}) async {
     try {
       if (isOnline) {
-        showLoading(userRootNavigator: true);
+        showLoading(useRootNavigator: true);
         ApiResponse apiResponse = await voucherRepo.createVoucherSubmit({
           'payment_type': payment_type,
           'package_id': package_id,
           'sale_type': sale_type
         });
+        infoLog('create voucher submit ${apiResponse.response?.data}');
         Get.back();
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
@@ -170,7 +172,22 @@ class VoucherProvider extends ChangeNotifier {
             await getVoucherList(false);
             Get.back();
             if (redirect_url != '') {
-              launchTheLink(redirect_url!);
+              var res = await Get.to(WebViewExample(
+                url: redirect_url,
+                allowBack: false,
+                allowCopy: false,
+                conditions: [
+                  'https://mywealthclub.com/api/customer/card-voucher-request-status'
+                ],
+                onResponse: (res) {
+                  print('request url matched <res> $res');
+                  Get.back();
+                  hitPaymentResponse(res);
+                  // getVoucherList(false);
+                },
+              ));
+              errorLog('redirect result from webview $res');
+              // launchTheLink(redirect_url!);
             } else {
               Toasts.showSuccessNormalToast(message.split('.').first);
             }
@@ -185,6 +202,46 @@ class VoucherProvider extends ChangeNotifier {
       print('createVoucherSubmit failed ${e}');
     }
   }
+
+  Future<void> hitPaymentResponse(url) async {
+    try {
+      if (isOnline) {
+        showLoading(useRootNavigator: true);
+        ApiResponse apiResponse = await voucherRepo.hitPaymentResponse(url);
+        infoLog(
+            'create voucher hitPaymentResponse: ${apiResponse.response?.data}');
+        Get.back();
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          Map map = apiResponse.response!.data;
+          bool status = false;
+          String message = '';
+
+          try {
+            status = map["status"];
+            if (map['is_logged_in'] == 0) {
+              logOut();
+            }
+          } catch (e) {}
+          try {
+            message = map["message"] ?? '';
+          } catch (e) {}
+
+          if (status) {
+            await getVoucherList(false);
+            Get.back();
+          } else {
+            Toasts.showErrorNormalToast(message.split('.').first);
+          }
+        }
+      } else {
+        Toasts.showWarningNormalToast('You are offline');
+      }
+    } catch (e) {
+      print('createVoucherSubmit failed ${e}');
+    }
+  }
+
 /*
   ///voucherList selection
   TextEditingController amountController = TextEditingController();

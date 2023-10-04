@@ -6,6 +6,8 @@ import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/model/response/income_activity_model.dart';
+import 'package:mycarclub/database/model/response/trade_idea_model.dart';
 import '/database/model/response/yt_video_model.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/CardDetailsPurchasedHistoryModel.dart';
@@ -16,7 +18,6 @@ import '/database/model/response/card_feature_detail_model.dart';
 import '/database/model/response/company_info_model.dart';
 import '/database/model/response/cusomer_rewards_model.dart';
 import '/database/model/response/dashboard_alert_model.dart';
-import '/database/model/response/dashboard_alert_model.dart';
 import '/database/model/response/dashboard_wallet_activity_model.dart';
 import '/database/model/response/ddashboard_subscription_pack_model.dart';
 import '/database/model/response/get_active_log_model.dart';
@@ -25,9 +26,6 @@ import '/providers/auth_provider.dart';
 import '/screens/dashboard/CardFeature/Main_Page_Card_History.dart';
 import '/sl_container.dart';
 import '/utils/app_default_loading.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
-import '/utils/default_logger.dart';
 import '/utils/default_logger.dart';
 import '/utils/toasts.dart';
 
@@ -47,18 +45,7 @@ class DashBoardProvider extends ChangeNotifier {
 
   //drawer
   String selectedDrawerTile = '';
-  List<List<dynamic>> drawerComponentsItems = [
-    // ['Subscription', Assets.creditCard],
-    ['Inbox', Assets.inbox],
-    ['Gift Voucher', Assets.gift],
-    ['Event Ticket', Assets.eventTicket],
-  ];
-  List<List<dynamic>> drawerUsersItems = [
-    ['Notifications', Assets.notification],
-    ['Settings', Assets.settings],
-    ['Support', Assets.support],
-    ['Logout', Assets.logout],
-  ];
+
   setDrawerTile(String val) {
     selectedDrawerTile = val;
     notifyListeners();
@@ -67,12 +54,14 @@ class DashBoardProvider extends ChangeNotifier {
   /// download
   String? pdfLink;
   String? pptLink;
-  String? videoLink;
+  String? promotionalVideoLink;
+  String? introVideoLink;
 
   Future<void> getDownloadsData() async {
     String? pdf_link;
     String? ppt_link;
-    String? video_link;
+    String? promotional_video_link;
+    String? intro_video_link;
     if (isOnline) {
       ApiResponse apiResponse = await dashBoardRepo.getDownloadsData();
       if (apiResponse.response != null &&
@@ -88,10 +77,13 @@ class DashBoardProvider extends ChangeNotifier {
             try {
               pdf_link = map["pdf_link"];
               ppt_link = map["ppt_link"];
-              video_link = map["video_link"];
+              promotional_video_link = map["promotion_video_link"];
+              intro_video_link = map["intro_video_link"];
               dashBoardRepo.setPDFLink(pdf_link ?? '');
               dashBoardRepo.setPPTLink(ppt_link ?? '');
-              dashBoardRepo.setVideoLink(video_link ?? '');
+              dashBoardRepo
+                  .setPromotionalVideoLink(promotional_video_link ?? '');
+              dashBoardRepo.setIntroVideoLink(intro_video_link ?? '');
             } catch (e) {}
           }
         } catch (e) {
@@ -114,14 +106,16 @@ class DashBoardProvider extends ChangeNotifier {
       try {
         pdf_link = dashBoardRepo.getPDFLink();
         ppt_link = dashBoardRepo.getPPTLink();
-        video_link = dashBoardRepo.getVideoLink();
+        promotional_video_link = dashBoardRepo.getPromoVideoLink();
+        intro_video_link = dashBoardRepo.getIntroVideoLink();
       } catch (e) {
         errorLog('getDownloadsData cache hit failed!');
       }
     }
     pdfLink = pdf_link;
     pptLink = ppt_link;
-    videoLink = video_link;
+    promotionalVideoLink = promotional_video_link;
+    introVideoLink = intro_video_link;
     notifyListeners();
   }
 
@@ -241,11 +235,17 @@ class DashBoardProvider extends ChangeNotifier {
           get_active_member1 = int.parse(map['get_active_member_1'] ?? '0');
           get_active_member2 = int.parse(map['get_active_member_2'] ?? '0');
           get_active_member3 = int.parse(map['get_active_member_3'] ?? '0');
+          notifyListeners();
           if (placementUrl.isNotEmpty) {
             placementIdController.text = placementUrl;
             notifyListeners();
           }
-          wevinarEventVideo = WebinarEventModel.fromJson(map['webinar_event']);
+          if (map['webinar_event'] != null) {
+            wevinarEventVideo =
+                WebinarEventModel.fromJson(map['webinar_event']);
+            // wevinarEventVideo = WebinarEventModel.fromJson(map['webinar_event']);
+          }
+          infoLog('dashboard webinar_event ${wevinarEventVideo?.toJson()}');
           // get_active_member = 274;
 
           notifyListeners();
@@ -553,7 +553,7 @@ class DashBoardProvider extends ChangeNotifier {
     bool status = false;
     try {
       if (isOnline) {
-        showLoading(userRootNavigator: false);
+        showLoading(useRootNavigator: false);
         ApiResponse apiResponse = await dashBoardRepo.cardDetailsSubmit(data);
         Get.back();
         if (apiResponse.response != null &&
@@ -595,6 +595,167 @@ class DashBoardProvider extends ChangeNotifier {
     return status;
   }
 
+  //income api
+  List<IncomeActivityModel> incomeActivity = [];
+  bool loadingIncomeActivity = true;
+  int totalIncomeActivity = 0;
+  int incomePage = 0;
+  Future<List<IncomeActivityModel>> getIncomeActivity() async {
+    loadingIncomeActivity = true;
+    notifyListeners();
+    List<IncomeActivityModel> _incomeActivity = [];
+    Map? map;
+
+    bool isIncomeActivityCacheExist = await APICacheManager()
+        .isAPICacheKeyExist(AppConstants.myIncomeActivity);
+    if (isOnline) {
+      ApiResponse apiResponse =
+          await dashBoardRepo.myIncomeActivity({'page': incomePage.toString()});
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        bool status = false;
+        map = apiResponse.response!.data;
+        try {
+          status = map?["status"];
+        } catch (e) {}
+        if (status && incomePage == 0) {
+          try {
+            var cacheModel = APICacheDBModel(
+                key: AppConstants.myIncomeActivity, syncData: jsonEncode(map));
+            await APICacheManager().addCacheData(cacheModel);
+          } catch (e) {}
+        }
+        notifyListeners();
+      } else {
+        String errorMessage = "";
+        if (apiResponse.error is String) {
+          errorMessage = apiResponse.error.toString();
+        } else {
+          ErrorResponse errorResponse = apiResponse.error;
+          errorMessage = errorResponse.errors[0].message;
+        }
+        errorLog('error message from getIncomeActivity ${errorMessage}');
+        Toasts.showErrorNormalToast(errorMessage);
+      }
+    } else if (!isOnline && isIncomeActivityCacheExist) {
+      try {
+        if (incomePage == 0) {
+          var data = (await APICacheManager()
+                  .getCacheData(AppConstants.myIncomeActivity))
+              .syncData;
+          Map map = jsonDecode(data);
+        }
+        warningLog('getIncomeActivity cache hit $map');
+      } catch (e) {
+        errorLog('getIncomeActivity cache hit failed! $e');
+      }
+    } else {
+      Toasts.showWarningNormalToast('You are offline!');
+    }
+    if (map != null) {
+      try {
+        totalIncomeActivity = int.parse(map['total'] ?? '0');
+        if (map['item_list'] != null && map['item_list'] is List) {
+          map['item_list'].forEach(
+              (e) => _incomeActivity.add(IncomeActivityModel.fromJson(e)));
+          if (incomePage == 0) {
+            incomeActivity.clear();
+            incomeActivity = _incomeActivity;
+          } else {
+            incomeActivity.addAll(_incomeActivity);
+          }
+          incomePage++;
+        }
+      } catch (e) {
+        errorLog('income_activity error $e');
+      }
+    }
+    loadingIncomeActivity = false;
+    notifyListeners();
+    return _incomeActivity;
+  }
+
+// company trade ideas
+  //income api
+  List<TradeIdeaModel> tradeIdeas = [];
+  bool loadingTradeIdeas = true;
+  int totalTradeIdeas = 0;
+  int tradeIdeaPage = 0;
+  Future<List<TradeIdeaModel>> getTradeIdea() async {
+    loadingTradeIdeas = true;
+    notifyListeners();
+    List<TradeIdeaModel> _tradeIdeas = [];
+    Map? map;
+
+    bool isIncomeActivityCacheExist =
+        await APICacheManager().isAPICacheKeyExist(AppConstants.tradeIdeas);
+    if (isOnline) {
+      ApiResponse apiResponse =
+          await dashBoardRepo.tradeIdeas({'page': tradeIdeaPage.toString()});
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        bool status = false;
+        map = apiResponse.response!.data;
+        try {
+          status = map?["status"];
+        } catch (e) {}
+        if (status && tradeIdeaPage == 0) {
+          try {
+            var cacheModel = APICacheDBModel(
+                key: AppConstants.tradeIdeas, syncData: jsonEncode(map));
+            await APICacheManager().addCacheData(cacheModel);
+          } catch (e) {}
+        }
+        notifyListeners();
+      } else {
+        String errorMessage = "";
+        if (apiResponse.error is String) {
+          errorMessage = apiResponse.error.toString();
+        } else {
+          ErrorResponse errorResponse = apiResponse.error;
+          errorMessage = errorResponse.errors[0].message;
+        }
+        errorLog('error message from tradeIdeas ${errorMessage}');
+        Toasts.showErrorNormalToast(errorMessage);
+      }
+    } else if (!isOnline && isIncomeActivityCacheExist) {
+      try {
+        if (tradeIdeaPage == 0) {
+          var data =
+              (await APICacheManager().getCacheData(AppConstants.tradeIdeas))
+                  .syncData;
+          map = jsonDecode(data);
+        }
+        warningLog('tradeIdeas cache hit $map');
+      } catch (e) {
+        errorLog('tradeIdeas cache hit failed! $e');
+      }
+    } else {
+      Toasts.showWarningNormalToast('You are offline!');
+    }
+    if (map != null) {
+      try {
+        totalTradeIdeas = int.parse(map['total'] ?? '0');
+        if (map['data'] != null && map['data'] is List) {
+          map['data']
+              .forEach((e) => _tradeIdeas.add(TradeIdeaModel.fromJson(e)));
+          if (tradeIdeaPage == 0) {
+            tradeIdeas.clear();
+            tradeIdeas = _tradeIdeas;
+          } else {
+            tradeIdeas.addAll(_tradeIdeas);
+          }
+          tradeIdeaPage++;
+        }
+      } catch (e) {
+        errorLog('tradeIdeas error $e');
+      }
+    }
+    loadingTradeIdeas = false;
+    notifyListeners();
+    return _tradeIdeas;
+  }
+
   clear() {
     loadingDash = true;
     hasSubscription = false;
@@ -607,7 +768,7 @@ class DashBoardProvider extends ChangeNotifier {
     kycUrl = null;
     pdfLink = null;
     pptLink = null;
-    videoLink = null;
+    promotionalVideoLink = null;
     teamBuildingUrl = '';
     placementUrl = '';
     promotionString = '';
@@ -616,6 +777,24 @@ class DashBoardProvider extends ChangeNotifier {
     sub_expire_days = 0;
     subs_per = 0;
     customerReward.clear();
+    get_active_Leg.clear();
+    incomeActivity.clear();
+    loadingIncomeActivity = true;
+    cards.clear();
+    wevinarEventVideo = null;
+    selectedDrawerTile = '';
+    editingMode = false;
+    changed = false;
+    errorText = '';
+    submittingPlacementId = ButtonLoadingState.idle;
+    placementIdController.clear();
+    //card-details
+    cardDetail = null;
+    purchasedCardsList.clear();
+    loadingCardDetail = false;
+    selectedPayType = null;
+    selectedDelivery = null;
+
     alerts.clear();
     subscriptionPacks.clear();
     activities.clear();
@@ -624,6 +803,8 @@ class DashBoardProvider extends ChangeNotifier {
     cardDetail = null;
     purchasedCardsList.clear();
     loadingCardDetail = false;
+    selectedPayType = null;
+    selectedDelivery = null;
   }
 }
 

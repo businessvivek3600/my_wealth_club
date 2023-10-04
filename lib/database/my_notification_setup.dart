@@ -28,7 +28,7 @@ import 'package:path_provider/path_provider.dart';
 import '../myapp.dart';
 import '../screens/Notification/notification_page.dart';
 
-int id = 0;
+int notificationId = 0;
 
 final StreamController<ReceivedNotification> didReceiveLocalNotificationStream =
     StreamController<ReceivedNotification>.broadcast();

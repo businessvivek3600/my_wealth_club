@@ -257,10 +257,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> login(LoginModel loginBody) async {
     bool loggedIn = false;
     if (isOnline) {
-      // showLoading();
       ApiResponse apiResponse = await authRepo.login(loginBody);
-      // Get.back();
-      primaryFocus?.unfocus();
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         Map map = apiResponse.response!.data;
@@ -284,7 +281,6 @@ class AuthProvider with ChangeNotifier {
                 key: SPConstants.user, syncData: jsonEncode(map['userData']));
             await APICacheManager().addCacheData(cacheModel);
             userData = _userData;
-            notifyListeners();
             // sl.get<SettingsRepo>().setBiometric(true);
             await fcmSubscriptionRepo.subscribeToTopic(SPConstants.topic_all);
             await fcmSubscriptionRepo.subscribeToTopic(SPConstants.topic_event);
@@ -296,11 +292,7 @@ class AuthProvider with ChangeNotifier {
           authRepo.saveUserToken(login_token);
           authRepo.saveUser(userData);
         }
-        notifyListeners();
-        status
-            ? Future.delayed(Duration(seconds: 3),
-                () => Toasts.showSuccessNormalToast(message.split('.').first))
-            : Toasts.showErrorNormalToast(message.split('.').first);
+        if (!status) Toasts.showErrorNormalToast(message.split('.').first);
         loggedIn = status;
       } else {
         if (apiResponse.error is String) {
@@ -310,7 +302,6 @@ class AuthProvider with ChangeNotifier {
           print('error message from login ${errorResponse.errors[0].message}');
         }
         Toasts.showErrorNormalToast('Some thing went wrong!');
-        notifyListeners();
       }
     } else {
       Toasts.showWarningNormalToast('You are offline');

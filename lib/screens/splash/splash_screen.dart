@@ -278,7 +278,9 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     setState(() {
-      _canCheckBiometrics = canCheckBiometrics;
+      // _canCheckBiometrics = canCheckBiometrics;
+      //TODO: remove this line
+      _canCheckBiometrics = false;
     });
   }
 

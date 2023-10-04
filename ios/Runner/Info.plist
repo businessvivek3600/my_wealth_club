@@ -98,5 +98,7 @@
 		<string>n6lvk-alternate.app.link</string>
 		<string>n6lvk.test.app.link</string>
 	</array>
+	<key>branch_check_pasteboard</key>
+	<true/>
 </dict>
 </plist>

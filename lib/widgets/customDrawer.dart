@@ -3,10 +3,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import '../screens/drawerPages/downlines/my_incomes_page.dart';
+import '../screens/drawerPages/downlines/team_view/fancy_team_view.dart';
 import '/screens/drawerPages/download_pages/edcational_downloads_page.dart';
 import '../screens/dashboard/company_trade_ideas_page.dart';
 import '../screens/drawerPages/downlines/matrix_analyzer .dart';
-import '../screens/drawerPages/liquid_user_page.dart';
+import '../screens/drawerPages/holding_tank_page.dart';
 import '../screens/drawerPages/downlines/geration_member/direct_member_page.dart';
 import '../screens/drawerPages/downlines/generation_analyzer.dart';
 import '/utils/default_logger.dart';
@@ -59,8 +61,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    List<List<dynamic>> drawerOtherItems = [
+      ['Notifications', Assets.notification],
+      ['Settings', Assets.settings],
+      ['Support', Assets.support],
+      ['Logout', Assets.logout],
+    ];
     Size size = MediaQuery.of(context).size;
-    String liquidUser = 'Liquid User';
+    String inbox = 'Inbox';
+    String giftVoucher = 'Gift Voucher';
+    String eventTicket = 'Event Ticket';
+    String holdingTank = 'Holding Tank';
     String matrixAnalyzer = 'Matrix Analyzer';
     return Container(
       color: Colors.blueGrey.shade900,
@@ -94,25 +105,41 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                 color: Colors.white70,
                                 fontWeight: FontWeight.bold),
                             height10(),
-                            ...dashBoardProvider.drawerComponentsItems.map(
-                                (e) => buildComponentsTile(
-                                    e, context, size, dashBoardProvider)),
-                            buildDownlinesExpansionTile(
-                                size, dashBoardProvider),
-                            height10(),
+                            //Inbox
                             DrawerTileItem(
                               onTap: () {
-                                dashBoardProvider.setDrawerTile(liquidUser);
-                                Widget page = const LiquidUserPage();
+                                dashBoardProvider.setDrawerTile(inbox);
+                                Widget page = const InboxScreen();
+                                Get.to(page);
+                              },
+                              leading: Assets.inbox,
+                              title: inbox,
+                              width: size.width * 0.7,
+                              selected:
+                                  dashBoardProvider.selectedDrawerTile == inbox,
+                            ),
+                            height10(),
+                            //holdingTank
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile(holdingTank);
+                                Widget page = const HoldingTankPage();
                                 Get.to(page);
                               },
                               leading: Assets.creditCard,
-                              title: liquidUser,
+                              title: holdingTank,
                               width: size.width * 0.7,
                               selected: dashBoardProvider.selectedDrawerTile ==
-                                  liquidUser,
+                                  holdingTank,
                             ),
                             height10(),
+
+                            //downlines
+                            buildDownlinesExpansionTile(
+                                size, dashBoardProvider),
+                            height10(),
+
+                            //Matrix-Analyzer
                             DrawerTileItem(
                               onTap: () {
                                 dashBoardProvider.setDrawerTile(matrixAnalyzer);
@@ -126,6 +153,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                   matrixAnalyzer,
                             ),
                             height10(),
+
+                            // Subscription
                             DrawerTileItem(
                               onTap: () {
                                 dashBoardProvider.setDrawerTile('Subscription');
@@ -139,23 +168,58 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                   'Subscription',
                             ),
                             height10(),
-                            buildWalletsExpansionTile(size, dashBoardProvider),
+
+                            //Gift Voucher
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile(giftVoucher);
+                                Widget page = const GiftVoucherPage();
+                                Get.to(page);
+                              },
+                              leading: Assets.gift,
+                              title: giftVoucher,
+                              width: size.width * 0.7,
+                              selected: dashBoardProvider.selectedDrawerTile ==
+                                  giftVoucher,
+                            ),
                             height10(),
+
+                            //Event Ticket
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile(eventTicket);
+                                Widget page = const EventTicketsPage();
+                                Get.to(page);
+                              },
+                              leading: Assets.eventTicket,
+                              title: eventTicket,
+                              width: size.width * 0.7,
+                              selected: dashBoardProvider.selectedDrawerTile ==
+                                  eventTicket,
+                            ),
+                            height10(),
+                            //Downloads
                             buildDownloadExpansionTile(size, dashBoardProvider),
                             height10(),
+
+                            //Wallets
+                            buildWalletsExpansionTile(size, dashBoardProvider),
+                            height10(),
+
                             capText('User', context,
                                 color: Colors.white70,
                                 fontWeight: FontWeight.bold),
                             height10(),
                             buildProfileExpansionTile(size, dashBoardProvider),
                             height10(),
+
+                            //Others
                             capText('Others', context,
                                 color: Colors.white70,
                                 fontWeight: FontWeight.bold),
                             height10(),
-                            ...dashBoardProvider.drawerUsersItems.map((e) =>
-                                buildOthersTile(e, context, authProvider, size,
-                                    dashBoardProvider)),
+                            ...drawerOtherItems.map((e) => buildOthersTile(
+                                e, context, size, dashBoardProvider)),
                             buildAppPagesExpansionTile(
                                 size, dashBoardProvider, authProvider),
                             height10(),
@@ -282,11 +346,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
   }
 
   Column buildOthersTile(
-      List<dynamic> e,
-      BuildContext context,
-      AuthProvider authProvider,
-      Size size,
-      DashBoardProvider dashBoardProvider) {
+    List<dynamic> e,
+    BuildContext context,
+    // AuthProvider authProvider,
+    Size size,
+    DashBoardProvider dashBoardProvider,
+  ) {
     return Column(
       children: [
         Stack(
@@ -364,7 +429,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 break;
 
               case 'Gift Voucher':
-                page = const VoucherPage();
+                page = const GiftVoucherPage();
                 break;
               case 'Event Ticket':
                 page = const EventTicketsPage();
@@ -419,11 +484,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
             children: [
               ...[
                 teamMemeber,
+                directMember,
                 teamView,
                 myTreeView,
-                directMember,
                 generationAnalyzer,
-                // inactiveAnalyzer
               ].map(
                 (e) => Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
@@ -435,7 +499,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           page = const TeamMemberPage();
                           break;
                         case teamView:
-                          page = MyTreeViewPage();
+                          page = FancyTreeView();
                           break;
                         case myTreeView:
                           page = MyTreeViewPage();
@@ -484,6 +548,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   Widget buildWalletsExpansionTile(
       Size size, DashBoardProvider dashBoardProvider) {
+    const String myIncomes = 'My Incomes';
     const String cashWallet = 'Cash Wallet';
     const String commissionWallet = 'Commission Wallet';
     const String withdrawals = 'Withdrawals';
@@ -504,13 +569,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           child: Column(
             children: [
-              ...[cashWallet, commissionWallet, withdrawals].map(
+              ...[myIncomes, cashWallet, commissionWallet, withdrawals].map(
                 (e) => Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: DrawerTileItem(
                     onTap: () {
                       Widget page = buildDefaultPage();
                       switch (e) {
+                        case myIncomes:
+                          page = const MyIncomesPage();
+                          break;
                         case cashWallet:
                           page = CashWalletPage();
                           break;
@@ -743,18 +811,20 @@ class _CustomDrawerState extends State<CustomDrawer> {
       Size size, DashBoardProvider dashBoardProvider) {
     const String pdf = 'PDF';
     const String ppt = 'PPT';
-    const String video = 'Promotional Video';
+    const String promotionalVideo = 'Promotional Video';
     const String gallery = 'Gallery';
-    const String videos = 'Academic Videos';
+    const String academicVideos = 'Academic Videos';
+    const String introVideo = 'Intro Video';
 
     return expansionTile(
       title: 'Downloads',
       headerAsset: Assets.download,
       initiallyExpanded: dashBoardProvider.selectedDrawerTile == pdf ||
           dashBoardProvider.selectedDrawerTile == ppt ||
-          dashBoardProvider.selectedDrawerTile == video ||
+          dashBoardProvider.selectedDrawerTile == promotionalVideo ||
           dashBoardProvider.selectedDrawerTile == gallery ||
-          dashBoardProvider.selectedDrawerTile == videos,
+          dashBoardProvider.selectedDrawerTile == academicVideos ||
+          dashBoardProvider.selectedDrawerTile == introVideo,
       children: [
         Container(
           width: double.maxFinite,
@@ -768,7 +838,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),
           child: Column(
             children: [
-              ...[pdf, ppt, video, gallery, videos].map(
+              ...[
+                pdf,
+                ppt,
+                gallery,
+                promotionalVideo,
+                introVideo,
+                academicVideos,
+              ].map(
                 (e) => Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
                   child: DrawerTileItem(
@@ -777,22 +854,26 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       switch (e) {
                         case pdf:
                           page = MainPage();
-                          launchTheLink(
-                              sl.get<DashBoardProvider>().pdfLink ?? '');
+                          launchTheLink(dashBoardProvider.pdfLink ?? '');
                           break;
                         case ppt:
                           page = MainPage();
-                          // Get.back();
-                          launchTheLink(
-                              sl.get<DashBoardProvider>().pptLink ?? '');
-                          break;
-                        case video:
-                          page = DrawerVideoScreen();
+                          launchTheLink(dashBoardProvider.pptLink ?? '');
                           break;
                         case gallery:
                           page = GalleryMainPage();
                           break;
-                        case videos:
+                        case promotionalVideo:
+                          page = DrawerVideoScreen(
+                              url: dashBoardProvider.promotionalVideoLink ?? '',
+                              title: promotionalVideo);
+                          break;
+                        case introVideo:
+                          page = DrawerVideoScreen(
+                              url: dashBoardProvider.introVideoLink ?? '',
+                              title: introVideo);
+                          break;
+                        case academicVideos:
                           page = DrawerVideosMainPage();
                           break;
                         default:
@@ -805,11 +886,13 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         ? Assets.pdf
                         : e == ppt
                             ? Assets.ppt
-                            : e == video
-                                ? Assets.video
-                                : e == gallery
-                                    ? Assets.gallery
-                                    : Assets.videoGallery,
+                            : e == gallery
+                                ? Assets.gallery
+                                : e == promotionalVideo
+                                    ? Assets.video
+                                    : e == introVideo
+                                        ? Assets.video
+                                        : Assets.video,
                     title: e,
                     width: size.width * 0.7,
                     selected: dashBoardProvider.selectedDrawerTile == e,

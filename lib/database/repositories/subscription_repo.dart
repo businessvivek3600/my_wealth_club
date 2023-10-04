@@ -17,7 +17,7 @@ class SubscriptionRepo {
     try {
       Response response =
           await dioClient.post(AppConstants.mySubscription, token: true);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -28,21 +28,31 @@ class SubscriptionRepo {
     try {
       Response response = await dioClient.post(AppConstants.buySubscription,
           token: true, data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
 
-  Future<ApiResponse> submitCardPayment(String path,Map<String, dynamic> data) async {
+  Future<ApiResponse> submitCardPayment(
+      String path, Map<String, dynamic> data) async {
     try {
-      Response response = await dioClient.post(path,
-          token: true, data: data);
-      
+      Response response = await dioClient.post(path, token: true, data: data);
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       getSubscription();
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  Future<ApiResponse> hitPaymentResponse(String url) async {
+    try {
+      Response response = await dioClient.get(url);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }

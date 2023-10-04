@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '/constants/assets_constants.dart';
@@ -24,17 +26,50 @@ class TeamMemberPage extends StatefulWidget {
 
 class _TeamMemberPageState extends State<TeamMemberPage> {
   final globalKey = GlobalKey<ScaffoldState>();
+  var provider = sl.get<TeamViewProvider>();
+  late ScrollController _scrollController;
   @override
   void initState() {
-    sl.get<TeamViewProvider>().getCustomerTeam();
+    provider.teamMemberPage = 0;
+    provider.getCustomerTeam();
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(() => _loadMore(sl.get<TeamViewProvider>()));
   }
 
   @override
   void dispose() {
-    sl.get<TeamViewProvider>().loadingTeamMembers = false;
-    sl.get<TeamViewProvider>().customerTeamMembers.clear();
+    provider.loadingTeamMembers = false;
+    provider.customerTeamMembers.clear();
+    _scrollController.removeListener(() => _loadMore(provider));
+    provider.teamMemberPage = 0;
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<bool> _loadMore(TeamViewProvider provider) async {
+    if (_scrollController.position.pixels ==
+            (_scrollController.position.maxScrollExtent) &&
+        _scrollController.position.userScrollDirection ==
+            ScrollDirection.reverse &&
+        !provider.loadingTeamMembers) {
+      bool isFinished =
+          provider.customerTeamMembers.length == provider.totalTeamMembers;
+      if (isFinished) {
+        Fluttertoast.showToast(msg: "No more data");
+        return false;
+      }
+      print("Team Members ,onLoadMore");
+      await provider.getDirectMembers();
+    }
+    return true;
+  }
+
+  Future<void> _refresh() async {
+    print("Team members ,onRefresh");
+    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
+    provider.directMemberPage = 0;
+    await provider.getDirectMembers();
   }
 
   @override
@@ -55,46 +90,55 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
               opacity: 1),
         ),
         child: Consumer<TeamViewProvider>(
-          builder: (context, teamViewProvider, child) {
-            return !teamViewProvider.loadingTeamMembers
-                ? (teamViewProvider.loadingTeamMembers ||
-                        teamViewProvider.customerTeamMembers.isNotEmpty)
-                    ? ListView(
-                        physics: BouncingScrollPhysics(),
-                        padding: EdgeInsets.all(8),
+            builder: (context, teamViewProvider, child) {
+          return (teamViewProvider.loadingTeamMembers ||
+                  teamViewProvider.customerTeamMembers.isNotEmpty)
+              ? RefreshIndicator(
+                  onRefresh: _refresh,
+                  child: ListView(
+                    controller: _scrollController,
+                    physics: BouncingScrollPhysics(),
+                    padding: EdgeInsets.all(8),
+                    children: [
+                      ...teamViewProvider.customerTeamMembers
+                          .map((e) => buildMember(e)),
+                      if (provider.loadingTeamMembers)
+                        Container(
+                            padding: const EdgeInsets.all(20),
+                            height: provider.customerTeamMembers.length == 0
+                                ? Get.height -
+                                    kToolbarHeight -
+                                    kBottomNavigationBarHeight
+                                : 100,
+                            child: const Center(
+                                child: CircularProgressIndicator(
+                                    color: Colors.white))),
+                    ],
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ///TODO: teamMembersLottie
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ...teamViewProvider.customerTeamMembers
-                              .map((e) => buildMember(e))
+                          assetLottie(Assets.teamMembersLottie, width: 200),
                         ],
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ///TODO: teamMembersLottie
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                assetLottie(Assets.teamMembersLottie,
-                                    width: 200),
-                              ],
-                            ),
-                            titleLargeText(
-                                'Create your own team & join more people to enlarge your team.',
-                                context,
-                                color: Colors.white,
-                                textAlign: TextAlign.center),
-                            height20(),
-                            buildTeamBuildingReferralLink(context)
-                          ],
-                        ),
-                      )
-                : Center(
-                    child: CircularProgressIndicator(color: Colors.white),
-                  );
-          },
-        ),
+                      ),
+                      titleLargeText(
+                          'Create your own team & join more people to enlarge your team.',
+                          context,
+                          color: Colors.white,
+                          textAlign: TextAlign.center),
+                      height20(),
+                      buildTeamBuildingReferralLink(context)
+                    ],
+                  ),
+                );
+        }),
       ),
     );
   }
@@ -186,9 +230,10 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
   }
 
   Widget buildMember(UserData e) {
+    Color tColor = Colors.white;
     return Container(
-      decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(5)),
+      decoration:
+          BoxDecoration(color: bColor, borderRadius: BorderRadius.circular(5)),
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.only(bottom: 10),
       child: Column(
@@ -202,9 +247,9 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
                   children: [
                     bodyLargeText(
                         ('${e.customerName ?? ""}').capitalize!, context,
-                        color: Colors.black),
+                        color: tColor),
                     capText('( ${e.username ?? ""} )', context,
-                        color: Colors.black, fontWeight: FontWeight.bold),
+                        color: tColor, fontWeight: FontWeight.bold),
                   ],
                 ),
               ),
@@ -216,7 +261,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
                             : e.status == '2'
                                 ? Colors.red
                                 : Colors.amber)
-                        .withOpacity(1)),
+                        .withOpacity(0.5)),
                 padding: EdgeInsets.symmetric(vertical: 3, horizontal: 5),
                 child: capText(
                     e.status == '1'
@@ -247,20 +292,20 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              capText('Rank:', context, color: Colors.black),
+              capText('Rank:', context, color: tColor.withOpacity(0.5)),
               capText(e.rankName ?? 'N/A', context, color: Colors.deepOrange),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              capText('Joined on:', context, color: Colors.black),
+              capText('Joined on:', context, color: tColor.withOpacity(0.5)),
               capText(
                   DateFormat()
                       .add_yMMMMd()
                       .format(DateTime.parse(e.createdAt ?? '')),
                   context,
-                  color: Colors.black54,
+                  color: tColor.withOpacity(0.5),
                   fontWeight: FontWeight.bold),
             ],
           ),
