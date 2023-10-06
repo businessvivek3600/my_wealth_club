@@ -13,10 +13,10 @@ class CashWalletRepo {
   CashWalletRepo({required this.dioClient, required this.sharedPreferences});
 
   /// :Subscription History
-  Future<ApiResponse> getCashWallet() async {
+  Future<ApiResponse> getCashWallet(Map<String, dynamic> map) async {
     try {
       Response response =
-          await dioClient.post(AppConstants.cashWallet, token: true);
+          await dioClient.post(AppConstants.cashWallet, token: true, data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {

@@ -42,8 +42,8 @@ class GalleryProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('galleryData');
           }
         } catch (e) {}
         try {
@@ -102,8 +102,8 @@ class GalleryProvider extends ChangeNotifier {
           bool status = false;
           try {
             status = map?["status"];
-            if (map?['is_logged_in'] == 0) {
-              logOut();
+            if (map?['is_logged_in'] != 1) {
+              logOut('galleryData');
             }
           } catch (e) {}
           try {
@@ -156,7 +156,7 @@ class GalleryProvider extends ChangeNotifier {
     loadingVideos = !videoPage;
     notifyListeners();
     bool cacheExist =
-        await APICacheManager().isAPICacheKeyExist(AppConstants.galleryVideos);
+        await APICacheManager().isAPICacheKeyExist(AppConstants.getVideos);
     try {
       if (isOnline) {
         ApiResponse apiResponse = await galleryRepo
@@ -167,15 +167,16 @@ class GalleryProvider extends ChangeNotifier {
           bool status = false;
           try {
             status = map?["status"];
-            if (map?['is_logged_in'] == 0) {
-              logOut();
+            infoLog('getVideos status ${map?['is_logged_in']}');
+            if (map?['is_logged_in'] != 1) {
+              logOut('getVideos');
             }
           } catch (e) {}
           try {
             if (status && map != null) {
               try {
                 var cacheModel = APICacheDBModel(
-                    key: AppConstants.galleryVideos, syncData: jsonEncode(map));
+                    key: AppConstants.getVideos, syncData: jsonEncode(map));
                 await APICacheManager().addCacheData(cacheModel);
               } catch (e) {}
             }
@@ -184,7 +185,7 @@ class GalleryProvider extends ChangeNotifier {
           }
         } else if (!isOnline && cacheExist) {
           var cacheData =
-              (await APICacheManager().getCacheData(AppConstants.galleryVideos))
+              (await APICacheManager().getCacheData(AppConstants.getVideos))
                   .syncData;
           map = jsonDecode(cacheData);
         } else {
@@ -272,8 +273,8 @@ class GalleryProvider extends ChangeNotifier {
           bool status = false;
           try {
             status = map?["status"];
-            if (map?['is_logged_in'] == 0) {
-              logOut();
+            if (map?['is_logged_in'] != 1) {
+              logOut('getImportantDownloads');
             }
           } catch (e) {}
           try {

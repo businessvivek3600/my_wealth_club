@@ -473,8 +473,8 @@ class CardPaymentProvider extends ChangeNotifier {
         String message = '';
         try {
           status = map["status"];
-          if (map['is_logged_in'] == 0) {
-            logOut();
+          if (map['is_logged_in'] != 1) {
+            logOut('submitCardPayment');
           }
         } catch (e) {}
         try {

@@ -7,6 +7,8 @@ import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:mycarclub/database/app_update/upgrader.dart';
+import 'package:mycarclub/utils/app_lock_authentication.dart';
 import '/database/repositories/auth_repo.dart';
 import '/database/repositories/settings_repo.dart';
 import '/providers/auth_provider.dart';
@@ -23,19 +25,151 @@ import '/utils/network_info.dart';
 import '/utils/no_internet_widget.dart';
 import 'package:video_player/video_player.dart';
 import '../../database/functions.dart';
-import '../../main.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen(this.controller, {Key? key}) : super(key: key);
+  const SplashScreen({Key? key, this.controller}) : super(key: key);
   static const String routeName = '/SplashScreen';
-  final VideoPlayerController controller;
+  final VideoPlayerController? controller;
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  static const String tag = 'Splash Screen';
   StreamSubscription<Map>? streamSubscription;
   StreamController<String> controllerData = StreamController<String>();
+  int duration = 0;
+  int position = 0;
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    sl.get<NetworkInfo>().checkConnectivity(context);
+    sl.get<AuthProvider>().getSignUpInitialData();
+    super.initState();
+    initController();
+  }
+
+  void initController() {
+    _controller = VideoPlayerController.asset('assets/videos/1_1.mp4')
+      ..initialize().then((_) {
+        duration = _controller.value.duration.inMilliseconds;
+        _controller.play();
+        _controller.setVolume(0.0);
+        _controller
+          ..addListener(() {
+            position = _controller.value.position.inMilliseconds;
+            if (position == duration) {
+              checkLogin2();
+            }
+          });
+      });
+  }
+
+  checkLogin2() async {
+    var authProvider = sl.get<AuthProvider>();
+    bool isLogin = authProvider.isLoggedIn();
+    if (!isLogin) {
+      Get.offAll(LoginScreen());
+    } else {
+      var user = await authProvider.getUser();
+      if (user != null) {
+        authProvider.userData = user;
+        authProvider.authRepo
+            .saveUserToken(await authProvider.authRepo.getUserToken());
+        bool isBiometric = sl.get<SettingsRepo>().getBiometric();
+        if (isBiometric) {
+          AppLockAuthentication.authenticate().then((value) {
+            if (value[0] == AuthStatus.available &&
+                value[1] == AuthStatus.authenticated) {
+              Get.offAll(MainPage());
+            } else {
+              exitTheApp();
+            }
+          });
+        } else {
+          Get.offAll(MainPage());
+        }
+      } else {
+        logOut(tag);
+        Get.offAll(LoginScreen());
+        listenDynamicLinks();
+      }
+    }
+  }
+
+  checkAppUpdate() async {
+    var hasUpdate = sl.get<AuthRepo>().getAppCanUpdate();
+    var canRunApp = sl.get<AuthRepo>().getCanRunApp();
+
+    //method:1 check from package info and call store apis
+
+    //method:2 hit api and check from api
+
+    if (hasUpdate) {
+      Get.offAll(UpdatePage(required: true));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: buildBody(),
+    );
+  }
+
+  Stack buildBody() {
+    return Stack(
+      children: [
+        Container(
+          height: double.maxFinite,
+          width: double.maxFinite,
+          color: mainColor,
+          child: _controller.value.isInitialized
+              ? AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller))
+              : Container(),
+        ),
+        /*if (position == duration)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height: 100,
+              width: double.maxFinite,
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                    backgroundColor: Colors.white, strokeWidth: 2),
+              ),
+            ),
+          ),*/
+        /*      Align(
+          alignment: Alignment.bottomCenter,
+          child: FilledButton(
+              onPressed: _updateInfo?.updateAvailability ==
+                      UpdateAvailability.updateAvailable
+                  ? () {
+                      infoLog('performing immediateUpdateAllowed ');
+                      InAppUpdate.performImmediateUpdate().catchError((e) {
+                        Fluttertoast.showToast(msg: e.toString());
+                        return AppUpdateResult.inAppUpdateFailed;
+                      });
+                    }
+                  : () {},
+              child: titleLargeText('Update', context)),
+        )*/
+      ],
+    );
+  }
+
+//
   Future<void> listenDynamicLinks() async {
     streamSubscription = FlutterBranchSdk.initSession().listen((data) {
       try {
@@ -98,205 +232,81 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-  AppUpdateInfo? _updateInfo;
+  // AppUpdateInfo? _updateInfo;
 
-  Future<void> checkLogin() async {
-    await checkFBForAppUpdate().first.then((value) async {
-      bool canRunApp = sl.get<AuthRepo>().getCanRunApp();
-      await checkForUpdate().then((value) async {
-        bool canUpdate = sl.get<AuthRepo>().getAppCanUpdate();
-        print('SplashScreen app can run $canRunApp &&& has Update $canUpdate');
+  // Future<void> checkLogin() async {
+  //   await checkFBForAppUpdate().first.then((value) async {
+  //     bool canRunApp = sl.get<AuthRepo>().getCanRunApp();
+  //     await checkForUpdate().then((value) async {
+  //       bool canUpdate = sl.get<AuthRepo>().getAppCanUpdate();
+  //       print('SplashScreen app can run $canRunApp &&& has Update $canUpdate');
+  //       if (!canRunApp && isOnline) {
+  //         Get.offAll(AppUnderMaintenancePage());
+  //       } else if (!canRunApp && !isOnline) {
+  //         Get.offAll(NoInternetWidget(
+  //           btnText: 'Restart',
+  //           callback: () => exitTheApp(),
+  //         ));
+  //       } else {
+  //         if (canUpdate) {
+  //           Get.offAll(
+  //               // Platform.isIOS ?
+  //               // UpdateAppPage() :
+  //               UpdatePage(required: true));
+  //           // updateApp();
+  //         } else {
+  //           bool isLogin = sl.get<AuthRepo>().isLoggedIn();
+  //           if (isLogin) {
+  //             await sl.get<AuthProvider>().userInfo().then((value) async {
+  //               if (value != null) {
+  //                 await _checkBiometrics().then((value) async {
+  //                   print(
+  //                       '_checkBiometrics $_canCheckBiometrics  ${await auth.canCheckBiometrics}');
+  //                   if (_canCheckBiometrics &&
+  //                       sl.get<SettingsRepo>().getBiometric()) {
+  //                     await _authenticateWithBiometrics().then((value) {
+  //                       if (value) {
+  //                         sl.get<DashBoardProvider>().getCustomerDashboard();
+  //                         Get.offAll(MainPage());
+  //                       } else {
+  //                         exitTheApp();
+  //                       }
+  //                     });
+  //                   } else {
+  //                     Get.offAll(MainPage());
+  //                   }
+  //                 });
+  //               } else {
+  //                 Get.offAll(LoginScreen());
+  //               }
+  //             });
+  //           } else {
+  //             Get.offAll(LoginScreen());
+  //             listenDynamicLinks();
+  //           }
+  //         }
+  //       }
+  //     });
+  //   });
+  // }
 
-        if (!canRunApp && isOnline) {
-          Get.offAll(AppUnderMaintenancePage());
-        } else if (!canRunApp && !isOnline) {
-          Get.offAll(NoInternetWidget(
-            btnText: 'Restart',
-            callback: () => exitTheApp(),
-          ));
-        } else {
-          if (canUpdate) {
-            Get.offAll(
-                // Platform.isIOS ?
-                // UpdateAppPage() :
-                UpdatePage(required: true));
-            // updateApp();
-          } else {
-            bool isLogin = sl.get<AuthRepo>().isLoggedIn();
-            if (isLogin) {
-              await sl.get<AuthProvider>().userInfo().then((value) async {
-                if (value != null) {
-                  errorLog('time5 $time', 'timer---');
-
-                  await _checkBiometrics().then((value) async {
-                    print(
-                        '_checkBiometrics $_canCheckBiometrics  ${await auth.canCheckBiometrics}');
-                    if (_canCheckBiometrics &&
-                        sl.get<SettingsRepo>().getBiometric()) {
-                      await _authenticateWithBiometrics().then((value) {
-                        if (value) {
-                          sl.get<DashBoardProvider>().getCustomerDashboard();
-                          Get.offAll(MainPage());
-                        } else {
-                          exitTheApp();
-                        }
-                      });
-                    } else {
-                      Get.offAll(MainPage());
-                    }
-                  });
-                } else {
-                  Get.offAll(LoginScreen());
-                }
-              });
-            } else {
-              Get.offAll(LoginScreen());
-              listenDynamicLinks();
-            }
-          }
-        }
-      });
-    });
-  }
-
-  Future<AppUpdateInfo?> checkForUpdate() async {
-    AppUpdateInfo? updateInfo;
-    if (Platform.isAndroid) {
-      InAppUpdate.checkForUpdate().then((info) {
-        setState(() {
-          _updateInfo = info;
-          updateInfo = info;
-        });
-        if (_updateInfo != null) {
-          sl.get<AuthRepo>().setAppCanUpdate(_updateInfo!.updateAvailability ==
-              UpdateAvailability.updateAvailable);
-          successLog(_updateInfo!.toString());
-        }
-      }).catchError((e) {
-        errorLog(e.toString());
-      });
-    }
-    return updateInfo;
-  }
-
-  int duration = 0;
-  int position = 0;
-  bool checked = false;
-  late VideoPlayerController _controller;
-
-  @override
-  void initState() {
-    errorLog('time4 $time', 'timer---');
-    super.initState();
-    sl.get<NetworkInfo>().checkConnectivity(context);
-    sl.get<AuthProvider>().getSignUpInitialData();
-    super.initState();
-    _controller = widget.controller;
-    duration = _controller.value.duration.inMicroseconds;
-    _controller.play();
-    _controller.setVolume(0.0);
-    _controller
-      ..addListener(() {
-        position = _controller.value.position.inMicroseconds;
-        setState(() {});
-        if (position == duration) {
-          errorLog('time v $time', 'timer---');
-          checkLogin().then((value) => _controller.dispose());
-        }
-        print(' i got position: $position   ----   duration: $duration');
-      });
-    // getPPTDownloadFilePath("my_ppt");
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    // _timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            height: double.maxFinite,
-            width: double.maxFinite,
-            color: mainColor,
-            child: _controller.value.isInitialized
-                ? AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller))
-                : Container(),
-          ),
-          /*if (position == duration)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: 100,
-                width: double.maxFinite,
-                child: Center(
-                  child: CircularProgressIndicator.adaptive(
-                      backgroundColor: Colors.white, strokeWidth: 2),
-                ),
-              ),
-            ),*/
-          /*      Align(
-            alignment: Alignment.bottomCenter,
-            child: FilledButton(
-                onPressed: _updateInfo?.updateAvailability ==
-                        UpdateAvailability.updateAvailable
-                    ? () {
-                        infoLog('performing immediateUpdateAllowed ');
-                        InAppUpdate.performImmediateUpdate().catchError((e) {
-                          Fluttertoast.showToast(msg: e.toString());
-                          return AppUpdateResult.inAppUpdateFailed;
-                        });
-                      }
-                    : () {},
-                child: titleLargeText('Update', context)),
-          )*/
-        ],
-      ),
-    );
-  }
-
-  final LocalAuthentication auth = LocalAuthentication();
-  bool _canCheckBiometrics = false;
-
-  Future<void> _checkBiometrics() async {
-    late bool canCheckBiometrics;
-    try {
-      canCheckBiometrics = await auth.canCheckBiometrics;
-    } on PlatformException catch (e) {
-      canCheckBiometrics = false;
-      print(e);
-    }
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      // _canCheckBiometrics = canCheckBiometrics;
-      //TODO: remove this line
-      _canCheckBiometrics = false;
-    });
-  }
-
-  Future<bool> _authenticateWithBiometrics() async {
-    bool authenticated = false;
-
-    authenticated = await auth.authenticate(
-      localizedReason:
-          'Scan your fingerprint (or face or whatever) to authenticate',
-      options: const AuthenticationOptions(
-        stickyAuth: true,
-        biometricOnly: false,
-      ),
-    );
-    final String message = authenticated ? 'Authorized' : 'Not Authorized';
-    print(' message = authenticated ? $message');
-    return authenticated;
-  }
+  // Future<AppUpdateInfo?> checkForUpdate() async {
+  //   AppUpdateInfo? updateInfo;
+  //   if (Platform.isAndroid) {
+  //     InAppUpdate.checkForUpdate().then((info) {
+  //       setState(() {
+  //         _updateInfo = info;
+  //         updateInfo = info;
+  //       });
+  //       if (_updateInfo != null) {
+  //         sl.get<AuthRepo>().setAppCanUpdate(_updateInfo!.updateAvailability ==
+  //             UpdateAvailability.updateAvailable);
+  //         successLog(_updateInfo!.toString());
+  //       }
+  //     }).catchError((e) {
+  //       errorLog(e.toString());
+  //     });
+  //   }
+  //   return updateInfo;
+  // }
 }

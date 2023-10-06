@@ -208,7 +208,7 @@ class _MyTreeViewPageState extends State<MyTreeViewPage> {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getDownLines');
             }
             if (status) {
               try {

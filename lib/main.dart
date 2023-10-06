@@ -12,25 +12,20 @@ import '/database/functions.dart';
 import '/screens/splash/splash_screen.dart';
 import '/sl_container.dart';
 import '/utils/app_icon_badge_utils.dart';
-import '/utils/default_logger.dart';
 import '/utils/network_info.dart';
 import '/utils/notification_sqflite_helper.dart';
 
+import 'database/app_update/upgrader.dart';
 import 'database/my_notification_setup.dart';
 import 'myapp.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
-int time = 0;
-var timer = Timer.periodic(Duration(seconds: 1), (timer) {
-  time++;
-});
-
 Future<void> main() async {
-  errorLog('time1 $time', 'timer---');
   // timer;
   WidgetsFlutterBinding.ensureInitialized();
+  await Upgrader.clearSavedSettings();
   await initRepos();
   await Firebase.initializeApp();
   await configureLocalTimeZone();
@@ -53,7 +48,6 @@ Future<void> main() async {
     selectedNotificationPayload =
         notificationAppLaunchDetails!.notificationResponse?.payload;
   }
-  errorLog('time2 $time', 'timer---');
   runApp(MyCarClub(
       initialRoute: initialRoute,
       notificationAppLaunchDetails: notificationAppLaunchDetails));

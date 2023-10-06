@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/default_logger.dart';
 
 import '../constants/assets_constants.dart';
 import '../utils/picture_utils.dart';
@@ -47,6 +48,8 @@ class _GalleryDetailsImagePopupState extends State<GalleryDetailsImagePopup> {
           backgroundColor: Colors.white24);
   @override
   Widget build(BuildContext context) {
+    infoLog(
+        'popup img --> current index image is: ${widget.images[currentIndex]}');
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         print(details);
@@ -74,10 +77,7 @@ class _GalleryDetailsImagePopupState extends State<GalleryDetailsImagePopup> {
               child: Container(
                 margin: EdgeInsets.symmetric(horizontal: 0, vertical: 20),
                 child: buildCachedNetworkImage(widget.images[currentIndex],
-                    fit: BoxFit.contain,
-                    placeholderImg: Assets.whiteNoImageIcon,
-                    pw: Get.width / 2,
-                    ph: Get.width / 2),
+                    fit: BoxFit.fill, pw: Get.width / 2, ph: Get.width / 2),
               ),
             ),
           ),
@@ -106,10 +106,8 @@ class _GalleryDetailsImagePopupState extends State<GalleryDetailsImagePopup> {
                           width: 40.0,
                           height: 40.0,
                           decoration: BoxDecoration(shape: BoxShape.circle),
-                          child: Icon(
-                            Icons.arrow_back_ios_rounded,
-                            color: Colors.white,
-                          ),
+                          child: Icon(Icons.arrow_back_ios_rounded,
+                              color: Colors.white),
                         ),
                       ),
                     ),

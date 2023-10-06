@@ -1,9 +1,9 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:http/http.dart' as http;
-import '/constants/app_constants.dart';
 import '/utils/default_logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -16,12 +16,7 @@ class AppVersionChecker {
   /// if [currentVersion] is null the [currentVersion] will take the Flutter package version
   final String? currentVersion;
 
-  /// The id of the app (com.exemple.your_app).
-  /// if [appId] is null the [appId] will take the Flutter package identifier
   final String? appId;
-
-  /// Select The marketplace of your app
-  /// default will be `AndroidStore.GooglePlayStore`
   final AndroidStore androidStore;
 
   AppVersionChecker({
@@ -91,20 +86,22 @@ class AppVersionChecker {
     String? url;
     // final uri = Uri.https(
     //     "play.google.com", "/store/apps/details", {"id": packageName});
-      if(isOnline)  {
+    if (isOnline) {
       final uri = Uri.parse(
-          "https://play.google.com/store/apps/details?id=${AppConstants.appID}");
+          "https://play.google.com/store/apps/details?id=${packageName}");
       try {
         final response = await http.get(uri);
-        infoLog(response.body.contains('Version').toString(),'_checkPlayStore');
-        // longLogger(response.body,'_checkPlayStore');
+        infoLog(
+            response.body.contains('Version').toString(), '_checkPlayStore');
+        log(response.body, name: '_checkPlayStore');
         if (response.statusCode != 200) {
           errorMsg =
               "Can't find an app in the Google Play Store with the id: $packageName";
         } else {
           var test = RegExp("add to wishlist").allMatches(response.body);
           print('testing update--> ${test.map((e) => e)}');
-          print('RegExp--> ${RegExp(r'"softwareVersion":"([\d.]+)"').firstMatch(response.body)}');
+          print(
+              'RegExp--> ${RegExp(r'"softwareVersion":"([\d.]+)"').firstMatch(response.body)}');
           // newVersion = RegExp(r',\[\[\["([0-9,\.]*)"]],')
           newVersion = RegExp(r'"softwareVersion":"([\d.]+)"')
               .firstMatch(response.body)!
@@ -121,8 +118,6 @@ class AppVersionChecker {
     return AppCheckerResult(currentVersion, newVersion, url, errorMsg);
   }
 }
-
-
 
 Future<AppCheckerResult> _checkApkPureStore(
     String currentVersion, String packageName) async {

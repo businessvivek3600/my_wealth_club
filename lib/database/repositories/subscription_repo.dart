@@ -13,10 +13,24 @@ class SubscriptionRepo {
   SubscriptionRepo({required this.dioClient, required this.sharedPreferences});
 
   /// :Subscription History
-  Future<ApiResponse> getSubscription() async {
+  Future<ApiResponse> getSubscription(Map<String, dynamic> map) async {
     try {
-      Response response =
-          await dioClient.post(AppConstants.mySubscription, token: true);
+      Response response = await dioClient.post(AppConstants.mySubscription,
+          token: true, data: map);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  Future<ApiResponse> subscriptionRequestHistory(
+      Map<String, dynamic> map) async {
+    try {
+      Response response = await dioClient.post(
+          AppConstants.subscriptionRequestHistory,
+          token: true,
+          data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -26,8 +40,10 @@ class SubscriptionRepo {
 
   Future<ApiResponse> buySubscription(Map<String, dynamic> data) async {
     try {
-      Response response = await dioClient.post(AppConstants.buySubscription,
-          token: true, data: data);
+      Response response = await dioClient.post(
+          AppConstants.subscriptionRequestHistory,
+          token: true,
+          data: data);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -42,7 +58,7 @@ class SubscriptionRepo {
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
-      getSubscription();
+      getSubscription({'page': 1});
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }

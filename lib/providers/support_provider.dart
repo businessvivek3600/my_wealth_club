@@ -52,8 +52,8 @@ class SupportProvider extends ChangeNotifier {
           status = map?["status"];
         } catch (e) {}
         try {
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getTickets');
           }
         } catch (e) {}
         try {
@@ -168,8 +168,8 @@ class SupportProvider extends ChangeNotifier {
           status = map?["status"];
         } catch (e) {}
         try {
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getTicketDetail');
           }
         } catch (e) {}
         try {
@@ -254,7 +254,7 @@ class SupportProvider extends ChangeNotifier {
           status = map["status"];
           try {
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('reply');
             }
           } catch (e) {}
           sendingMessage = false;
@@ -317,7 +317,7 @@ class SupportProvider extends ChangeNotifier {
             status = map["status"];
             try {
               if (map['is_logged_in'] == 0) {
-                logOut();
+                logOut('newTicketSubmit');
               }
             } catch (e) {}
             sendingMessage = false;

@@ -13,7 +13,7 @@
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
+	<string>1</string>
 	<key>CFBundleName</key>
 	<string>MyCarClub</string>
 	<key>CFBundlePackageType</key>
@@ -51,7 +51,7 @@
 		<true/>
 	</dict>
 	<key>NSFaceIDUsageDescription</key>
-	<string>I need face auth to unlock the application with the real user</string>
+	<string>Face auth to unlock the application with the real user</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

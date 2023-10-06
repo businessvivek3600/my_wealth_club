@@ -39,8 +39,8 @@ class EventTicketsProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getEventTickets');
           }
         } catch (e) {}
         try {
@@ -117,8 +117,8 @@ class EventTicketsProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('buyEventTicketsRequest');
           }
         } catch (e) {}
         if (status && map != null) {
@@ -175,7 +175,7 @@ class EventTicketsProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('buyTicketSubmit');
             }
           } catch (e) {}
           try {

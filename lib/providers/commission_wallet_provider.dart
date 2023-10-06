@@ -45,8 +45,8 @@ class CommissionWalletProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getCommissionWalletHistory');
           }
         } catch (e) {}
         try {
@@ -135,59 +135,57 @@ class CommissionWalletProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getCommissionWithdrawRequest');
             }
           } catch (e) {}
 
           if (status) {
-            if (map != null) {
-              try {
-                if (map['wallet_balance'] != null &&
-                    map['wallet_balance'] != '') {
-                  walletBalance = double.parse(map['wallet_balance']);
-                  amountController.text = walletBalance.toStringAsFixed(0);
-                  notifyListeners();
-                }
-              } catch (e) {}
-              try {
-                sl.get<AuthProvider>().updateUser(map["userData"]);
-              } catch (e) {}
-              try {
-                if (map['minimum_amt'] != null && map['minimum_amt'] != '') {
-                  minimumBalance = double.parse(map['minimum_amt']);
-                  notifyListeners();
-                }
-              } catch (e) {}
-              try {
-                if (map['bank'] != null) {
-                  _banks.add(CommissionWalletBankDetail.fromJson(map['bank']));
-                  banks.clear();
-                  banks = _banks;
-                  notifyListeners();
-                }
-              } catch (e) {
-                print('bank error $e');
+            try {
+              if (map['wallet_balance'] != null &&
+                  map['wallet_balance'] != '') {
+                walletBalance = double.parse(map['wallet_balance']);
+                amountController.text = walletBalance.toStringAsFixed(0);
+                notifyListeners();
               }
-              try {
-                if (map['payment_type'] != null) {
-                  paymentTypes.clear();
-                  map['payment_type'].entries.toList().forEach((e) =>
-                      paymentTypes.addEntries([MapEntry(e.key, e.value)]));
-                  notifyListeners();
-                }
-              } catch (e) {
-                print('payment types error === $e');
+            } catch (e) {}
+            try {
+              sl.get<AuthProvider>().updateUser(map["userData"]);
+            } catch (e) {}
+            try {
+              if (map['minimum_amt'] != null && map['minimum_amt'] != '') {
+                minimumBalance = double.parse(map['minimum_amt']);
+                notifyListeners();
               }
-              try {
-                if (map['admin_per'] != null) {
-                  admin_per.clear();
-                  map['admin_per'].entries.toList().forEach(
-                      (e) => admin_per.addEntries([MapEntry(e.key, e.value)]));
-                  notifyListeners();
-                }
-              } catch (e) {
-                print('admin_per error === $e');
+            } catch (e) {}
+            try {
+              if (map['bank'] != null) {
+                _banks.add(CommissionWalletBankDetail.fromJson(map['bank']));
+                banks.clear();
+                banks = _banks;
+                notifyListeners();
               }
+            } catch (e) {
+              print('bank error $e');
+            }
+            try {
+              if (map['payment_type'] != null) {
+                paymentTypes.clear();
+                map['payment_type'].entries.toList().forEach((e) =>
+                    paymentTypes.addEntries([MapEntry(e.key, e.value)]));
+                notifyListeners();
+              }
+            } catch (e) {
+              print('payment types error === $e');
+            }
+            try {
+              if (map['admin_per'] != null) {
+                admin_per.clear();
+                map['admin_per'].entries.toList().forEach(
+                    (e) => admin_per.addEntries([MapEntry(e.key, e.value)]));
+                notifyListeners();
+              }
+            } catch (e) {
+              print('admin_per error === $e');
             }
           } else {
             Toasts.showErrorNormalToast(map["message"].split('.').first);
@@ -226,7 +224,7 @@ class CommissionWalletProvider extends ChangeNotifier {
           String? redirectUrl;
           try {
             status = map["status"];
-            if (map['is_logged_in'] == 0) logOut();
+            if (map['is_logged_in'] == 0) logOut('withdrawSubmit');
           } catch (e) {}
           try {
             message = map["message"];
@@ -273,7 +271,7 @@ class CommissionWalletProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('transferToCashWallet');
             }
           } catch (e) {}
           try {

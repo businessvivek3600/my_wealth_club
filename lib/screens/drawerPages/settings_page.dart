@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:mycarclub/utils/app_lock_authentication.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/repositories/settings_repo.dart';
@@ -44,7 +45,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // Print the list of route names in the history
     // history.forEach((route) {
-      print('Route name: ${Navigator.of(context).context}');
+    print('Route name: ${Navigator.of(context).context}');
     // });
     return Scaffold(
       backgroundColor: mainColor,
@@ -193,82 +194,35 @@ class _SettingsPageState extends State<SettingsPage> {
   final LocalAuthentication auth = LocalAuthentication();
   bool _canCheckBiometrics = false;
 
-  Future<void> _checkBiometrics() async {
-    late bool canCheckBiometrics;
-    try {
-      canCheckBiometrics = await auth.canCheckBiometrics;
-    } on PlatformException catch (e) {
-      canCheckBiometrics = false;
-      print(e);
-    }
-    if (!mounted) {
-      return;
-    }
-
-    setState(() {
-      _canCheckBiometrics = canCheckBiometrics;
-    });
-  }
-
-  Future<bool> _authenticateWithBiometrics() async {
-    bool authenticated = false;
-
-    authenticated = await auth.authenticate(
-      localizedReason: 'Biometric Verification',
-      options: const AuthenticationOptions(
-        stickyAuth: true,
-        biometricOnly: false,
-        sensitiveTransaction: true,
-      ),
-    );
-    // on PlatformException catch (e) {
-    //   print('biometric failed ${e.message}');
-    //   exitTheApp();
-    //   return authenticated;
-    // }
-
-    final String message = authenticated ? 'Authorized' : 'Not Authorized';
-    print(' message = authenticated ? $message');
-    return authenticated;
-  }
-
   void setAppLock() async {
-    await _checkBiometrics().then((value) async {
-      if (_canCheckBiometrics) {
-        print('can check biometrics $_canCheckBiometrics');
-        await _authenticateWithBiometrics().then((value) {
-          if (value) {
-            setState(() {
-              biometric = !biometric;
-              repo.setBiometric(biometric);
-            });
-          }
-        });
-      } else {
-        Fluttertoast.showToast(msg: 'Your device does not support Biometrics');
+    AppLockAuthentication.authenticate().then((value) {
+      if (value[0] == AuthStatus.available) {
+        if (value[1] == AuthStatus.authenticated) {
+          setState(() {
+            biometric = !biometric;
+            repo.setBiometric(biometric);
+          });
+        }
       }
     });
   }
 
   void deleteAccount() async {
-    await _checkBiometrics().then((value) async {
-      if (_canCheckBiometrics) {
-        print('can check biometrics $_canCheckBiometrics');
-        await _authenticateWithBiometrics().then((value) async {
-          if (value) {
-            // setState(() {
-            // biometric = !biometric;
-            // repo.setBiometric(biometric);
-            // });
-            showLoading();
-            await Future.delayed(Duration(seconds: 3));
-            Get.back();
-            logOut().then((value) =>
-                Toasts.showSuccessNormalToast('Your account has been deleted'));
-          }
-        });
+    AppLockAuthentication.authenticate().then((value) async {
+      if (value[0] == AuthStatus.available) {
+        if (value[1] == AuthStatus.authenticated) {
+          showLoading();
+          await Future.delayed(Duration(seconds: 3));
+          Get.back();
+          logOut('deleteAccount').then((value) =>
+              Toasts.showSuccessNormalToast('Your account has been deleted'));
+        }
       } else {
-        Fluttertoast.showToast(msg: 'Your device does not support Biometrics');
+        showLoading();
+        await Future.delayed(Duration(seconds: 3));
+        Get.back();
+        logOut('deleteAccount').then((value) =>
+            Toasts.showSuccessNormalToast('Your account has been deleted'));
       }
     });
   }

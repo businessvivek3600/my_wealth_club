@@ -118,7 +118,7 @@ class AuthProvider with ChangeNotifier {
         try {
           var is_logged_in = map["is_logged_in"];
           if (is_logged_in == 0) {
-            logOut();
+            logOut('user data not found in updateProfile');
           }
         } catch (e) {}
         try {
@@ -256,8 +256,11 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(LoginModel loginBody) async {
     bool loggedIn = false;
+
     if (isOnline) {
+      showLoading(dismissable: false, useRootNavigator: true);
       ApiResponse apiResponse = await authRepo.login(loginBody);
+      Get.back();
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         Map map = apiResponse.response!.data;
@@ -387,7 +390,7 @@ class AuthProvider with ChangeNotifier {
           login_token = map["login_token"];
         } catch (e) {}
         if (map['userData'] == null) {
-          logOut();
+          logOut('user data not found in userInfo');
           return null;
         }
         try {
@@ -451,8 +454,8 @@ class AuthProvider with ChangeNotifier {
   Future<void> commissionWithdrawal() async {
     loadingCommissionWithdrawal = true;
     notifyListeners();
-    bool isCacheExist = await APICacheManager()
-        .isAPICacheKeyExist(AppConstants.commissionWithdrawal);
+    bool isCacheExist =
+        await APICacheManager().isAPICacheKeyExist(AppConstants.paymentMethod);
     Map? map;
 
     if (isOnline) {
@@ -461,15 +464,14 @@ class AuthProvider with ChangeNotifier {
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
         try {
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('commissionWithdrawal');
           }
         } catch (e) {}
         try {
           if (map != null) {
             var cacheModel = APICacheDBModel(
-                key: AppConstants.commissionWithdrawal,
-                syncData: jsonEncode(map));
+                key: AppConstants.paymentMethod, syncData: jsonEncode(map));
             await APICacheManager().addCacheData(cacheModel);
           }
         } catch (e) {}
@@ -486,9 +488,9 @@ class AuthProvider with ChangeNotifier {
       }
     } else if (!isOnline && isCacheExist) {
       try {
-        var cacheModel = (await APICacheManager()
-                .getCacheData(AppConstants.commissionWithdrawal))
-            .syncData;
+        var cacheModel =
+            (await APICacheManager().getCacheData(AppConstants.paymentMethod))
+                .syncData;
         map = jsonDecode(cacheModel);
       } catch (e) {}
     } else {
@@ -516,7 +518,7 @@ class AuthProvider with ChangeNotifier {
     // print(data);
     try {
       if (data['username'] == null) {
-        logOut();
+        logOut('user data not found in updateUser');
         return null;
       }
       _userData = UserData.fromJson(data);
@@ -681,6 +683,10 @@ class AuthProvider with ChangeNotifier {
 
   bool isLoggedIn() {
     return authRepo.isLoggedIn();
+  }
+
+  Future<UserData?> getUser() async {
+    return await authRepo.getUser();
   }
 
   Future<bool> clearSharedData() async {

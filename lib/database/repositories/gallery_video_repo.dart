@@ -47,7 +47,7 @@ class GalleryRepo {
 //
   Future<ApiResponse> galleryVideos(Map<String, String> map) async {
     try {
-      Response response = await dioClient.post(AppConstants.galleryVideos,
+      Response response = await dioClient.post(AppConstants.getVideos,
           data: map, token: true);
       return ApiResponse.withSuccess(response);
     } catch (e) {

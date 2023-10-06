@@ -4,11 +4,14 @@ import 'dart:io';
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/utils/color.dart';
 import '/database/model/response/base/user_model.dart';
 import '/database/model/response/company_info_model.dart';
 import '/database/repositories/auth_repo.dart';
@@ -39,6 +42,7 @@ import 'package:html/parser.dart';
 import '../constants/app_constants.dart';
 import '../providers/support_provider.dart';
 import '../utils/default_logger.dart';
+import 'app_update/src/upgrader.dart';
 
 bool isOnline = false;
 String appVersion = '';
@@ -176,7 +180,8 @@ String parseHtmlString(String htmlString) {
   return parsedString;
 }
 
-Future<void> logOut() async {
+Future<void> logOut(dynamic reason) async {
+  warningLog('logOut called  due to ${reason.toString()}');
   await sl.get<AuthProvider>().clearSharedData();
   await sl.get<AuthProvider>().clear();
   sl.get<AuthProvider>().userData = UserData();
@@ -191,6 +196,7 @@ Future<void> logOut() async {
   await sl.get<TeamViewProvider>().clear();
   await sl.get<GalleryProvider>().clear();
   await APICacheManager().emptyCache();
+
   MyCarClub.navigatorKey.currentState
       ?.pushNamedAndRemoveUntil(LoginScreen.routeName, (r) => false);
 }
@@ -542,4 +548,35 @@ void copyToClipboard(String text, [String? message]) {
   Clipboard.setData(ClipboardData(text: text));
   // AdvanceToasts.showNormalElegant(context, 'Link copied successfully!',
   Fluttertoast.showToast(msg: message ?? 'Copied to clipboard');
+}
+
+// working update
+checkForUpdate(BuildContext context) async {
+  Upgrader appcast = Upgrader(
+    debugLogging: true,
+    showIgnore: false,
+    showLater: false,
+    debugDisplayAlways: false,
+    // shouldPopScope: () => false,
+    dialogStyle: Platform.isIOS
+        ? UpgradeDialogStyle.cupertino
+        : UpgradeDialogStyle.material,
+    willDisplayUpgrade: (
+        {String? appStoreVersion,
+        required bool display,
+        String? installedVersion,
+        String? minAppVersion}) async {
+      print(
+          'appcast.willDisplayUpgrade $appStoreVersion $display $installedVersion $minAppVersion');
+    },
+    backgroundColor: bColor,
+    borderRadius: 10,
+    textColor: Platform.isIOS ? Colors.black : Colors.white,
+  );
+  try {
+    await appcast.initialize();
+  } catch (e) {
+    errorLog('appcast.initialize() error $e');
+  }
+  appcast.checkVersion(context: context);
 }

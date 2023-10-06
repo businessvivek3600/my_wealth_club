@@ -5,6 +5,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/functions.dart';
 import 'package:mycarclub/widgets/show_custom_dialog.dart';
 import '../../utils/app_default_loading.dart';
 import '/screens/drawerPages/download_pages/videos/data_manager.dart';
@@ -50,6 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _loadSavedCredentials();
     OverlayState? overlayState = Overlay.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      checkForUpdate(context);
       globalKey;
     });
     _focusNode.addListener(() {
@@ -72,6 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
       .saveCredentials(_userNameController.text, _passwordController.text);
   @override
   Widget build(BuildContext context) {
+    // checkForUpdate(context);
     double height = MediaQuery.of(context).size.height;
     return GestureDetector(
       onTap: () => primaryFocus?.unfocus(),
@@ -140,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Stack(
           children: [
             GestureDetector(
-              onTap: _login,
+              onTap: () => _login(context),
               // label: !isLoginDisabled
               //     ? loaderWidget(radius: 8)
               //     : Icon(Icons.arrow_forward_rounded,
@@ -416,13 +419,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _login() async {
+  void _login(BuildContext context) async {
     primaryFocus?.unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       //--- trigger Password Save
       TextInput.finishAutofillContext();
       try {
-        showLoading(dismissable: true);
         await sl
             .get<AuthProvider>()
             .login(LoginModel(
@@ -431,7 +433,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 device_id: ''))
             .then((value) {
           print('Login Value ${value != true}');
-          Get.back();
           if (value) {
             sl.get<DashBoardProvider>().getCustomerDashboard();
             Future.delayed(

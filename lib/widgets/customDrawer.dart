@@ -370,7 +370,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     btnOkText: 'Yes Sure!',
                     btnCancelOnPress: () {},
                     btnOkOnPress: () async {
-                      await logOut().then((value) => Get.offAll(LoginScreen()));
+                      await logOut('log-out button').then((value) => Get.offAll(LoginScreen()));
                     },
                     reverseBtnOrder: true,
                   ).show();

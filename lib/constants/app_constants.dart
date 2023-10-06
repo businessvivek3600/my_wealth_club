@@ -40,6 +40,8 @@ class AppConstants {
 
   //subscription
   static const String mySubscription = 'customer/my-subscription';
+  static const String subscriptionRequestHistory =
+      'customer/subscription-request-history';
   static const String buySubscription = 'customer/buy-subscription';
   static const String submitCardInvoice =
       'customer/stripe-payment-subscription-submit';
@@ -48,7 +50,7 @@ class AppConstants {
   static const String myTeam = 'customer/my-team';
   static const String directMember = 'customer/my-direct';
   static const String getDownLines = 'customer/get-customer-downline';
-  static const String customerTeam = 'customer/team-view';
+  // static const String customerTeam = 'customer/team-view';
   static const String sendInboxMessageToUser = 'send-inbox-message-to-user';
   static const String getGenerationAnalyzer = 'customer/generation-analyzer';
 
@@ -101,7 +103,7 @@ class AppConstants {
   /// : gallery
   static const String gallery = 'gallery';
   static const String galleryDetail = 'gallery_detail';
-  static const String galleryVideos = 'get-videos';
+  static const String getVideos = 'get-videos';
   static const String getImportantDownloads = 'get-important-downloads';
 
   /// : Support
@@ -112,7 +114,7 @@ class AppConstants {
   static const String ticketReplySubmit = 'ticket-reply-submit';
 
   //profile
-  static const String commissionWithdrawal = 'commission_withdrawal';
+  static const String paymentMethod = 'payment-method';
   static const String getOtpCommissionWithdrawal =
       'otp-for-commission-withdrawal';
 

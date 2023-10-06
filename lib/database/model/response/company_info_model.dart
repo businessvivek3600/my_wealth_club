@@ -156,7 +156,7 @@ class CompanyInfoModel {
       if (json['popup_image'] != null) {
         List<Map<String, dynamic>> popup = [];
         jsonDecode(json['popup_image']).forEach((e) {
-          infoLog(e.toString());
+          infoLog('CompanyInfoModel.fromJson  popup-img $e');
           popup.add(e);
         });
         popupImage = popup;

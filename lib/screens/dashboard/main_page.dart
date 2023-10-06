@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import 'package:mycarclub/widgets/app_lock_auth_suggest_view.dart';
 import '/database/model/response/videos_model.dart';
 import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/screens/drawerPages/event_tickets/buy_ticket_Page.dart';
@@ -55,7 +56,6 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../../database/functions.dart';
 import '../../database/my_notification_setup.dart';
-import '../../providers/Cash_wallet_provider.dart';
 import '../../utils/picture_utils.dart';
 import '../../utils/skeleton.dart';
 
@@ -85,23 +85,21 @@ class _MainPageState extends State<MainPage>
 
   @override
   void initState() {
-    errorLog('time6 $time', 'timer---');
-    dashboardProvider.getDownloadsData();
-    dashboardProvider
-        .getCustomerDashboard()
-        .then((value) => showDashboardInitialPopUp(dashboardProvider, context));
-    sl.get<NotificationProvider>().getUnRead();
-    sl.get<SubscriptionProvider>().getSubscription();
-    authProvider.getSignUpInitialData();
-    sl.get<CashWalletProvider>().getCoinPaymentFundRequest(false);
-    galleryProvider.getGalleryData(false);
-    sl.get<EventTicketsProvider>().getEventTickets(true);
-    galleryProvider.getVideos(false);
-    canShowNextDashPopUPBool.addListener(() {});
     super.initState();
-    // print('device token ${getDeviceToken()}');
-
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      dashboardProvider.getCustomerDashboard().then(
+          (value) => showDashboardInitialPopUp(dashboardProvider, context));
+      sl.get<NotificationProvider>().getUnRead();
+      dashboardProvider.getDownloadsData();
+      sl.get<SubscriptionProvider>().getSubscription();
+      authProvider.getSignUpInitialData();
+      galleryProvider.getGalleryData(false);
+      sl.get<EventTicketsProvider>().getEventTickets(true);
+      galleryProvider.getVideos(false);
+      canShowNextDashPopUPBool.addListener(() {});
+      checkForUpdate(context);
+
+      //check if user is logged in and show bottom sheet to save password
       if (widget.loginModel != null) {
         Future.delayed(Duration(seconds: 2), () async {
           var list = await authProvider.getSavedCredentials();
@@ -197,8 +195,9 @@ class _MainPageState extends State<MainPage>
   void _onRefresh() async {
     appRating();
     dashboardProvider.getDownloadsData();
-    await dashboardProvider.getCustomerDashboard();
-    // .then((value) => showDashboardInitialPopUp(dashboardProvider, context));
+    await dashboardProvider
+        .getCustomerDashboard()
+        .then((value) => showDashboardInitialPopUp(dashboardProvider, context));
     sl.get<NotificationProvider>().getUnRead();
     sl.get<SubscriptionProvider>().getSubscription();
     authProvider.getSignUpInitialData();
@@ -259,11 +258,19 @@ class _MainPageState extends State<MainPage>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          buildAccountStatistics(
-                                              context, authProvider),
+                                          AppLockAuthSuggestionWidget(
+                                            showSuggestion: true,
+                                            margin:
+                                                EdgeInsetsDirectional.symmetric(
+                                                    horizontal: 8),
+                                            backgroundColor: Colors.white12,
+                                          ),
+                                          buildAccountStatistics(context,
+                                              authProvider, dashBoardProvider),
                                           _buildTeamBuildingReferralLink(
                                               context, dashBoardProvider),
                                           height10(),
+
                                           // _buildPlaceholderIdField(
                                           //     context, dashBoardProvider),
                                           // height10(),
@@ -417,9 +424,17 @@ class _MainPageState extends State<MainPage>
     return _MainPageAccademicVideoList();
   }
 
-  Padding buildAccountStatistics(
-      BuildContext context, AuthProvider authProvider) {
+  Padding buildAccountStatistics(BuildContext context,
+      AuthProvider authProvider, DashBoardProvider dashBoardProvider) {
     String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+    double bal_commission =
+        double.parse(dashBoardProvider.member_sale['bal_commission'] ?? '0');
+    double bal_cash =
+        double.parse(dashBoardProvider.member_sale['bal_cash'] ?? '0');
+    int active_member =
+        int.parse(dashBoardProvider.member_sale['active_member'] ?? '0');
+    int member = int.parse(dashBoardProvider.member_sale['member'] ?? '0');
+
     return Padding(
       padding: const EdgeInsetsDirectional.symmetric(vertical: 16),
       child: GridView(
@@ -435,19 +450,23 @@ class _MainPageState extends State<MainPage>
           ),
           children: [
             _buildStatisticsGridViewItem(
-                context, 'Commission Balance', 567890, currency_icon),
+                context, 'Commission Balance', bal_commission, currency_icon),
             _buildStatisticsGridViewItem(
-                context, 'Cash Balance', 456, currency_icon),
+                context, 'Cash Balance', bal_cash, currency_icon),
             _buildStatisticsGridViewItem(
-                context, 'Total Member', 5890, currency_icon),
-            _buildStatisticsGridViewItem(
-                context, 'Total Active Member', 0, currency_icon),
+                context, 'Total Member', member.toDouble(), currency_icon,
+                isCount: true),
+            _buildStatisticsGridViewItem(context, 'Total Active Member',
+                active_member.toDouble(), currency_icon,
+                isCount: true),
           ]),
     );
   }
 
   Container _buildStatisticsGridViewItem(
-      BuildContext context, String title, double value, String icon) {
+      BuildContext context, String title, double value, String icon,
+      {bool isCount = false}) {
+    var _value = isCount ? value.toInt() : value.toStringAsFixed(2);
     return Container(
       // height: 100,
       // width: 100,
@@ -464,7 +483,7 @@ class _MainPageState extends State<MainPage>
               fontWeight: FontWeight.bold,
               useGradient: false),
           height10(),
-          titleLargeText('$icon ${value.toStringAsFixed(2)}', context,
+          titleLargeText('${isCount ? '' : icon} ${_value}', context,
               useGradient: true, color: Colors.white),
         ],
       ),
@@ -572,6 +591,7 @@ class _MainPageState extends State<MainPage>
                   (dashBoardProvider.companyInfo!.popup_url ?? "") +
                   (e['file_name'] ?? ''))
               .toList();
+
           // images=[...images,...images,...images];
           showDialog<void>(
             context: context,
@@ -583,7 +603,7 @@ class _MainPageState extends State<MainPage>
                   currentIndex: 0, images: images, showCancel: true);
             },
           );
-          canShowNextDashPopUPBool.value = true;
+          canShowNextDashPopUPBool.value = false;
         }
       });
     }
@@ -861,7 +881,7 @@ class _MainPageState extends State<MainPage>
           height: dashBoardProvider.loadingDash
               ? 130
               : dashBoardProvider.hasSubscription
-                  ? 200
+                  ? 210
                   : null,
           child: !showList
               ? Container(
@@ -971,10 +991,9 @@ class _MainPageState extends State<MainPage>
                                                 BorderRadius.circular(10),
                                             boxShadow: const [
                                               BoxShadow(
-                                                color: Colors.black12,
-                                                spreadRadius: 5,
-                                                blurRadius: 15,
-                                              )
+                                                  color: Colors.black12,
+                                                  spreadRadius: 5,
+                                                  blurRadius: 15)
                                             ],
                                           ),
                                           padding: EdgeInsets.all(10),
@@ -1745,7 +1764,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
                   ? 150
                   : showList
                       ? 150
-                      : null,
+                      : 150,
               child: ListView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 8),

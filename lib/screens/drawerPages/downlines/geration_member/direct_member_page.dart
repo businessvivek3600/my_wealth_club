@@ -38,7 +38,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
     super.initState();
     provider.directMemberSearchController = TextEditingController();
     provider.setSearchingDirectMembers(false);
-    provider.getDirectMembers();
+    provider.getDirectMembers(true);
     _scrollController = ScrollController();
     _scrollController.addListener(() => _loadMore(sl.get<TeamViewProvider>()));
   }

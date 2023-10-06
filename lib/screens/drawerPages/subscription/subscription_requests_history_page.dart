@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/widgets/load_more_container.dart';
+import '../../../utils/default_logger.dart';
 import '/database/model/response/subscription_request_history_model.dart';
 import '/providers/auth_provider.dart';
 import '/providers/subscription_provider.dart';
@@ -24,6 +26,31 @@ class SubscriptionRequestsPage extends StatefulWidget {
 }
 
 class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
+  var provider = sl.get<SubscriptionProvider>();
+  @override
+  void initState() {
+    super.initState();
+    provider.subReqPage = 0;
+    provider.getSubscriptionRequestHistory(true);
+  }
+
+  @override
+  void dispose() {
+    provider.subReqPage = 0;
+    provider.totalReqSubscriptions = 0;
+    provider.requestHistory.clear();
+    super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getSubscriptionRequestHistory(false);
+  }
+
+  Future<void> _refresh() async {
+    provider.subReqPage = 0;
+    await provider.getSubscriptionRequestHistory(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -31,6 +58,8 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
 
     return Consumer<SubscriptionProvider>(
       builder: (context, provider, child) {
+        infoLog(
+            'SubscriptionRequestsPage: ${provider.requestHistory.length} loading: ${provider.loadingReqSub}');
         return Scaffold(
           backgroundColor: mainColor,
           body: Container(
@@ -43,12 +72,20 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                 opacity: 0.5,
               ),
             ),
-            child: CustomScrollView(
-              slivers: <Widget>[
-                buildSliverAppBar(size),
-                buildSliverList(provider, currency_icon),
-              ],
-            ),
+            child: LoadMoreContainer(
+                finishWhen: provider.requestHistory.length >=
+                    provider.totalReqSubscriptions,
+                onLoadMore: _loadMore,
+                onRefresh: _refresh,
+                builder: (scrollController, status) {
+                  return CustomScrollView(
+                    controller: scrollController,
+                    slivers: <Widget>[
+                      buildSliverAppBar(size),
+                      buildSliverList(provider, currency_icon),
+                    ],
+                  );
+                }),
           ),
         );
       },
@@ -58,8 +95,8 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
   SliverPadding buildSliverList(
       SubscriptionProvider provider, String currencyText) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      sliver: (!provider.loadingSub && provider.requestHistory.isEmpty)
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+      sliver: (!provider.loadingReqSub && provider.requestHistory.isEmpty)
           ? SliverToBoxAdapter(
               child: SizedBox(
                 height: Get.height - kToolbarHeight * 4,
@@ -95,15 +132,15 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
           : SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  var history = SubscriptionRequestHistory();
-                  if (!provider.loadingSub) {
-                    history = provider.requestHistory[index];
+                  var requestHistory = SubscriptionRequestHistory();
+                  if (!provider.loadingReqSub) {
+                    requestHistory = provider.requestHistory[index];
                   }
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8.0),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(10),
-                      child: !provider.loadingSub
+                      child: !provider.loadingReqSub
                           ? ExpansionTile(
                               title: Row(
                                 mainAxisAlignment:
@@ -115,13 +152,13 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         titleLargeText(
-                                          '$currencyText${history.packageAmount}',
+                                          '$currencyText${requestHistory.packageAmount}',
                                           context,
                                         ),
                                         width10(),
                                         Expanded(
                                           child: bodyLargeText(
-                                            (history.packageName ?? ''),
+                                            (requestHistory.packageName ?? ''),
                                             context,
                                             textAlign: TextAlign.start,
                                             // style: TextStyle(
@@ -134,9 +171,9 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                   width10(),
                                   Container(
                                     decoration: BoxDecoration(
-                                      color: history.status == '0'
+                                      color: requestHistory.status == '0'
                                           ? Colors.amber[500]
-                                          : history.status == '1'
+                                          : requestHistory.status == '1'
                                               ? Colors.green[500]
                                               : Colors.red[500],
                                       borderRadius: BorderRadius.circular(5),
@@ -144,9 +181,9 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 3),
                                     child: bodyMedText(
-                                      history.status == '0'
+                                      requestHistory.status == '0'
                                           ? 'Pending'
-                                          : history.status == '1'
+                                          : requestHistory.status == '1'
                                               ? 'Completed'
                                               : 'Canceled',
                                       context,
@@ -165,13 +202,13 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                   capText(
                                     DateFormat().add_yMMMEd().format(
                                         DateTime.parse(
-                                            history.createdAt ?? '')),
+                                            requestHistory.createdAt ?? '')),
                                     context,
                                     textAlign: TextAlign.center,
                                   ),
                                   capText(
                                     DateFormat().add_jm().format(DateTime.parse(
-                                        history.createdAt ?? '')),
+                                        requestHistory.createdAt ?? '')),
                                     context,
                                     textAlign: TextAlign.center,
                                   ),
@@ -204,7 +241,7 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                         children: [
                                           Expanded(
                                             child: bodyLargeText(
-                                              '${history.packageName ?? ''}',
+                                              '${requestHistory.packageName ?? ''}',
                                               context,
                                               // color: index % 2 == 0
                                               //     ? yearlyPackColor
@@ -219,8 +256,8 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                         children: [
                                           capText('Order ID:', context),
                                           width10(),
-                                          capText(
-                                              history.orderId ?? '', context,
+                                          capText(requestHistory.orderId ?? '',
+                                              context,
                                               fontWeight: FontWeight.bold),
                                         ],
                                       ),
@@ -229,7 +266,7 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                                         children: [
                                           Expanded(
                                             child: bodyLargeText(
-                                              history.paymentType ?? '',
+                                              requestHistory.paymentType ?? '',
                                               context,
                                               // color: index % 2 == 0
                                               //     ? yearlyPackColor
@@ -244,7 +281,7 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                               ],
                             )
                           : Skeleton(
-                              height: 50,
+                              height: 70,
                               width: double.maxFinite,
                               textColor: Colors.white54,
                             ),
@@ -342,8 +379,9 @@ class _SubscriptionRequestsPageState extends State<SubscriptionRequestsPage> {
                 //     ),
                 //   ],
                 // ), //ListTile
-                childCount:
-                    !provider.loadingSub ? provider.requestHistory.length : 10,
+                childCount: !provider.loadingReqSub
+                    ? provider.requestHistory.length
+                    : 10,
               ), //SliverChildBuildDelegate
             ),
     );

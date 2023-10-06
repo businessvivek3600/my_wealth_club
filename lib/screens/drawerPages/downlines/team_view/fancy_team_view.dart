@@ -94,7 +94,7 @@ class _FancyTeamViewUIState extends State<FancyTeamViewUI> {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getDownLines');
             }
             if (status) {
               try {
@@ -266,7 +266,7 @@ class _LazyLoadingTreeViewState extends State<LazyLoadingTreeView> {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getDownLines');
             }
             if (status) {
               try {

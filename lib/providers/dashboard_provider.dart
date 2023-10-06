@@ -147,6 +147,7 @@ class DashBoardProvider extends ChangeNotifier {
   List<DashboardAlert> alerts = [];
   List<DashboardSubscriptionPack> subscriptionPacks = [];
   List<DashboardWalletActivity> activities = [];
+  Map member_sale = {};
 
   bool loadingDash = true;
   bool hasSubscription = false;
@@ -245,6 +246,7 @@ class DashBoardProvider extends ChangeNotifier {
                 WebinarEventModel.fromJson(map['webinar_event']);
             // wevinarEventVideo = WebinarEventModel.fromJson(map['webinar_event']);
           }
+          member_sale = map['member_sale'] ?? {};
           infoLog('dashboard webinar_event ${wevinarEventVideo?.toJson()}');
           // get_active_member = 274;
 
@@ -481,8 +483,8 @@ class DashBoardProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getdashcarddetails');
           }
         } catch (e) {}
         if (status) {
@@ -563,7 +565,7 @@ class DashBoardProvider extends ChangeNotifier {
           String? return_url;
           try {
             status = map["status"];
-            if (map['is_logged_in'] == 0) logOut();
+            if (map['is_logged_in'] == 0) logOut('purchaseACard');
           } catch (e) {}
           try {
             message = map["message"] ?? "";

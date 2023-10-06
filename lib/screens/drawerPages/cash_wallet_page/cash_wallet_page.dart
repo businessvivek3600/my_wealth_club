@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/cash_wallet_history_model.dart';
@@ -30,18 +31,31 @@ class CashWalletPage extends StatefulWidget {
 }
 
 class _CashWalletPageState extends State<CashWalletPage> {
+  var provider = sl.get<CashWalletProvider>();
   @override
   void initState() {
-    sl.get<CashWalletProvider>().getCashWallet();
+    provider.cashWalletPage = 0;
+    provider.getCashWallet(true);
     super.initState();
   }
 
   @override
   void dispose() {
-    sl.get<CashWalletProvider>().btn_fund_coinpayment = false;
-    sl.get<CashWalletProvider>().btn_fund_card = false;
-    sl.get<CashWalletProvider>().btn_fund_cash_wallet = false;
+    provider.cashWalletPage = 0;
+    provider.totalCashWallet = 0;
+    provider.btn_fund_coinpayment = false;
+    provider.btn_fund_card = false;
+    provider.btn_fund_cash_wallet = false;
     super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getCashWallet();
+  }
+
+  Future<void> _refresh() async {
+    provider.cashWalletPage = 0;
+    await provider.getCashWallet(true);
   }
 
   @override
@@ -60,14 +74,21 @@ class _CashWalletPageState extends State<CashWalletPage> {
                     image: userAppBgImageProvider(context),
                     fit: BoxFit.cover,
                     opacity: 1)),
-            child: CustomScrollView(
-              slivers: <Widget>[
-                buildSliverAppBar(size, provider),
-                (provider.loadingWallet || provider.history.isNotEmpty)
-                    ? buildSliverList(provider)
-                    : dataNotFound(context),
-              ],
-            ),
+            child: LoadMoreContainer(
+                finishWhen: provider.history.length >= provider.totalCashWallet,
+                onLoadMore: _loadMore,
+                onRefresh: _refresh,
+                builder: (scrollController, status) {
+                  return CustomScrollView(
+                    controller: scrollController,
+                    slivers: <Widget>[
+                      buildSliverAppBar(size, provider),
+                      (provider.loadingWallet || provider.history.isNotEmpty)
+                          ? buildSliverList(provider)
+                          : dataNotFound(context),
+                    ],
+                  );
+                }),
           ),
 /*          bottomNavigationBar: (provider.btn_fund_cash_wallet ||
                   provider.btn_fund_card ||
@@ -327,7 +348,9 @@ class _CashWalletPageState extends State<CashWalletPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: titleLargeText("Cash Wallet", context, useGradient: true)),
+              child: titleLargeText(
+                  "Cash Wallet  ${provider.totalCashWallet}", context,
+                  useGradient: true)),
           !provider.loadingWallet
               ? bodyLargeText(
                   "${sl.get<AuthProvider>().userData.currency_icon ?? ''}${provider.walletBalance.toStringAsFixed(2)}",

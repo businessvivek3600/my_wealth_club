@@ -31,23 +31,28 @@ class CashWalletProvider extends ChangeNotifier {
   bool btn_fund_card = false;
   bool btn_fund_cash_wallet = false;
 
-  Future<void> getCashWallet() async {
+  int cashWalletPage = 0;
+  bool loadingCashWallet = false;
+  int totalCashWallet = 0;
+
+  Future<void> getCashWallet([bool showLoading = false]) async {
     bool cacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.cashWallet);
     List<CashWalletHistory> _history = [];
     Map? map;
-    loadingWallet = true;
+    loadingWallet = showLoading;
     notifyListeners();
     if (isOnline) {
-      ApiResponse apiResponse = await cashWalletRepo.getCashWallet();
+      ApiResponse apiResponse = await cashWalletRepo
+          .getCashWallet({'page': cashWalletPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getCashWalletHistory');
           }
         } catch (e) {}
         try {
@@ -101,13 +106,22 @@ class CashWalletProvider extends ChangeNotifier {
           }
         } catch (e) {}
         try {
+          if (map['totalRows'] != null && map['totalRows'] != '') {
+            totalCashWallet = int.parse(map['totalRows']);
+            notifyListeners();
+          }
           if (map['wallet_history'] != null &&
               map['wallet_history'].isNotEmpty) {
             map['wallet_history']
                 .forEach((e) => _history.add(CashWalletHistory.fromJson(e)));
             _history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-            history.clear();
-            history = _history;
+            if (cashWalletPage == 0) {
+              history.clear();
+              history = _history;
+            } else {
+              history.addAll(_history);
+            }
+            cashWalletPage++;
             notifyListeners();
           }
         } catch (e) {}
@@ -139,8 +153,8 @@ class CashWalletProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getCoinPaymentFundRequest');
           }
         } catch (e) {}
         try {
@@ -222,7 +236,7 @@ class CashWalletProvider extends ChangeNotifier {
             status = map["status"];
             redirectUrl = map["redirect_url"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('coinPaymentSubmit');
             }
           } catch (e) {}
 
@@ -260,7 +274,7 @@ class CashWalletProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('transferCashToOther');
             }
           } catch (e) {}
 
@@ -300,8 +314,8 @@ class CashWalletProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getCardPaymentFundRequest');
           }
         } catch (e) {}
         try {
@@ -381,7 +395,7 @@ class CashWalletProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getNGCashWalletData');
             }
           } catch (e) {}
           try {
@@ -426,7 +440,7 @@ class CashWalletProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getCardPaymentOrderId');
             }
           } catch (e) {}
           try {
@@ -475,7 +489,7 @@ class CashWalletProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('addFundFromNGCashWallet');
             }
           } catch (e) {}
           try {

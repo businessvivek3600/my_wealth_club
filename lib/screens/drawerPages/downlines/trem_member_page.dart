@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/user_model.dart';
@@ -27,120 +28,108 @@ class TeamMemberPage extends StatefulWidget {
 class _TeamMemberPageState extends State<TeamMemberPage> {
   final globalKey = GlobalKey<ScaffoldState>();
   var provider = sl.get<TeamViewProvider>();
-  late ScrollController _scrollController;
   @override
   void initState() {
     provider.teamMemberPage = 0;
-    provider.getCustomerTeam();
+    provider.getCustomerTeam(true);
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(() => _loadMore(sl.get<TeamViewProvider>()));
   }
 
   @override
   void dispose() {
     provider.loadingTeamMembers = false;
     provider.customerTeamMembers.clear();
-    _scrollController.removeListener(() => _loadMore(provider));
     provider.teamMemberPage = 0;
-    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<bool> _loadMore(TeamViewProvider provider) async {
-    if (_scrollController.position.pixels ==
-            (_scrollController.position.maxScrollExtent) &&
-        _scrollController.position.userScrollDirection ==
-            ScrollDirection.reverse &&
-        !provider.loadingTeamMembers) {
-      bool isFinished =
-          provider.customerTeamMembers.length == provider.totalTeamMembers;
-      if (isFinished) {
-        Fluttertoast.showToast(msg: "No more data");
-        return false;
-      }
-      print("Team Members ,onLoadMore");
-      await provider.getDirectMembers();
-    }
-    return true;
+  Future<void> _loadMore() async {
+    await provider.getCustomerTeam();
   }
 
   Future<void> _refresh() async {
-    print("Team members ,onRefresh");
-    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
-    provider.directMemberPage = 0;
-    await provider.getDirectMembers();
+    provider.teamMemberPage = 0;
+    await provider.getCustomerTeam();
   }
 
   @override
   Widget build(BuildContext context) {
     // sl.get<TeamViewProvider>().getCustomerTeam();
-    return Scaffold(
-      key: globalKey,
-      backgroundColor: mainColor,
-      appBar: AppBar(
-          title: titleLargeText('Team Members', context, useGradient: true)),
-      body: Container(
-        height: double.maxFinite,
-        width: double.maxFinite,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-              image: userAppBgImageProvider(context),
-              fit: BoxFit.cover,
-              opacity: 1),
-        ),
-        child: Consumer<TeamViewProvider>(
-            builder: (context, teamViewProvider, child) {
-          return (teamViewProvider.loadingTeamMembers ||
-                  teamViewProvider.customerTeamMembers.isNotEmpty)
-              ? RefreshIndicator(
-                  onRefresh: _refresh,
-                  child: ListView(
-                    controller: _scrollController,
-                    physics: BouncingScrollPhysics(),
-                    padding: EdgeInsets.all(8),
-                    children: [
-                      ...teamViewProvider.customerTeamMembers
-                          .map((e) => buildMember(e)),
-                      if (provider.loadingTeamMembers)
-                        Container(
-                            padding: const EdgeInsets.all(20),
-                            height: provider.customerTeamMembers.length == 0
-                                ? Get.height -
-                                    kToolbarHeight -
-                                    kBottomNavigationBarHeight
-                                : 100,
-                            child: const Center(
-                                child: CircularProgressIndicator(
-                                    color: Colors.white))),
-                    ],
-                  ),
-                )
-              : Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ///TODO: teamMembersLottie
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+    return Consumer<TeamViewProvider>(
+        builder: (context, teamViewProvider, child) {
+      return Scaffold(
+        key: globalKey,
+        backgroundColor: mainColor,
+        appBar: AppBar(
+            title: titleLargeText(
+                'Team Members ${teamViewProvider.customerTeamMembers.length}/${teamViewProvider.totalTeamMembers} ${teamViewProvider.customerTeamMembers.length == teamViewProvider.totalTeamMembers}',
+                context,
+                useGradient: true)),
+        body: Container(
+          height: double.maxFinite,
+          width: double.maxFinite,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+                image: userAppBgImageProvider(context),
+                fit: BoxFit.cover,
+                opacity: 1),
+          ),
+          child: Builder(builder: (context) {
+            return (teamViewProvider.loadingTeamMembers ||
+                    teamViewProvider.customerTeamMembers.isNotEmpty)
+                ? LoadMoreContainer(
+                    finishWhen: teamViewProvider.customerTeamMembers.length ==
+                        teamViewProvider.totalTeamMembers,
+                    onLoadMore: _loadMore,
+                    onRefresh: _refresh,
+                    builder: (scrollController, status) {
+                      return ListView(
+                        controller: scrollController,
+                        physics: BouncingScrollPhysics(),
+                        padding: EdgeInsets.all(8),
                         children: [
-                          assetLottie(Assets.teamMembersLottie, width: 200),
+                          ...teamViewProvider.customerTeamMembers
+                              .map((e) => buildMember(e)),
+                          if (provider.loadingTeamMembers)
+                            Container(
+                                padding: const EdgeInsets.all(20),
+                                height: provider.customerTeamMembers.length == 0
+                                    ? Get.height -
+                                        kToolbarHeight -
+                                        kBottomNavigationBarHeight
+                                    : 100,
+                                child: const Center(
+                                    child: CircularProgressIndicator(
+                                        color: Colors.white))),
                         ],
-                      ),
-                      titleLargeText(
-                          'Create your own team & join more people to enlarge your team.',
-                          context,
-                          color: Colors.white,
-                          textAlign: TextAlign.center),
-                      height20(),
-                      buildTeamBuildingReferralLink(context)
-                    ],
-                  ),
-                );
-        }),
-      ),
-    );
+                      );
+                    })
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ///TODO: teamMembersLottie
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            assetLottie(Assets.teamMembersLottie, width: 200),
+                          ],
+                        ),
+                        titleLargeText(
+                            'Create your own team & join more people to enlarge your team.',
+                            context,
+                            color: Colors.white,
+                            textAlign: TextAlign.center),
+                        height20(),
+                        buildTeamBuildingReferralLink(context)
+                      ],
+                    ),
+                  );
+          }),
+        ),
+      );
+    });
   }
 
   Widget buildTeamBuildingReferralLink(BuildContext context) {

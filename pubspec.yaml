@@ -113,6 +113,8 @@ dependencies:
   banner_carousel: ^1.2.1
   flutter_fancy_tree_view: ^1.1.1
   path_drawing: ^1.0.1
+  version: ^3.0.2
+  os_detect: ^2.0.1
 
 
 

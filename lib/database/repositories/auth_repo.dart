@@ -99,7 +99,7 @@ class AuthRepo {
   Future<ApiResponse> commissionWithdrawal() async {
     try {
       Response response = await dioClient.post(
-        AppConstants.commissionWithdrawal,
+        AppConstants.paymentMethod,
         data: {'login_token': getUserToken()},
       );
       return ApiResponse.withSuccess(response);
@@ -140,7 +140,7 @@ class AuthRepo {
     try {
       var data = await sharedPreferences.getString(SPConstants.user);
       if (data != null) {
-        _userData = jsonDecode(data);
+        _userData = UserData.fromJson(jsonDecode(data));
       }
     } catch (e) {
       throw e;

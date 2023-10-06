@@ -65,8 +65,8 @@ class VoucherProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getVoucherList');
           }
         } catch (e) {}
         try {
@@ -160,7 +160,7 @@ class VoucherProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('createVoucherSubmit');
             }
           } catch (e) {}
           try {
@@ -220,7 +220,7 @@ class VoucherProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('hitPaymentResponse');
             }
           } catch (e) {}
           try {
@@ -264,7 +264,7 @@ class VoucherProvider extends ChangeNotifier {
           bool status = false;
           try {
             status = map?["status"];
-            if (map?['is_logged_in'] == 0) {
+            if (map?['is_logged_in'] != 1) {
               logOut();
             }
           } catch (e) {}

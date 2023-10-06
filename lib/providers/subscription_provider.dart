@@ -14,7 +14,6 @@ import '/database/model/response/subscription_package_model.dart';
 import '/database/model/response/subscription_request_history_model.dart';
 import '/database/repositories/subscription_repo.dart';
 import '/providers/auth_provider.dart';
-import '/screens/card_form/card_form_widget.dart';
 import '/sl_container.dart';
 import '/utils/app_default_loading.dart';
 import '/utils/toasts.dart';
@@ -32,7 +31,11 @@ class SubscriptionProvider extends ChangeNotifier {
   double cashNBal = 0.0;
   bool customerRenewal = false;
   String? joiningPriceId;
+
+  ///subscription history
   bool loadingSub = false;
+  int subPage = 0;
+  int totalSubscriptions = 0;
 
   Future<void> getSubscription([bool? loading]) async {
     bool cacheExist =
@@ -45,15 +48,16 @@ class SubscriptionProvider extends ChangeNotifier {
     loadingSub = loading ?? true;
     notifyListeners();
     if (isOnline) {
-      ApiResponse apiResponse = await subscriptionRepo.getSubscription();
+      ApiResponse apiResponse =
+          await subscriptionRepo.getSubscription({"page": subPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getSubscription');
           }
         } catch (e) {}
 
@@ -85,46 +89,20 @@ class SubscriptionProvider extends ChangeNotifier {
     try {
       if (map != null) {
         try {
-          if (map['customer_renewal'] != null &&
-              map['customer_renewal'] != '') {
-            customerRenewal = map['customer_renewal'] == 1;
-            notifyListeners();
+          if (map['totalRows'] != null && map['totalRows'] != '') {
+            totalSubscriptions = int.parse(map['totalRows'] ?? '0');
           }
-          if (map['joining_price_id'] != null &&
-              map['joining_price_id'] != '') {
-            joiningPriceId = map['joining_price_id'];
-            notifyListeners();
-          }
-          if (map['balance_mcc_commission'] != null &&
-              map['balance_mcc_commission'] != '') {
-            commissionMBal = map['balance_mcc_commission'].toDouble();
-            notifyListeners();
-          }
-          if (map['balance_ng_amgen'] != null &&
-              map['balance_ng_amgen'] != '') {
-            amgenBal = map['balance_ng_amgen'].toDouble();
-            notifyListeners();
-          }
-          if (map['balance_ng_commission'] != null &&
-              map['balance_ng_commission'] != '') {
-            commissionNBal = map['balance_ng_commission'].toDouble();
-            notifyListeners();
-          }
-          if (map['balance_ng_cash'] != null && map['balance_ng_cash'] != '') {
-            cashNBal = map['balance_ng_cash'].toDouble();
-            notifyListeners();
-          }
-        } catch (e) {
-          print('getSubscription Error in balance $e');
-        }
-
-        try {
           if (map['buy_package'] != null && map['buy_package'].isNotEmpty) {
             map['buy_package']
                 .forEach((e) => _history.add(SubscriptionHistory.fromJson(e)));
             _history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-            history.clear();
-            history = _history;
+            if (subPage == 0) {
+              history.clear();
+              history = _history;
+            } else {
+              history.addAll(_history);
+            }
+            subPage++;
             notifyListeners();
           }
         } catch (e) {}
@@ -140,18 +118,6 @@ class SubscriptionProvider extends ChangeNotifier {
           print('SubscriptionPackage error $e');
         }
         try {
-          if (map['package_request'] != null &&
-              map['package_request'].isNotEmpty) {
-            map['package_request'].forEach((e) =>
-                _requestHistory.add(SubscriptionRequestHistory.fromJson(e)));
-            _requestHistory
-                .sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-            requestHistory.clear();
-            requestHistory = _requestHistory;
-            notifyListeners();
-          }
-        } catch (e) {}
-        try {
           if (map['payment_type'] != null) {
             map['payment_type'].entries.toList().forEach(
                 (e) => _paymentTypes.addEntries([MapEntry(e.key, e.value)]));
@@ -166,6 +132,82 @@ class SubscriptionProvider extends ChangeNotifier {
       }
     } catch (e) {}
     loadingSub = false;
+    notifyListeners();
+  }
+
+  ///subscription Request history
+  bool loadingReqSub = false;
+  int subReqPage = 0;
+  int totalReqSubscriptions = 0;
+
+  Future<void> getSubscriptionRequestHistory([bool? loading]) async {
+    bool cacheExist = await APICacheManager()
+        .isAPICacheKeyExist(AppConstants.subscriptionRequestHistory);
+    List<SubscriptionRequestHistory> _requestHistory = [];
+    Map? map;
+    loadingReqSub = loading ?? true;
+    notifyListeners();
+    if (isOnline) {
+      ApiResponse apiResponse = await subscriptionRepo
+          .subscriptionRequestHistory({"page": subReqPage.toString()});
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        map = apiResponse.response!.data;
+        bool status = false;
+        try {
+          status = map?["status"];
+          if (map?['is_logged_in'] != 1) {
+            logOut('subscriptionRequestHistory');
+          }
+        } catch (e) {}
+
+        try {
+          if (status) {
+            try {
+              var cacheModel = APICacheDBModel(
+                  key: AppConstants.subscriptionRequestHistory,
+                  syncData: jsonEncode(map));
+              await APICacheManager().addCacheData(cacheModel);
+            } catch (e) {}
+          }
+        } catch (e) {
+          print('subscriptionRequestHistory online hit failed \n $e');
+        }
+      }
+    } else if (!isOnline && cacheExist) {
+      var cacheData = (await APICacheManager()
+              .getCacheData(AppConstants.subscriptionRequestHistory))
+          .syncData;
+      map = jsonDecode(cacheData);
+    } else {
+      print('getSubscriptionHistory not online not cache exist ');
+    }
+    try {
+      if (map != null) {
+        try {
+          if (map['totalRows'] != null && map['totalRows'] != '') {
+            totalReqSubscriptions =
+                int.parse(map['total_subscriptions'] ?? '0');
+          }
+          if (map['package_request'] != null &&
+              map['package_request'].isNotEmpty) {
+            map['package_request'].forEach((e) =>
+                _requestHistory.add(SubscriptionRequestHistory.fromJson(e)));
+            _requestHistory
+                .sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+            if (subReqPage == 0) {
+              requestHistory.clear();
+              requestHistory = _requestHistory;
+            } else {
+              requestHistory.addAll(_requestHistory);
+            }
+            subReqPage++;
+            notifyListeners();
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
+    loadingReqSub = false;
     notifyListeners();
   }
 
@@ -200,7 +242,7 @@ class SubscriptionProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('buySubscription');
             }
           } catch (e) {}
           try {
@@ -284,7 +326,7 @@ class SubscriptionProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('hitPaymentResponse');
             }
           } catch (e) {}
           try {
@@ -312,6 +354,11 @@ class SubscriptionProvider extends ChangeNotifier {
     history = [];
     packages = [];
     requestHistory = [];
+    subPage = 0;
+    totalSubscriptions = 0;
+    subReqPage = 0;
+    totalReqSubscriptions = 0;
+
     paymentTypes = {};
     commissionMBal = 0.0;
     amgenBal = 0.0;

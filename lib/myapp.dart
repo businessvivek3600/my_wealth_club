@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,6 +35,7 @@ import '/utils/default_logger.dart';
 import '/utils/theme.dart';
 import 'package:provider/provider.dart';
 
+import 'database/app_update/upgrader.dart';
 import 'providers/Cash_wallet_provider.dart';
 import 'screens/drawerPages/inbox/inbox_screen.dart';
 
@@ -73,14 +76,13 @@ class _MyCarClubState extends State<MyCarClub> {
 
   @override
   void initState() {
-    _controller = VideoPlayerController.asset("assets/videos/1_1.mp4")
-      ..initialize();
     MyNotification.isAndroidPermissionGranted();
     MyNotification.requestPermissions();
     MyNotification.configureDidReceiveLocalNotificationSubject();
     MyNotification.configureSelectNotificationSubject();
     super.initState();
   }
+
 
   @override
   void dispose() {
@@ -127,8 +129,6 @@ class _MyCarClubState extends State<MyCarClub> {
               create: (context) => sl.get<WebViewProvider>()),
         ],
         child: Builder(builder: (context) {
-          errorLog('time3 $time', 'timer---');
-
           return GetMaterialApp(
             navigatorKey: MyCarClub.navigatorKey,
             initialRoute: widget.initialRoute,
@@ -141,7 +141,7 @@ class _MyCarClubState extends State<MyCarClub> {
               errorLog('settings $settings', 'settings');
             },
             routes: <String, WidgetBuilder>{
-              SplashScreen.routeName: (_) => SplashScreen(_controller),
+              SplashScreen.routeName: (_) => SplashScreen(),
               MainPage.routeName: (_) => MainPage(),
               LoginScreen.routeName: (_) => LoginScreen(),
               InboxScreen.routeName: (_) => InboxScreen(),

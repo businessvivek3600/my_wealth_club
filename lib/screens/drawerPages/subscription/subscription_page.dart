@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mycarclub/utils/app_default_loading.dart';
+import '../../../widgets/load_more_container.dart';
 import '/database/functions.dart';
 import '/database/model/response/subscription_history_model.dart';
 import '/providers/auth_provider.dart';
@@ -27,14 +30,13 @@ class SubscriptionPage extends StatefulWidget {
 }
 
 class _SubscriptionPageState extends State<SubscriptionPage> {
+  var provider = sl.get<SubscriptionProvider>();
   @override
   void initState() {
-    // if (widget.initPurchaseDialog) {
-    //   showLoading(context: context, dismissable: true);
-    // }
-    sl.get<SubscriptionProvider>().getSubscription(false).then((value) {
+    super.initState();
+    provider.subPage = 0;
+    provider.getSubscription(true).then((value) {
       if (widget.initPurchaseDialog) {
-        // hideLoading(context: context);
         showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -42,18 +44,25 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             builder: (_) => SubscriptionPurchaseDialog());
       }
     });
-    super.initState();
   }
 
-  // @override
-  // void dispose() {
-  //   var provider = sl.get<SubscriptionProvider>();
-  //   provider.selectedTypeKey = null;
-  //   provider.selectedPackage = null;
-  //   provider.voucherController.clear();
-  //   provider.typeController.clear();
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    provider.subPage = 0;
+    provider.totalSubscriptions = 0;
+    provider.history.clear();
+    super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getSubscription(false);
+  }
+
+  Future<void> _refresh() async {
+    provider.subPage = 0;
+    await provider.getSubscription(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -66,7 +75,6 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           body: Stack(
             children: [
               Container(
-                height: double.maxFinite,
                 width: double.maxFinite,
                 decoration: BoxDecoration(
                   image: DecorationImage(
@@ -74,12 +82,20 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       fit: BoxFit.cover,
                       opacity: 1),
                 ),
-                child: CustomScrollView(
-                  slivers: <Widget>[
-                    buildSliverAppBar(size),
-                    buildSliverList(provider, currency_icon),
-                  ],
-                ),
+                child: LoadMoreContainer(
+                    finishWhen:
+                        provider.history.length >= provider.totalSubscriptions,
+                    onLoadMore: _loadMore,
+                    onRefresh: _refresh,
+                    builder: (scrollController, status) {
+                      return CustomScrollView(
+                        controller: scrollController,
+                        slivers: <Widget>[
+                          buildSliverAppBar(size),
+                          buildSliverList(provider, currency_icon),
+                        ],
+                      );
+                    }),
               ),
               // buildPurchaseButton()
             ],
@@ -151,7 +167,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   SliverPadding buildSliverList(
       SubscriptionProvider provider, String currency_icon) {
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       sliver: (!provider.loadingSub && provider.history.isEmpty)
           ? buildEmptyList()
           : SliverList(

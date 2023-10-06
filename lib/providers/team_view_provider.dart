@@ -41,8 +41,8 @@ class TeamViewProvider extends ChangeNotifier {
   int totalTeamMembers = 0;
   int teamMemberPage = 0;
 
-  Future<void> getCustomerTeam() async {
-    loadingTeamMembers = true;
+  Future<void> getCustomerTeam([bool loading = false]) async {
+    loadingTeamMembers = loading;
     notifyListeners();
     bool cacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.myTeam);
@@ -56,8 +56,8 @@ class TeamViewProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getCustomerTeam');
           }
         } catch (e) {}
         try {
@@ -82,14 +82,15 @@ class TeamViewProvider extends ChangeNotifier {
     try {
       if (map != null) {
         try {
-          sl.get<AuthProvider>().updateUser(map["userData"]);
-        } catch (e) {}
-
-        try {
           if (map['data'] != null && map['data'].isNotEmpty) {
-            customerTeamMembers.clear();
-            map['data']
-                .forEach((e) => customerTeamMembers.add(UserData.fromJson(e)));
+            List<UserData> team = [];
+            map['data'].forEach((e) => team.add(UserData.fromJson(e)));
+            if (teamMemberPage == 0) {
+              customerTeamMembers.clear();
+              customerTeamMembers = team;
+            } else {
+              customerTeamMembers.addAll(team);
+            }
             totalTeamMembers = int.parse(map['total'] ?? '0');
             teamMemberPage++;
             notifyListeners();
@@ -132,8 +133,8 @@ class TeamViewProvider extends ChangeNotifier {
           map = apiResponse.response!.data;
           try {
             status = map?["status"] ?? false;
-            if (map?['is_logged_in'] == 0) {
-              logOut();
+            if (map?['is_logged_in'] != 1) {
+              logOut('sendMessage');
             }
             if (status) {
               try {
@@ -186,8 +187,8 @@ class TeamViewProvider extends ChangeNotifier {
   bool loadingDirectMembers = true;
   int totalDirectMembers = 0;
   int directMemberPage = 0;
-  Future<List<UserData>> getDirectMembers() async {
-    loadingDirectMembers = true;
+  Future<List<UserData>> getDirectMembers([bool loading = false]) async {
+    loadingDirectMembers = loading;
     notifyListeners();
     List<UserData> _directMember = [];
     Map? map;
@@ -354,7 +355,7 @@ class TeamViewProvider extends ChangeNotifier {
           try {
             status = map["status"];
             if (map['is_logged_in'] == 0) {
-              logOut();
+              logOut('getGenerationAnalyzer');
             }
           } catch (e) {}
           if (status) {
@@ -401,8 +402,8 @@ class TeamViewProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getLiquidUsers');
           }
         } catch (e) {}
         try {
@@ -473,8 +474,8 @@ class TeamViewProvider extends ChangeNotifier {
           map = apiResponse.response!.data;
           try {
             status = map?["status"] ?? false;
-            if (map?['is_logged_in'] == 0) {
-              logOut();
+            if (map?['is_logged_in'] != 1) {
+              logOut('placeUser');
             }
             if (status) {
               try {
@@ -530,8 +531,8 @@ class TeamViewProvider extends ChangeNotifier {
         bool status = false;
         try {
           status = map?["status"];
-          if (map?['is_logged_in'] == 0) {
-            logOut();
+          if (map?['is_logged_in'] != 1) {
+            logOut('getMatrixUsers');
           }
         } catch (e) {}
       }
