@@ -9,6 +9,7 @@ import 'package:mycarclub/database/model/response/trade_idea_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../sl_container.dart';
+import '../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/utils/color.dart';
 import '/database/functions.dart';
@@ -26,14 +27,11 @@ class CompanyTradeIdeasPage extends StatefulWidget {
 
 class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
   var provider = sl.get<DashBoardProvider>();
-  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     provider.getTradeIdea();
-    _scrollController = ScrollController();
-    _scrollController.addListener(() => _loadMore(sl.get<DashBoardProvider>()));
   }
 
   @override
@@ -61,52 +59,41 @@ class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
                   fit: BoxFit.cover,
                   opacity: 1),
             ),
-            child: RefreshIndicator(
-              onRefresh: _refresh,
-              child: ListView(
-                controller: _scrollController,
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                children: [
-                  ...provider.tradeIdeas
-                      .map((trade) => _TradeTile(trade: trade)),
-                  if (provider.loadingTradeIdeas)
-                    Container(
-                        padding: const EdgeInsets.all(20),
-                        height: provider.tradeIdeas.length == 0
-                            ? Get.height -
-                                kToolbarHeight -
-                                kBottomNavigationBarHeight
-                            : 100,
-                        child: const Center(
-                            child: CircularProgressIndicator(
-                                color: Colors.white))),
-                ],
-              ),
-            ),
+            child: LoadMoreContainer(
+                finishWhen:
+                    provider.tradeIdeas.length == provider.totalTradeIdeas,
+                onLoadMore: _loadMore,
+                onRefresh: _refresh,
+                builder: (scrollController, status) {
+                  return ListView(
+                    controller: scrollController,
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    children: [
+                      ...provider.tradeIdeas
+                          .map((trade) => _TradeTile(trade: trade)),
+                      if (provider.loadingTradeIdeas)
+                        Container(
+                            padding: const EdgeInsets.all(20),
+                            height: provider.tradeIdeas.length == 0
+                                ? Get.height -
+                                    kToolbarHeight -
+                                    kBottomNavigationBarHeight
+                                : 100,
+                            child: const Center(
+                                child: CircularProgressIndicator(
+                                    color: Colors.white))),
+                    ],
+                  );
+                }),
           ));
     });
   }
 
-  Future<bool> _loadMore(DashBoardProvider provider) async {
-    if (_scrollController.position.pixels ==
-            _scrollController.position.maxScrollExtent &&
-        _scrollController.position.userScrollDirection ==
-            ScrollDirection.reverse &&
-        !provider.loadingTradeIdeas) {
-      bool isFinished = provider.tradeIdeas.length == provider.totalTradeIdeas;
-      if (isFinished) {
-        Fluttertoast.showToast(msg: "No more data");
-        return false;
-      }
-      print("my trade ,onLoadMore");
-      await provider.getTradeIdea();
-    }
-    return true;
+  Future<void> _loadMore() async {
+    await provider.getTradeIdea();
   }
 
   Future<void> _refresh() async {
-    print("my Incomes ,onRefresh");
-    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
     provider.tradeIdeaPage = 0;
     await provider.getTradeIdea();
   }

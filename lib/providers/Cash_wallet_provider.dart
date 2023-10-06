@@ -79,18 +79,14 @@ class CashWalletProvider extends ChangeNotifier {
       if (map != null) {
         try {
           if (map['wallet_balance'] != null && map['wallet_balance'] != '') {
-            walletBalance = double.parse(map['wallet_balance']);
-            minimum_transfer = double.parse(map['minimum_transfer'] ?? 0.0);
+            walletBalance = double.parse(map['wallet_balance'] ?? '0');
+            minimum_transfer = double.parse(map['minimum_transfer'] ?? '0.0');
             notifyListeners();
           }
         } catch (e) {
           print('getCashWalletHistory Error in balance $e');
         }
-        try {
-          if (map['userData'] != null) {
-            sl.get<AuthProvider>().updateUser(map['userData']);
-          }
-        } catch (e) {}
+
         try {
           if (map['btn_fund_coinpayment'] != null) {
             btn_fund_coinpayment = map['btn_fund_coinpayment'] == 1;

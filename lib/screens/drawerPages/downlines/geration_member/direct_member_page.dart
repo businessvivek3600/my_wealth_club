@@ -19,6 +19,7 @@ import '../../../../utils/color.dart';
 import '../../../../utils/picture_utils.dart';
 import '../../../../utils/sizedbox_utils.dart';
 import '../../../../utils/text.dart';
+import '../../../../widgets/load_more_container.dart';
 import '../trem_view_page.dart';
 
 class DirectMembersPage extends StatefulWidget {
@@ -31,7 +32,6 @@ class DirectMembersPage extends StatefulWidget {
 class _DirectMembersPageState extends State<DirectMembersPage> {
   final globalKey = GlobalKey<ScaffoldState>();
   var provider = sl.get<TeamViewProvider>();
-  late ScrollController _scrollController;
 
   @override
   void initState() {
@@ -39,8 +39,6 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
     provider.directMemberSearchController = TextEditingController();
     provider.setSearchingDirectMembers(false);
     provider.getDirectMembers(true);
-    _scrollController = ScrollController();
-    _scrollController.addListener(() => _loadMore(sl.get<TeamViewProvider>()));
   }
 
   @override
@@ -52,35 +50,14 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
     provider.isSearchingDirectMember = false;
     provider.directMemberSearchController.clear();
     provider.directMembers.clear();
-    _scrollController
-        .removeListener(() => _loadMore(sl.get<TeamViewProvider>()));
-    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<bool> _loadMore(TeamViewProvider provider) async {
-    print(
-        "my trade ,onLoadMore ${_scrollController.position.pixels} ${_scrollController.position.maxScrollExtent}");
-    if (_scrollController.position.pixels ==
-            (_scrollController.position.maxScrollExtent) &&
-        _scrollController.position.userScrollDirection ==
-            ScrollDirection.reverse &&
-        !provider.loadingDirectMembers) {
-      bool isFinished =
-          provider.directMembers.length == provider.totalDirectMembers;
-      if (isFinished) {
-        Fluttertoast.showToast(msg: "No more data");
-        return false;
-      }
-      print("my trade ,onLoadMore");
-      await provider.getDirectMembers();
-    }
-    return true;
+  Future<void> _loadMore() async {
+    await provider.getDirectMembers();
   }
 
   Future<void> _refresh() async {
-    print("my Incomes ,onRefresh");
-    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
     provider.directMemberPage = 0;
     await provider.getDirectMembers();
   }
@@ -109,18 +86,23 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                       children: [
                         Expanded(
                           child: provider.directMembers.isNotEmpty
-                              ? RefreshIndicator(
+                              ? LoadMoreContainer(
+                                  finishWhen:
+                                      teamViewProvider.directMembers.length ==
+                                          teamViewProvider.totalDirectMembers,
+                                  onLoadMore: _loadMore,
                                   onRefresh: _refresh,
-                                  child: ListView(
-                                    controller: _scrollController,
-                                    physics: BouncingScrollPhysics(),
-                                    padding: EdgeInsets.all(8),
-                                    children: [
-                                      ...teamViewProvider.directMembers
-                                          .map((e) => _MemberTile(user: e)),
-                                    ],
-                                  ),
-                                )
+                                  builder: (scrollController, status) {
+                                    return ListView(
+                                      controller: scrollController,
+                                      physics: BouncingScrollPhysics(),
+                                      padding: EdgeInsets.all(8),
+                                      children: [
+                                        ...teamViewProvider.directMembers
+                                            .map((e) => _MemberTile(user: e)),
+                                      ],
+                                    );
+                                  })
                               : Center(
                                   child: CircularProgressIndicator(
                                       color: Colors.white)),
