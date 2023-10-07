@@ -11,10 +11,10 @@ class VoucherRepo {
   VoucherRepo({required this.dioClient, required this.sharedPreferences});
 
   /// :Subscription History
-  Future<ApiResponse> getVoucherList() async {
+  Future<ApiResponse> getVoucherList(Map<String, dynamic> map) async {
     try {
-      Response response =
-          await dioClient.post(AppConstants.voucherList, token: true);
+      Response response = await dioClient.post(AppConstants.voucherList,
+          token: true, data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {

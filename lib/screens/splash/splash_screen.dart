@@ -54,16 +54,23 @@ class _SplashScreenState extends State<SplashScreen> {
   void initController() {
     _controller = VideoPlayerController.asset('assets/videos/1_1.mp4')
       ..initialize().then((_) {
-        duration = _controller.value.duration.inMilliseconds;
         _controller.play();
+
+        warningLog('SplashScreen video initialized: ${_controller.value}', tag,
+            'initState');
+        duration = _controller.value.duration.inMilliseconds;
         _controller.setVolume(0.0);
-        _controller
-          ..addListener(() {
-            position = _controller.value.position.inMilliseconds;
-            if (position == duration) {
-              checkLogin2();
-            }
-          });
+      });
+    _controller
+      ..addListener(() {
+        position = _controller.value.position.inMilliseconds;
+        infoLog(
+            'SplashScreen video position: $position - $duration  ${position == duration}',
+            tag,
+            'initState');
+        if ((position >= 2960)) {
+          checkLogin2();
+        }
       });
   }
 
@@ -81,11 +88,14 @@ class _SplashScreenState extends State<SplashScreen> {
         bool isBiometric = sl.get<SettingsRepo>().getBiometric();
         if (isBiometric) {
           AppLockAuthentication.authenticate().then((value) {
-            if (value[0] == AuthStatus.available &&
-                value[1] == AuthStatus.authenticated) {
-              Get.offAll(MainPage());
+            if (value[0] == AuthStatus.available) {
+              if (value[1] == AuthStatus.authenticated) {
+                Get.offAll(MainPage());
+              } else {
+                exitTheApp();
+              }
             } else {
-              exitTheApp();
+              Get.offAll(MainPage());
             }
           });
         } else {

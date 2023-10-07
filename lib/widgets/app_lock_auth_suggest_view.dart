@@ -84,6 +84,9 @@ class _AppLockAuthSuggestionWidgetState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!widget.showSuggestion) {
+        setDontShowAgain(false);
+      }
       getCanTryNow();
       getCanLater();
       getDontShowAgain();

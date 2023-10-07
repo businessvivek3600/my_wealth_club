@@ -602,8 +602,9 @@ class DashBoardProvider extends ChangeNotifier {
   bool loadingIncomeActivity = true;
   int totalIncomeActivity = 0;
   int incomePage = 0;
-  Future<List<IncomeActivityModel>> getIncomeActivity() async {
-    loadingIncomeActivity = true;
+  Future<List<IncomeActivityModel>> getIncomeActivity(
+      [bool loading = false]) async {
+    loadingIncomeActivity = loading;
     notifyListeners();
     List<IncomeActivityModel> _incomeActivity = [];
     Map? map;

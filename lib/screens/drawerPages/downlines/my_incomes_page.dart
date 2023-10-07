@@ -15,6 +15,7 @@ import '../../../constants/assets_constants.dart';
 import '../../../database/functions.dart';
 import '../../../utils/picture_utils.dart';
 import '../../../utils/sizedbox_utils.dart';
+import '../../../widgets/load_more_container.dart';
 import 'my_load_more_delegate.dart';
 
 class MyIncomesPage extends StatefulWidget {
@@ -26,14 +27,11 @@ class MyIncomesPage extends StatefulWidget {
 
 class _MyIncomesPageState extends State<MyIncomesPage> {
   var provider = sl.get<DashBoardProvider>();
-  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
-    provider.getIncomeActivity();
-    _scrollController = ScrollController();
-    _scrollController.addListener(() => _loadMore(sl.get<DashBoardProvider>()));
+    provider.getIncomeActivity(true);
   }
 
   @override
@@ -43,6 +41,15 @@ class _MyIncomesPageState extends State<MyIncomesPage> {
     provider.totalIncomeActivity = 0;
     provider.loadingIncomeActivity = false;
     provider.incomeActivity.clear();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getIncomeActivity();
+  }
+
+  Future<void> _refresh() async {
+    provider.incomePage = 0;
+    await provider.getIncomeActivity(true);
   }
 
   @override
@@ -63,55 +70,35 @@ class _MyIncomesPageState extends State<MyIncomesPage> {
                 fit: BoxFit.cover,
                 opacity: 1),
           ),
-          child: RefreshIndicator(
-            onRefresh: _refresh,
-            child: ListView(
-              controller: _scrollController,
-              children: [
-                _MyIncomeActivityHistoryList(
-                    activities: provider.incomeActivity),
-                if (provider.loadingIncomeActivity)
-                  Container(
-                      padding: const EdgeInsets.all(20),
-                      height: provider.incomeActivity.length == 0
-                          ? Get.height -
-                              kToolbarHeight -
-                              kBottomNavigationBarHeight
-                          : 100,
-                      child: const Center(
-                          child:
-                              CircularProgressIndicator(color: Colors.white))),
-              ],
-            ),
-          ),
+          child: LoadMoreContainer(
+              finishWhen: provider.incomeActivity.length >=
+                  provider.totalIncomeActivity,
+              onLoadMore: _loadMore,
+              onRefresh: _refresh,
+              builder: (scrollController, status) {
+                return ListView(
+                  controller: scrollController,
+                  children: [
+                    if (!provider.loadingIncomeActivity)
+                      _MyIncomeActivityHistoryList(
+                          activities: provider.incomeActivity),
+                    if (provider.loadingIncomeActivity)
+                      Container(
+                          padding: const EdgeInsets.all(20),
+                          height: provider.incomeActivity.length == 0
+                              ? Get.height -
+                                  kToolbarHeight -
+                                  kBottomNavigationBarHeight
+                              : 100,
+                          child: const Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white))),
+                  ],
+                );
+              }),
         ),
       );
     });
-  }
-
-  Future<bool> _loadMore(provider) async {
-    if (_scrollController.position.pixels ==
-            _scrollController.position.maxScrollExtent &&
-        _scrollController.position.userScrollDirection ==
-            ScrollDirection.reverse &&
-        !provider.loadingIncomeActivity) {
-      bool isFinished =
-          provider.incomeActivity.length == provider.totalIncomeActivity;
-      if (isFinished) {
-        Fluttertoast.showToast(msg: "No more data");
-        return false;
-      }
-      print("my Incomes ,onLoadMore");
-      await provider.getIncomeActivity();
-    }
-    return true;
-  }
-
-  Future<void> _refresh() async {
-    print("my Incomes ,onRefresh");
-    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
-    provider.incomePage = 0;
-    await provider.getIncomeActivity();
   }
 }
 

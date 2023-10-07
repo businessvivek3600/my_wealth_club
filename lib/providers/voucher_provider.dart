@@ -16,6 +16,7 @@ import '/database/repositories/voucher_repo.dart';
 import '/utils/app_default_loading.dart';
 import '/utils/default_logger.dart';
 import '/utils/toasts.dart';
+import 'Cash_wallet_provider.dart';
 
 class VoucherProvider extends ChangeNotifier {
   final VoucherRepo voucherRepo;
@@ -47,6 +48,8 @@ class VoucherProvider extends ChangeNotifier {
   double walletBalance = 0.0;
 
   bool loadingVoucher = false;
+  int voucherPage = 0;
+  int totalVouchers = 0;
 
   Future<void> getVoucherList(bool loading) async {
     bool cacheExist =
@@ -57,11 +60,11 @@ class VoucherProvider extends ChangeNotifier {
     loadingVoucher = loading;
     notifyListeners();
     if (isOnline) {
-      ApiResponse apiResponse = await voucherRepo.getVoucherList();
+      ApiResponse apiResponse =
+          await voucherRepo.getVoucherList({'page': voucherPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
-        successLog(map.toString());
         bool status = false;
         try {
           status = map?["status"];
@@ -92,14 +95,20 @@ class VoucherProvider extends ChangeNotifier {
     try {
       if (map != null) {
         try {
+          totalVouchers = int.parse(map['total'] ?? '0');
           if (map['voucher_list'] != null &&
               map['voucher_list'] != false &&
               map['voucher_list'].isNotEmpty) {
             map['voucher_list']
                 .forEach((e) => _history.add(VoucherModel.fromJson(e)));
             _history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-            history.clear();
-            history = _history;
+            if (voucherPage == 0) {
+              history.clear();
+              history = _history;
+            } else {
+              history.addAll(_history);
+            }
+            voucherPage++;
             notifyListeners();
           }
         } catch (e) {
@@ -182,8 +191,9 @@ class VoucherProvider extends ChangeNotifier {
                 onResponse: (res) {
                   print('request url matched <res> $res');
                   Get.back();
-                  hitPaymentResponse(res);
-                  // getVoucherList(false);
+                  hitPaymentResponse(() => voucherRepo.hitPaymentResponse(res),
+                      () => getVoucherList(false),
+                      tag: 'createVoucherSubmit');
                 },
               ));
               errorLog('redirect result from webview $res');
@@ -203,44 +213,44 @@ class VoucherProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> hitPaymentResponse(url) async {
-    try {
-      if (isOnline) {
-        showLoading(useRootNavigator: true);
-        ApiResponse apiResponse = await voucherRepo.hitPaymentResponse(url);
-        infoLog(
-            'create voucher hitPaymentResponse: ${apiResponse.response?.data}');
-        Get.back();
-        if (apiResponse.response != null &&
-            apiResponse.response!.statusCode == 200) {
-          Map map = apiResponse.response!.data;
-          bool status = false;
-          String message = '';
+  // Future<void> hitPaymentResponse(url) async {
+  //   try {
+  //     if (isOnline) {
+  //       showLoading(useRootNavigator: true);
+  //       ApiResponse apiResponse = await voucherRepo.hitPaymentResponse(url);
+  //       infoLog(
+  //           'create voucher hitPaymentResponse: ${apiResponse.response?.data}');
+  //       Get.back();
+  //       if (apiResponse.response != null &&
+  //           apiResponse.response!.statusCode == 200) {
+  //         Map map = apiResponse.response!.data;
+  //         bool status = false;
+  //         String message = '';
 
-          try {
-            status = map["status"];
-            if (map['is_logged_in'] == 0) {
-              logOut('hitPaymentResponse');
-            }
-          } catch (e) {}
-          try {
-            message = map["message"] ?? '';
-          } catch (e) {}
+  //         try {
+  //           status = map["status"];
+  //           if (map['is_logged_in'] == 0) {
+  //             logOut('hitPaymentResponse');
+  //           }
+  //         } catch (e) {}
+  //         try {
+  //           message = map["message"] ?? '';
+  //         } catch (e) {}
 
-          if (status) {
-            await getVoucherList(false);
-            Get.back();
-          } else {
-            Toasts.showErrorNormalToast(message.split('.').first);
-          }
-        }
-      } else {
-        Toasts.showWarningNormalToast('You are offline');
-      }
-    } catch (e) {
-      print('createVoucherSubmit failed ${e}');
-    }
-  }
+  //         if (status) {
+  //           await getVoucherList(false);
+  //           Get.back();
+  //         } else {
+  //           Toasts.showErrorNormalToast(message.split('.').first);
+  //         }
+  //       }
+  //     } else {
+  //       Toasts.showWarningNormalToast('You are offline');
+  //     }
+  //   } catch (e) {
+  //     print('createVoucherSubmit failed ${e}');
+  //   }
+  // }
 
 /*
   ///voucherList selection

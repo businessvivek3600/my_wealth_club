@@ -10,6 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../constants/app_constants.dart';
+import '../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/voucher_model.dart';
@@ -47,6 +48,8 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
   @override
   void dispose() {
     provider.currentIndex = 0;
+    provider.totalVouchers = 0;
+    provider.voucherPage = 0;
     provider.currentPackage = null;
     provider.packages.clear();
     provider.paymentTypes.clear();
@@ -54,28 +57,27 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
     super.dispose();
   }
 
+  Future<void> _loadMore() async {
+    await provider.getVoucherList(false);
+  }
+
+  Future<void> _refresh() async {
+    provider.voucherPage = 0;
+    await provider.getVoucherList(false);
+  }
+
+// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYTNmOTI0NTNjODViYzEyNjU4ZjNiZSIsInVzZXJuYW1lIjoiSnVkZ2VfQ3JvbmluIiwiaWF0IjoxNjcxNjk3MTcxfQ.hbZLKSsS6Mdj1ndhAf4rm_5we4iWYvKY1VPSo51sQRM
   @override
   Widget build(BuildContext context) {
     return Consumer<VoucherProvider>(
       builder: (context, provider, child) {
+        print(
+            'gift voucher history length ${provider.history.length}/${provider.totalVouchers}}');
         return Scaffold(
           backgroundColor: mainColor,
           appBar: AppBar(
-            title: titleLargeText('Vouchers', context, useGradient: true),
-            shadowColor: Colors.white,
-            actions: [
-              //   if (provider.history.isNotEmpty)
-              //     TextButton(
-              //       // onPressed: () => Get.(Container()),
-              //       onPressed: () => buildShowModalBottomSheet(context),
-              //       child: Icon(
-              //         Icons.add,
-              //         color: Colors.white,
-              //       ),
-              //       // child: assetSvg(Assets.gift, color: Colors.white, width: 30),
-              //     )
-            ],
-          ),
+              title: titleLargeText('Vouchers', context, useGradient: true),
+              shadowColor: Colors.white),
           body: Container(
             height: double.maxFinite,
             width: double.maxFinite,
@@ -86,49 +88,61 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                   opacity: 1),
             ),
             child: !provider.loadingVoucher
-                ? ListView(
-                    padding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                    physics: BouncingScrollPhysics(),
-                    children: [
-                      Container(
-                        height: !provider.loadingVoucher &&
-                                provider.packages.isEmpty
-                            ? Get.height * 0.3
-                            : Get.height * 0.3,
-                        width: double.maxFinite,
-                        child: (provider.loadingVoucher ||
-                                provider.packages.isNotEmpty)
-                            ? Column(
-                                children: [
-                                  height10(),
-                                  Expanded(child: VoucherCarousel()),
-                                  buildVoucherDetailsCard(provider, context),
-                                ],
-                              )
-                            : buildNoVouchers(context),
-                      ),
-                      SizedBox(height: 20),
-                      ...provider.history.map((e) => buildVoucher(e, context)),
-                      if (provider.history.isEmpty)
-                        Divider(color: Colors.white54),
-                      if (provider.history.isEmpty)
-                        Column(
-                          children: [
-                            SizedBox(
-                                height: Get.height * 0.2,
-                                child: assetLottie(Assets.emptyCards)),
-                            bodyLargeText(
-                                "You don't have any voucher yet.", context,
-                                textAlign: TextAlign.center),
-                          ],
-                        ),
-                    ],
-                  )
+                ? LoadMoreContainer(
+                    finishWhen:
+                        provider.history.length >= provider.totalVouchers,
+                    onLoadMore: _loadMore,
+                    onRefresh: _refresh,
+                    builder: (scrollController, status) {
+                      return ListView(
+                        controller: scrollController,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+                        physics: BouncingScrollPhysics(),
+                        children: [
+                          Container(
+                            height: !provider.loadingVoucher &&
+                                    provider.packages.isEmpty
+                                ? Get.height * 0.3
+                                : Get.height * 0.3,
+                            width: double.maxFinite,
+                            child: (provider.loadingVoucher ||
+                                    provider.packages.isNotEmpty)
+                                ? Column(
+                                    children: [
+                                      height10(),
+                                      Expanded(child: VoucherCarousel()),
+                                      buildVoucherDetailsCard(provider, context)
+                                    ],
+                                  )
+                                : buildNoVouchers(context),
+                          ),
+                          SizedBox(height: 20),
+                          ...provider.history
+                              .map((e) => buildVoucher(e, context)),
+                          if (provider.history.isEmpty)
+                            Divider(color: Colors.white54),
+                          if (provider.history.isEmpty)
+                            buildEmptyHistory(context),
+                        ],
+                      );
+                    })
                 : Center(child: CircularProgressIndicator(color: Colors.white)),
           ),
           // bottomNavigationBar: buildBottomButton(context),
         );
       },
+    );
+  }
+
+  Column buildEmptyHistory(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+            height: Get.height * 0.2, child: assetLottie(Assets.emptyCards)),
+        bodyLargeText("You don't have any voucher yet.", context,
+            textAlign: TextAlign.center),
+      ],
     );
   }
 
@@ -435,7 +449,6 @@ class VoucherCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<VoucherProvider>(
       builder: (context, provider, child) {
-        print('gift voucher packages length ${provider.packages.length}');
         return CarouselSlider(
             carouselController: provider.carouselController,
             items: <Widget>[

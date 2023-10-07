@@ -5,6 +5,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
 import '../screens/drawerPages/downlines/my_incomes_page.dart';
 import '../screens/drawerPages/downlines/team_view/fancy_team_view.dart';
+import '../screens/drawerPages/wallets/withdraw_history_page.dart';
 import '/screens/drawerPages/download_pages/edcational_downloads_page.dart';
 import '../screens/dashboard/company_trade_ideas_page.dart';
 import '../screens/drawerPages/downlines/matrix_analyzer .dart';
@@ -21,7 +22,7 @@ import '/providers/notification_provider.dart';
 import '/screens/Notification/notification_page.dart';
 import '/screens/auth/login_screen.dart';
 import '/screens/dashboard/main_page.dart';
-import '../screens/drawerPages/commission_wallet/commission_wallet_page.dart';
+import '../screens/drawerPages/wallets/commission_wallet/commission_wallet_page.dart';
 import '/screens/drawerPages/download_pages/gallery_main_page.dart';
 import '../screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/screens/drawerPages/event_tickets/event_tickets_page.dart';
@@ -40,7 +41,7 @@ import '/utils/text.dart';
 import '/widgets/scroll_to_top.dart';
 import 'package:provider/provider.dart';
 
-import '../screens/drawerPages/cash_wallet_page/cash_wallet_page.dart';
+import '../screens/drawerPages/wallets/cash_wallet_page/cash_wallet_page.dart';
 import '../screens/drawerPages/payment_methods_page.dart';
 import '../screens/drawerPages/download_pages/drawer_video_player_page.dart';
 import '../screens/drawerPages/settings_page.dart';
@@ -370,7 +371,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     btnOkText: 'Yes Sure!',
                     btnCancelOnPress: () {},
                     btnOkOnPress: () async {
-                      await logOut('log-out button').then((value) => Get.offAll(LoginScreen()));
+                      await logOut('log-out button')
+                          .then((value) => Get.offAll(LoginScreen()));
                     },
                     reverseBtnOrder: true,
                   ).show();
@@ -557,7 +559,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
       headerAsset: Assets.cashWallet,
       initiallyExpanded: dashBoardProvider.selectedDrawerTile == cashWallet ||
           dashBoardProvider.selectedDrawerTile == commissionWallet ||
-          dashBoardProvider.selectedDrawerTile == withdrawals,
+          dashBoardProvider.selectedDrawerTile == withdrawals ||
+          dashBoardProvider.selectedDrawerTile == myIncomes,
       children: [
         Container(
           width: double.maxFinite,
@@ -586,7 +589,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           page = CommissionWalletPage();
                           break;
                         case withdrawals:
-                          // page = const WithdrawalsPage();
+                          page = const WithdrawRequestHistoryPage();
                           break;
 
                         default:

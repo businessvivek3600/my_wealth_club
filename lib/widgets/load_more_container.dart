@@ -16,7 +16,8 @@ class LoadMoreContainer extends StatefulWidget {
       this.showLoading = true,
       this.showNoMore = false,
       this.showToast = true,
-      this.toastMessage});
+      this.toastMessage,
+      this.height});
   final Widget Function(
       ScrollController scrollController, LoadMoreStatus status) builder;
   final bool finishWhen;
@@ -28,6 +29,7 @@ class LoadMoreContainer extends StatefulWidget {
   final bool showNoMore;
   final bool showToast;
   final String? toastMessage;
+  final double? height;
   @override
   State<LoadMoreContainer> createState() => _LoadMoreContainerState();
 }
@@ -74,6 +76,7 @@ class _LoadMoreContainerState extends State<LoadMoreContainer> {
     infoLog(
         'LoadMoreContainer build called: $_loadMoreStatus hasmore: $_hasMoreItems');
     var child = Container(
+      height: widget.height,
       child: Column(
         children: [
           Expanded(child: widget.builder(_scrollController, _loadMoreStatus)),

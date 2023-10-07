@@ -17,6 +17,7 @@ import '/providers/auth_provider.dart';
 import '/sl_container.dart';
 import '/utils/app_default_loading.dart';
 import '/utils/toasts.dart';
+import 'Cash_wallet_provider.dart';
 
 class SubscriptionProvider extends ChangeNotifier {
   final SubscriptionRepo subscriptionRepo;
@@ -274,7 +275,10 @@ class SubscriptionProvider extends ChangeNotifier {
                   onResponse: (res) {
                     print('request url matched <res> $res');
                     Get.back();
-                    hitPaymentResponse(res);
+                    hitPaymentResponse(
+                        () => subscriptionRepo.hitPaymentResponse(res),
+                        () => getSubscription(false),
+                        tag: 'buySubscription');
                     // getVoucherList(false);
                   },
                 ));
@@ -309,44 +313,44 @@ class SubscriptionProvider extends ChangeNotifier {
     Get.back();
   }
 
-  Future<void> hitPaymentResponse(url) async {
-    try {
-      if (isOnline) {
-        showLoading(dismissable: true);
-        ApiResponse apiResponse =
-            await subscriptionRepo.hitPaymentResponse(url);
-        infoLog(
-            'create subscription hitPaymentResponse: ${apiResponse.response?.data}');
-        Get.back();
-        if (apiResponse.response != null &&
-            apiResponse.response!.statusCode == 200) {
-          Map map = apiResponse.response!.data;
-          bool status = false;
-          String message = '';
-          try {
-            status = map["status"];
-            if (map['is_logged_in'] == 0) {
-              logOut('hitPaymentResponse');
-            }
-          } catch (e) {}
-          try {
-            message = map["message"] ?? '';
-          } catch (e) {}
+  // Future<void> hitPaymentResponses(url) async {
+  //   try {
+  //     if (isOnline) {
+  //       showLoading(dismissable: true);
+  //       ApiResponse apiResponse =
+  //           await subscriptionRepo.hitPaymentResponse(url);
+  //       infoLog(
+  //           'create subscription hitPaymentResponse: ${apiResponse.response?.data}');
+  //       Get.back();
+  //       if (apiResponse.response != null &&
+  //           apiResponse.response!.statusCode == 200) {
+  //         Map map = apiResponse.response!.data;
+  //         bool status = false;
+  //         String message = '';
+  //         try {
+  //           status = map["status"];
+  //           if (map['is_logged_in'] == 0) {
+  //             logOut('hitPaymentResponse');
+  //           }
+  //         } catch (e) {}
+  //         try {
+  //           message = map["message"] ?? '';
+  //         } catch (e) {}
 
-          if (status) {
-            await getSubscription(false);
-            Get.back();
-          } else {
-            Toasts.showErrorNormalToast(message);
-          }
-        }
-      } else {
-        Toasts.showWarningNormalToast('You are offline');
-      }
-    } catch (e) {
-      print('createVoucherSubmit failed ${e}');
-    }
-  }
+  //         if (status) {
+  //           await getSubscription(false);
+  //           Get.back();
+  //         } else {
+  //           Toasts.showErrorNormalToast(message);
+  //         }
+  //       }
+  //     } else {
+  //       Toasts.showWarningNormalToast('You are offline');
+  //     }
+  //   } catch (e) {
+  //     print('createVoucherSubmit failed ${e}');
+  //   }
+  // }
 
   ///TODO: Stripe Payment
 

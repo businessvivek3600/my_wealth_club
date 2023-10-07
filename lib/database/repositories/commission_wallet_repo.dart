@@ -14,10 +14,10 @@ class CommissionWalletRepo {
       {required this.dioClient, required this.sharedPreferences});
 
   /// :Subscription History
-  Future<ApiResponse> getCommissionWallet() async {
+  Future<ApiResponse> getCommissionWallet(Map<String, dynamic> map) async {
     try {
-      Response response =
-          await dioClient.post(AppConstants.commissionWallet, token: true);
+      Response response = await dioClient.post(AppConstants.commissionWallet,
+          token: true, data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {

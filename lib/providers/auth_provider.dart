@@ -211,8 +211,8 @@ class AuthProvider with ChangeNotifier {
     }
     if (map != null) {
       try {
-        if (map['company_info'] != null && map['company_info'].isNotEmpty)
-          companyInfo = CompanyInfoModel.fromJson(map['company_info'][0]);
+        if (map['company_info'] != null)
+          companyInfo = CompanyInfoModel.fromJson(map['company_info']);
         notifyListeners();
       } catch (e) {
         print('company info error on getSignUpInitialData $e');

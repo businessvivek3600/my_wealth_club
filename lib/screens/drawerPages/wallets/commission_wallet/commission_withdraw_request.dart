@@ -11,7 +11,9 @@ import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
 class CommissionWithdrawRequestPage extends StatefulWidget {
-  const CommissionWithdrawRequestPage({Key? key}) : super(key: key);
+  const CommissionWithdrawRequestPage({Key? key, this.fromHistory = false})
+      : super(key: key);
+  final bool fromHistory;
 
   @override
   State<CommissionWithdrawRequestPage> createState() =>
@@ -50,6 +52,10 @@ class _CommissionWithdrawRequestPageState
     provider.paymentTypes.clear();
     provider.loadingWithdrawSubmit = false;
     provider.loadingWithdrawSubmit = false;
+    if (widget.fromHistory) {
+      provider.withdrawRequestHistoryPage = 0;
+      provider.getWithdrawRequestHistory(true);
+    }
     super.dispose();
   }
 

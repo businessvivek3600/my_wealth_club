@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/fund_request_model.dart';
@@ -11,8 +12,8 @@ import '/utils/sizedbox_utils.dart';
 import '/utils/skeleton.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utils/picture_utils.dart';
-import '../../../utils/text.dart';
+import '../../../../utils/picture_utils.dart';
+import '../../../../utils/text.dart';
 
 class CashWalletAddFundFromCoinPayment extends StatefulWidget {
   const CashWalletAddFundFromCoinPayment({Key? key}) : super(key: key);
@@ -26,19 +27,35 @@ class _CashWalletAddFundFromCoinPaymentState
     extends State<CashWalletAddFundFromCoinPayment> {
   String _currentPaymentTypeVal = '';
   String _currentPaymentTypeKey = '';
+  var provider = sl.get<CashWalletProvider>();
   @override
   void initState() {
-    sl.get<CashWalletProvider>().getCoinPaymentFundRequest(false).then((value) {
+    provider.getCoinPaymentFundRequest(true).then((value) {
       setState(() {
-        if (sl.get<CashWalletProvider>().paymentTypes.entries.isNotEmpty)
-          _currentPaymentTypeKey =
-              sl.get<CashWalletProvider>().paymentTypes.entries.first.key;
+        if (provider.paymentTypes.entries.isNotEmpty)
+          _currentPaymentTypeKey = provider.paymentTypes.entries.first.key;
       });
     });
     super.initState();
   }
 
   bool isLoading = true;
+  @override
+  void dispose() {
+    provider.amountController.clear();
+    provider.coinPaymentPage = 0;
+    provider.coinfundRequests.clear();
+    super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getCoinPaymentFundRequest();
+  }
+
+  Future<void> _refresh() async {
+    provider.coinPaymentPage = 0;
+    await provider.getCoinPaymentFundRequest(true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,30 +85,38 @@ class _CashWalletAddFundFromCoinPaymentState
               opacity: 0.5)),
       child: (provider.loadingFundRequestData ||
               provider.coinfundRequests.isNotEmpty)
-          ? ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-              itemCount: !provider.loadingFundRequestData
-                  ? provider.coinfundRequests.length
-                  : 7,
-              itemBuilder: (context, index) {
-                var history = FundRequestModel();
-                if (!provider.loadingFundRequestData) {
-                  history = provider.coinfundRequests[index];
-                }
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: !provider.loadingFundRequestData
-                        ? buildExpansionTile(history, context)
-                        : Skeleton(
-                            height: 70,
-                            width: double.maxFinite,
-                            textColor: Colors.white38),
-                  ),
+          ? LoadMoreContainer(
+              finishWhen:
+                  provider.coinfundRequests.length >= provider.totalCoinPayment,
+              onLoadMore: _loadMore,
+              onRefresh: _refresh,
+              builder: (scrollController, status) {
+                return ListView.builder(
+                  controller: scrollController,
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+                  itemCount: !provider.loadingFundRequestData
+                      ? provider.coinfundRequests.length
+                      : 7,
+                  itemBuilder: (context, index) {
+                    var history = FundRequestModel();
+                    if (!provider.loadingFundRequestData) {
+                      history = provider.coinfundRequests[index];
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: !provider.loadingFundRequestData
+                            ? buildExpansionTile(history, context)
+                            : Skeleton(
+                                height: 70,
+                                width: double.maxFinite,
+                                textColor: Colors.white38),
+                      ),
+                    );
+                  },
                 );
-              },
-            )
+              })
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

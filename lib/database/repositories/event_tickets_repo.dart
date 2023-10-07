@@ -1,4 +1,3 @@
-
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../constants/app_constants.dart';
@@ -12,11 +11,11 @@ class EventTicketRepo {
   EventTicketRepo({required this.dioClient, required this.sharedPreferences});
 
   /// :Subscription History
-  Future<ApiResponse> getEventTickets() async {
+  Future<ApiResponse> getEventTickets(Map<String, String> map) async {
     try {
-      Response response =
-          await dioClient.post(AppConstants.myEventTickets, token: true);
-      
+      Response response = await dioClient.post(AppConstants.myEventTickets,
+          token: true, data: map);
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -27,7 +26,7 @@ class EventTicketRepo {
     try {
       Response response = await dioClient.post(AppConstants.buyEventTickets,
           token: true, data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
@@ -38,7 +37,7 @@ class EventTicketRepo {
     try {
       Response response = await dioClient
           .post(AppConstants.buyEventTicketsSubmit, token: true, data: data);
-      
+
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));

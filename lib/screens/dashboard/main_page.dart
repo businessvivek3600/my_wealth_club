@@ -14,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import 'package:mycarclub/database/repositories/settings_repo.dart';
 import 'package:mycarclub/widgets/app_lock_auth_suggest_view.dart';
 import '/database/model/response/videos_model.dart';
 import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
@@ -259,7 +260,9 @@ class _MainPageState extends State<MainPage>
                                             CrossAxisAlignment.start,
                                         children: [
                                           AppLockAuthSuggestionWidget(
-                                            showSuggestion: true,
+                                            showSuggestion: sl
+                                                .get<SettingsRepo>()
+                                                .getBiometric(),
                                             margin:
                                                 EdgeInsetsDirectional.symmetric(
                                                     horizontal: 8),
@@ -1232,7 +1235,7 @@ class _MainPageState extends State<MainPage>
             opacity: !dashBoardProvider.loadingDash ? 1.0 : 0.0,
             duration: const Duration(milliseconds: 3000),
             curve: Curves.fastOutSlowIn,
-            child: QrImage(
+            child: QrImageView(
               data: dashBoardProvider.promotionString,
               version: QrVersions.auto,
               gapless: false,

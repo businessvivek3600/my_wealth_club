@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../widgets/load_more_container.dart';
 import '/constants/app_constants.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
@@ -24,17 +25,27 @@ class SupportPage extends StatefulWidget {
 }
 
 class _SupportPageState extends State<SupportPage> {
+  var provider = sl.get<SupportProvider>();
   @override
   void initState() {
-    sl.get<SupportProvider>().getTickets();
+    provider.getTickets();
     super.initState();
   }
 
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-  void _onRefresh() async {
-    await sl.get<SupportProvider>().getTickets(false);
-    _refreshController.refreshCompleted();
+  @override
+  void dispose() {
+    provider.supportPage = 0;
+    provider.tickets.clear();
+    super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getTickets();
+  }
+
+  Future<void> _refresh() async {
+    provider.supportPage = 0;
+    await provider.getTickets(true);
   }
 
   @override
@@ -46,7 +57,7 @@ class _SupportPageState extends State<SupportPage> {
           backgroundColor: mainColor,
           extendBody: true,
           appBar: AppBar(
-            title: titleLargeText('Support',context,useGradient: true),
+            title: titleLargeText('Support', context, useGradient: true),
             centerTitle: true,
             actions: [
               if (supportProvider.tickets.isNotEmpty)
@@ -123,22 +134,22 @@ class _SupportPageState extends State<SupportPage> {
   }
 
   Widget buildListView(SupportProvider supportProvider, BuildContext context) {
-    return SmartRefresher(
-      enablePullDown: true,
-      enablePullUp: false,
-      controller: _refreshController,
-      header: MaterialClassicHeader(),
-      onRefresh: _onRefresh,
-      child: ListView(
-        physics: BouncingScrollPhysics(),
-        padding: EdgeInsets.all(16),
-        children: [
-          ...supportProvider.tickets.map((ticket) {
-            return buildTicketTile(ticket, context);
-          })
-        ],
-      ),
-    );
+    return LoadMoreContainer(
+        finishWhen: provider.tickets.length >= provider.totalTickets,
+        onLoadMore: _loadMore,
+        onRefresh: _refresh,
+        builder: (scrollController, status) {
+          return ListView(
+            controller: scrollController,
+            physics: BouncingScrollPhysics(),
+            padding: EdgeInsets.all(16),
+            children: [
+              ...supportProvider.tickets.map((ticket) {
+                return buildTicketTile(ticket, context);
+              })
+            ],
+          );
+        });
   }
 
   GestureDetector buildTicketTile(TicketModel ticket, BuildContext context) {

@@ -11,9 +11,9 @@ import '/database/functions.dart';
 import '/database/model/response/cash_wallet_history_model.dart';
 import '/providers/Cash_wallet_provider.dart';
 import '/providers/auth_provider.dart';
-import '/screens/drawerPages/cash_wallet_page/add_fund_from_coinPayment.dart';
-import '/screens/drawerPages/cash_wallet_page/cash_wallet_add_fund_card_payment.dart';
-import '/screens/drawerPages/cash_wallet_page/cash_wallet_add_funds_ng_cash_wallet.dart';
+import '../cash_wallet_page/add_fund_from_coinPayment.dart';
+import '../cash_wallet_page/cash_wallet_add_fund_card_payment.dart';
+import '../cash_wallet_page/cash_wallet_add_funds_ng_cash_wallet.dart';
 import '/sl_container.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/picture_utils.dart';
@@ -21,7 +21,7 @@ import '/utils/skeleton.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utils/color.dart';
+import '../../../../utils/color.dart';
 
 class CashWalletPage extends StatefulWidget {
   const CashWalletPage({Key? key}) : super(key: key);

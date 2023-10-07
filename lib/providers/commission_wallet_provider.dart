@@ -4,6 +4,7 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/default_logger.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
@@ -29,7 +30,10 @@ class CommissionWalletProvider extends ChangeNotifier {
   bool btn_withdraw = false;
   bool btn_transfer = false;
 
-  Future<void> getCommissionWallet() async {
+  int commissionWalletPage = 0;
+  int totalHistory = 0;
+
+  Future<void> getCommissionWallet([bool loading = false]) async {
     bool cacheExist = await APICacheManager()
         .isAPICacheKeyExist(AppConstants.commissionWallet);
     List<CommissionWalletHistory> _history = [];
@@ -37,8 +41,8 @@ class CommissionWalletProvider extends ChangeNotifier {
     loadingWallet = true;
     notifyListeners();
     if (isOnline) {
-      ApiResponse apiResponse =
-          await commissionWalletRepo.getCommissionWallet();
+      ApiResponse apiResponse = await commissionWalletRepo
+          .getCommissionWallet({'page': commissionWalletPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
@@ -101,9 +105,15 @@ class CommissionWalletProvider extends ChangeNotifier {
               map['wallet_history'].isNotEmpty) {
             map['wallet_history'].forEach(
                 (e) => _history.add(CommissionWalletHistory.fromJson(e)));
-            _history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-            history.clear();
-            history = _history;
+            if (commissionWalletPage == 0) {
+              history.clear();
+              history = _history;
+            } else {
+              history.addAll(_history);
+            }
+            totalHistory = int.parse(map['totalRows'] ?? '0');
+            history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+            commissionWalletPage++;
             notifyListeners();
           }
         } catch (e) {}
@@ -170,8 +180,8 @@ class CommissionWalletProvider extends ChangeNotifier {
             try {
               if (map['payment_type'] != null) {
                 paymentTypes.clear();
-                map['payment_type'].entries.toList().forEach((e) =>
-                    paymentTypes.addEntries([MapEntry(e.key, e.value)]));
+                map['payment_type'].entries.toList().forEach(
+                    (e) => paymentTypes.addEntries([MapEntry(e.key, e.value)]));
                 notifyListeners();
               }
             } catch (e) {
@@ -330,6 +340,128 @@ class CommissionWalletProvider extends ChangeNotifier {
     } catch (e) {
       print('withdrawSubmit failed ${e}');
     }
+  }
+
+//withdraw request history
+
+  int withdrawRequestHistoryPage = 0;
+  int totalWithdrawRequestHistory = 0;
+  bool loadingWithdrawRequestHistory = false;
+  List<HistoryWithDate<CommissionWalletHistory>> withdrawRequestHistory = [];
+
+  Future<void> getWithdrawRequestHistory([bool loading = false]) async {
+    bool cacheExist = await APICacheManager()
+        .isAPICacheKeyExist(AppConstants.commissionWallet);
+    Map? map;
+    loadingWithdrawRequestHistory = loading;
+    notifyListeners();
+    if (isOnline) {
+      ApiResponse apiResponse = await commissionWalletRepo
+          .getCommissionWallet({'page': withdrawRequestHistoryPage.toString()});
+      infoLog('${apiResponse.response!.data}', 'getCommissionWalletHistory');
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        map = apiResponse.response!.data;
+        bool status = false;
+        try {
+          status = map?["status"];
+          if (map?['is_logged_in'] != 1) {
+            logOut('getCommissionWalletHistory');
+          }
+        } catch (e) {}
+        try {
+          if (status) {
+            try {
+              var cacheModel = APICacheDBModel(
+                  key: AppConstants.commissionWallet,
+                  syncData: jsonEncode(map));
+              await APICacheManager().addCacheData(cacheModel);
+            } catch (e) {}
+          }
+        } catch (e) {
+          print('getCommissionWalletHistory online hit failed \n $e');
+        }
+      }
+    } else if (!isOnline && cacheExist) {
+      var cacheData =
+          (await APICacheManager().getCacheData(AppConstants.commissionWallet))
+              .syncData;
+      map = jsonDecode(cacheData);
+    } else {
+      print('getCommissionWalletHistory not online not cache exist ');
+    }
+    try {
+      if (map != null) {
+        try {
+          if (map['wallet_balance'] != null && map['wallet_balance'] != '') {
+            walletBalance = double.parse(map['wallet_balance'].toString());
+            notifyListeners();
+          }
+        } catch (e) {
+          print('getSubscription Error in balance $e');
+        }
+
+        try {
+          if (map['btn_withdraw'] != null) {
+            btn_withdraw = map['btn_withdraw'] == 1;
+            notifyListeners();
+          }
+          if (map['btn_transfer'] != null) {
+            btn_transfer = map['btn_transfer'] == 1;
+            notifyListeners();
+          }
+        } catch (e) {}
+
+        try {
+          totalWithdrawRequestHistory = int.parse(map['totalRows'] ?? '0');
+          if (map['wallet_history'] != null &&
+              map['wallet_history'].isNotEmpty) {
+            List<HistoryWithDate<CommissionWalletHistory>>
+                _withdrawRequestHistory = [];
+
+            map['wallet_history'].forEach((e) {
+              CommissionWalletHistory _history =
+                  CommissionWalletHistory.fromJson(e);
+              DateTime _date = _history.createdAt != null
+                  ? DateTime.parse(_history.createdAt!)
+                  : DateTime(1970);
+              bool _dateExist = false;
+              //check if date exist
+              _dateExist = _withdrawRequestHistory.any((element) {
+                return element.date!.day == _date.day &&
+                    element.date!.month == _date.month &&
+                    element.date!.year == _date.year;
+              });
+              if (_dateExist) {
+                var list = _withdrawRequestHistory
+                    .firstWhere((element) =>
+                        element.date!.day == _date.day &&
+                        element.date!.month == _date.month &&
+                        element.date!.year == _date.year)
+                    .list;
+                list.add(_history);
+                list.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+              } else {
+                _withdrawRequestHistory.add(
+                    HistoryWithDate<CommissionWalletHistory>(
+                        date: _date, list: [_history]));
+              }
+            });
+            _withdrawRequestHistory.sort((a, b) => b.date!.compareTo(a.date!));
+            if (withdrawRequestHistoryPage == 0) {
+              withdrawRequestHistory.clear();
+              withdrawRequestHistory = _withdrawRequestHistory;
+            } else {
+              withdrawRequestHistory.addAll(_withdrawRequestHistory);
+            }
+            withdrawRequestHistoryPage++;
+            notifyListeners();
+          }
+        } catch (e) {}
+      }
+    } catch (e) {}
+    loadingWithdrawRequestHistory = false;
+    notifyListeners();
   }
 
   clear() {

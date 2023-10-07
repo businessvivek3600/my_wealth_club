@@ -22,6 +22,8 @@ class EventTicketsProvider extends ChangeNotifier {
   Map<String, dynamic> paymentTypes = {};
   double walletBalance = 0.0;
   bool loadingMyTickets = false;
+  int eventTicketsPage = 0;
+  int totalRequests = 0;
 
   Future<void> getEventTickets(bool loading) async {
     bool cacheExist =
@@ -32,7 +34,8 @@ class EventTicketsProvider extends ChangeNotifier {
     loadingMyTickets = loading;
     notifyListeners();
     if (isOnline) {
-      ApiResponse apiResponse = await eventTicketRepo.getEventTickets();
+      ApiResponse apiResponse = await eventTicketRepo
+          .getEventTickets({'page': eventTicketsPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
@@ -88,8 +91,14 @@ class EventTicketsProvider extends ChangeNotifier {
                 (e) => _ticketRequests.add(EventTicketsRequests.fromJson(e)));
             _ticketRequests
                 .sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
-            ticketRequests.clear();
-            ticketRequests = _ticketRequests;
+            if (eventTicketsPage == 0) {
+              ticketRequests.clear();
+              ticketRequests = _ticketRequests;
+            } else {
+              ticketRequests.addAll(_ticketRequests);
+            }
+            totalRequests = int.parse(map['totalRows'] ?? '0');
+            eventTicketsPage++;
             notifyListeners();
           }
         } catch (e) {}

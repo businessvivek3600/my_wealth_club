@@ -4,6 +4,8 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/default_logger.dart';
+import '../utils/app_web_view_page.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
@@ -110,7 +112,6 @@ class CashWalletProvider extends ChangeNotifier {
               map['wallet_history'].isNotEmpty) {
             map['wallet_history']
                 .forEach((e) => _history.add(CashWalletHistory.fromJson(e)));
-            _history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
             if (cashWalletPage == 0) {
               history.clear();
               history = _history;
@@ -118,6 +119,7 @@ class CashWalletProvider extends ChangeNotifier {
               history.addAll(_history);
             }
             cashWalletPage++;
+            history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
             notifyListeners();
           }
         } catch (e) {}
@@ -134,15 +136,17 @@ class CashWalletProvider extends ChangeNotifier {
   ///coin payment
   bool loadingFundRequestData = false;
   List<FundRequestModel> coinfundRequests = [];
-  Future<void> getCoinPaymentFundRequest(bool loading) async {
+  int coinPaymentPage = 0;
+  int totalCoinPayment = 0;
+  Future<void> getCoinPaymentFundRequest([bool loading = false]) async {
     loadingFundRequestData = loading;
     notifyListeners();
     bool cacheExist = await APICacheManager()
         .isAPICacheKeyExist(AppConstants.getCoinPaymentFundRequest);
     Map? map;
     if (isOnline) {
-      ApiResponse apiResponse =
-          await cashWalletRepo.getCoinPaymentFundRequest();
+      ApiResponse apiResponse = await cashWalletRepo
+          .getCoinPaymentFundRequest({'page': coinPaymentPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
@@ -187,11 +191,22 @@ class CashWalletProvider extends ChangeNotifier {
         } catch (e) {}
 
         try {
+          if (map['totalRows'] != null && map['totalRows'] != '') {
+            totalCoinPayment = int.parse(map['totalRows']);
+            notifyListeners();
+          }
           if (map['request_history'] != null &&
               map['request_history'].isNotEmpty) {
-            coinfundRequests.clear();
+            List<FundRequestModel> _coinfundRequests = [];
             map['request_history'].forEach(
-                (e) => coinfundRequests.add(FundRequestModel.fromJson(e)));
+                (e) => _coinfundRequests.add(FundRequestModel.fromJson(e)));
+            if (coinPaymentPage == 0) {
+              coinfundRequests.clear();
+              coinfundRequests = _coinfundRequests;
+            } else {
+              coinfundRequests.addAll(_coinfundRequests);
+            }
+            coinPaymentPage++;
             notifyListeners();
           }
         } catch (e) {}
@@ -223,6 +238,7 @@ class CashWalletProvider extends ChangeNotifier {
           'amount': amountController.text,
         });
         Get.back();
+        infoLog('coinPaymentSubmit ${apiResponse.response!.data}');
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
           Map map = apiResponse.response!.data;
@@ -295,15 +311,17 @@ class CashWalletProvider extends ChangeNotifier {
   ///card payment
   bool loadingCardRequestData = false;
   List<FundRequestModel> cardRequests = [];
-  Future<void> getCardPaymentFundRequest() async {
-    loadingCardRequestData = true;
+  int cardPaymentPage = 0;
+  int totalCardPayment = 0;
+  Future<void> getCardPaymentFundRequest([bool loading = false]) async {
+    loadingCardRequestData = loading;
     notifyListeners();
     bool cacheExist = await APICacheManager()
         .isAPICacheKeyExist(AppConstants.getCardPaymentFundRequest);
     Map? map;
     if (isOnline) {
-      ApiResponse apiResponse =
-          await cashWalletRepo.getCardPaymentFundRequest();
+      ApiResponse apiResponse = await cashWalletRepo
+          .getCardPaymentFundRequest({'page': cardPaymentPage.toString()});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;
@@ -350,9 +368,17 @@ class CashWalletProvider extends ChangeNotifier {
         try {
           if (map['request_history'] != null &&
               map['request_history'].isNotEmpty) {
-            cardRequests.clear();
-            map['request_history']
-                .forEach((e) => cardRequests.add(FundRequestModel.fromJson(e)));
+            List<FundRequestModel> _cardRequests = [];
+            map['request_history'].forEach(
+                (e) => _cardRequests.add(FundRequestModel.fromJson(e)));
+            if (cardPaymentPage == 0) {
+              cardRequests.clear();
+              cardRequests = _cardRequests;
+            } else {
+              cardRequests.addAll(_cardRequests);
+            }
+            cardPaymentPage++;
+            totalCardPayment = int.parse(map['totalRows'] ?? '0');
             notifyListeners();
           }
         } catch (e) {}
@@ -425,6 +451,7 @@ class CashWalletProvider extends ChangeNotifier {
         ApiResponse apiResponse = await cashWalletRepo.getCardPaymentOrderId(
             {'amount': amount.toString(), 'payment_type': paymentType});
         Get.back();
+        infoLog('getCardPaymentOrderId ${apiResponse.response!.data}');
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
           Map map = apiResponse.response!.data;
@@ -447,12 +474,37 @@ class CashWalletProvider extends ChangeNotifier {
             try {
               orderId = map["order_id"];
               currency = map["currency"];
-              if (currency != null && orderId != null) {
+              var redirectUrl = map["redirect_url"];
+              if (redirectUrl != '') {
                 Get.back();
-                amountController.clear();
-                Get.to(CardFormWidget(
-                    orderId: orderId, currency: currency, amount: amount));
+                var res = await Get.to(WebViewExample(
+                  url: redirectUrl,
+                  allowBack: false,
+                  allowCopy: false,
+                  conditions: [
+                    'https://mywealthclub.com/api/customer/card-fund-request-status'
+                  ],
+                  onResponse: (res) {
+                    print('request url matched <res> $res');
+                    Get.back();
+                    hitPaymentResponse(
+                      () => cashWalletRepo.hitPaymentResponse(res),
+                      () => getCardPaymentOrderId(amount, paymentType),
+                      tag: 'cardPaymentOrderId',
+                    );
+
+                    // getVoucherList(false);
+                  },
+                ));
+                errorLog('redirect result from webview $res');
+                // launchTheLink(redirectUrl!);
               }
+              // if (currency != null && orderId != null) {
+              //   Get.back();
+              //   amountController.clear();
+              //   Get.to(CardFormWidget(
+              //       orderId: orderId, currency: currency, amount: amount));
+              // }
             } catch (e) {}
           } else {
             Toasts.showErrorNormalToast(message.split('.').first);
@@ -525,5 +577,44 @@ class CashWalletProvider extends ChangeNotifier {
     btn_fund_coinpayment = false;
     btn_fund_card = false;
     btn_fund_cash_wallet = false;
+  }
+}
+
+Future<void> hitPaymentResponse(
+    Future<ApiResponse> Function() request, Future<void> Function()? onSuccess,
+    {String? tag}) async {
+  try {
+    if (isOnline) {
+      showLoading(dismissable: true);
+      ApiResponse apiResponse = await request();
+      infoLog('hitPaymentResponse: ${apiResponse.response?.data}', tag);
+      Get.back();
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        Map map = apiResponse.response!.data;
+        bool status = false;
+        String message = '';
+        try {
+          status = map["status"];
+          if (map['is_logged_in'] == 0) {
+            logOut('hitPaymentResponse');
+          }
+        } catch (e) {}
+        try {
+          message = map["message"] ?? '';
+        } catch (e) {}
+
+        if (status) {
+          onSuccess != null ? await onSuccess() : null;
+          Get.back();
+        } else {
+          Toasts.showErrorNormalToast(message);
+        }
+      }
+    } else {
+      Toasts.showWarningNormalToast('You are offline');
+    }
+  } catch (e) {
+    errorLog('hitPaymentResponse failed ${e}', tag);
   }
 }

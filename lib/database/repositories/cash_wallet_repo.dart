@@ -25,10 +25,11 @@ class CashWalletRepo {
   }
 
   ///coin payment
-  Future<ApiResponse> getCoinPaymentFundRequest() async {
+  Future<ApiResponse> getCoinPaymentFundRequest(
+      Map<String, dynamic> map) async {
     try {
       Response response = await dioClient
-          .post(AppConstants.getCoinPaymentFundRequest, token: true);
+          .post(AppConstants.getCoinPaymentFundRequest, token: true, data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -58,10 +59,11 @@ class CashWalletRepo {
   }
 
   ///card payment
-  Future<ApiResponse> getCardPaymentFundRequest() async {
+  Future<ApiResponse> getCardPaymentFundRequest(
+      Map<String, dynamic> map) async {
     try {
       Response response = await dioClient
-          .post(AppConstants.getCardPaymentFundRequest, token: true);
+          .post(AppConstants.getCardPaymentFundRequest, token: true, data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -99,6 +101,16 @@ class CashWalletRepo {
           AppConstants.addFundFromNGCashWalletFundSubmit,
           token: true,
           data: data);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  Future<ApiResponse> hitPaymentResponse(String url) async {
+    try {
+      Response response = await dioClient.get(url);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {

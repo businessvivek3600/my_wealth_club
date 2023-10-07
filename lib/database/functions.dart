@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/database/repositories/settings_repo.dart';
 import 'package:mycarclub/utils/color.dart';
 import '/database/model/response/base/user_model.dart';
 import '/database/model/response/company_info_model.dart';
@@ -196,6 +197,7 @@ Future<void> logOut(dynamic reason) async {
   await sl.get<TeamViewProvider>().clear();
   await sl.get<GalleryProvider>().clear();
   await APICacheManager().emptyCache();
+  sl.get<SettingsRepo>().setBiometric(false);
 
   MyCarClub.navigatorKey.currentState
       ?.pushNamedAndRemoveUntil(LoginScreen.routeName, (r) => false);
@@ -206,48 +208,16 @@ Stream<bool> checkFBForAppUpdate() async* {
   var canRunApp = sl.get<AuthRepo>().getCanRunApp();
   var dp = sl.get<DashBoardProvider>();
   await checkVersion().then((value) async {
-    /*  var versionKey = (Platform.isIOS
-        ? AppConstants.testMode
-            ? AppConstants.testIosVersionKey
-            : AppConstants.iosVersionKey
-        : AppConstants.testMode
-            ? AppConstants.testAndroidVersionKey
-            : AppConstants.androidVersionKey);*/
+    /*  var versionKey = (Platform.isIOS? AppConstants.testMode    ? AppConstants.testIosVersionKey    : AppConstants.iosVersionKey: AppConstants.testMode    ? AppConstants.testAndroidVersionKey    : AppConstants.androidVersionKey);*/
     // if (isOnline) {
     // FirebaseFirestore firestore = FirebaseFirestore.instance;
     //can run
-/*      var runKey =
-          AppConstants.testMode ? AppConstants.testCanRun : AppConstants.canRun;
-      await firestore
-          .collection('mycarclub')
-          .doc('runApp')
-          .snapshots()
-          .listen((event) {
-        if (event.data() != null) {
-          if ((event.data())!.entries.isNotEmpty) {
-            canRunApp = (event.data())!
-                .entries
-                .firstWhere((element) => element.key == runKey)
-                .value;
-          }
-        }
+/*      var runKey =  AppConstants.testMode ? AppConstants.testCanRun : AppConstants.canRun;
+      await firestore  .collection('mycarclub')  .doc('runApp')  .snapshots()  .listen((event) {if (event.data() != null) {  if ((event.data())!.entries.isNotEmpty) {    canRunApp = (event.data())!        .entries        .firstWhere((element) => element.key == runKey)        .value;  }}
       });*/
 
-/*    await firestore
-        .collection('mycarclub')
-        .doc('version')
-        .snapshots()
-        .listen((event) {
-      if (event.data() != null) {
-        if ((event.data())!.entries.isNotEmpty) {
-          var versionValue = (event.data())!
-              .entries
-              .firstWhere((element) => element.key == versionKey)
-              .value;
-          print(
-              'compare in old app-version is $appVersion  and new-version is $versionValue  ,  version key is $versionKey    result is ${(versionValue.toString().compareTo(appVersion))}');
-          hasUpdate = versionValue.toString().compareTo(appVersion) == 1;
-        }
+/*    await firestore.collection('mycarclub').doc('version').snapshots().listen((event) {
+      if (event.data() != null) {if ((event.data())!.entries.isNotEmpty) {  var versionValue = (event.data())!      .entries      .firstWhere((element) => element.key == versionKey)      .value;  print(      'compare in old app-version is $appVersion  and new-version is $versionValue  ,  version key is $versionKey    result is ${(versionValue.toString().compareTo(appVersion))}');  hasUpdate = versionValue.toString().compareTo(appVersion) == 1;}
       }
     });*/
     // }
@@ -288,58 +258,7 @@ Future<bool> checkVersion() async {
   bool canUpdate = false;
   try {
     // if (isOnline) {
-    /*
-        checkAppUpdate(
-          context,
-          appName: 'My Car Club',
-          iosAppId: '123456789',
-          androidAppBundleId: AppConstants.appPlayStoreId,
-          isDismissible: true,
-          customDialog: true,
-          customAndroidDialog: AlertDialog(
-            title: const Text('Update Available'),
-            content: const Text('Please update the app to continue'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  OpenStore.instance.open(
-                    androidAppBundleId: AppConstants.appPlayStoreId,
-                  );
-                  Navigator.pop(context);
-                },
-                child: const Text('Update'),
-              ),
-            ],
-          ),
-          customIOSDialog: CupertinoAlertDialog(
-            title: const Text('Update Available'),
-            content: const Text('Please update the app to continue'),
-            actions: [
-              CupertinoDialogAction(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Cancel'),
-              ),
-              CupertinoDialogAction(
-                onPressed: () {
-                  OpenStore.instance.open(
-                    appName: 'My Car Club',
-                    appStoreId: '123456789',
-                  );
-                  Navigator.pop(context);
-                },
-                child: const Text('Update'),
-              ),
-            ],
-          ),
-        );
+    /*checkAppUpdate(  context,  appName: 'My Car Club',  iosAppId: '123456789',  androidAppBundleId: AppConstants.appPlayStoreId,  isDismissible: true,  customDialog: true,  customAndroidDialog: AlertDialog(    title: const Text('Update Available'),    content: const Text('Please update the app to continue'),    actions: [      TextButton(        onPressed: () {          Navigator.pop(context);        },        child: const Text('Cancel'),      ),      TextButton(        onPressed: () {          OpenStore.instance.open(            androidAppBundleId: AppConstants.appPlayStoreId,          );          Navigator.pop(context);        },        child: const Text('Update'),      ),    ],  ),  customIOSDialog: CupertinoAlertDialog(    title: const Text('Update Available'),    content: const Text('Please update the app to continue'),    actions: [      CupertinoDialogAction(        onPressed: () {          Navigator.pop(context);        },        child: const Text('Cancel'),      ),      CupertinoDialogAction(        onPressed: () {          OpenStore.instance.open(            appName: 'My Car Club',            appStoreId: '123456789',          );          Navigator.pop(context);        },        child: const Text('Update'),      ),    ],  ),);
 */
     await _checker.checkUpdate().then((value) {
       appVersion = value.currentVersion;
@@ -438,55 +357,52 @@ Future<bool> setupAppRating(int hours) async {
 }
 
 void checkServiceEnableORDisable(String serviceKey, VoidCallback callback) {
-  CompanyInfoModel? company = sl.get<AuthProvider>().companyInfo;
+  CompanyInfoModel? company = sl.get<DashBoardProvider>().companyInfo;
   bool perForm = false;
   String? alert;
   String? key;
+  blackLog('checkServiceEnableORDisable key: $serviceKey');
   if (company != null) {
+    key = serviceKey;
     switch (serviceKey) {
       case 'mobile_is_subscription':
         perForm = company.mobileIsSubscription != null &&
             company.mobileIsSubscription == "1";
         alert = "Subscription is temporary disabled.";
-
-        key = serviceKey;
         break;
       case 'mobile_is_cash_wallet':
         perForm = company.mobileIsCashWallet != null &&
             company.mobileIsCashWallet == "1";
         alert = "Cash wallet is temporary disabled.";
-        key = serviceKey;
         break;
       case 'mobile_is_commission_wallet':
         perForm = company.mobileIsCommissionWallet != null &&
             company.mobileIsCommissionWallet == "1";
         alert = "Commission wallet is temporary disabled.";
-        key = serviceKey;
         break;
       case 'mobile_is_voucher':
         perForm =
             company.mobileIsVoucher != null && company.mobileIsVoucher == "1";
         alert = "Vouchers are temporary disabled.";
-        key = serviceKey;
         break;
       case 'mobile_is_event':
         perForm = company.mobileIsEvent != null && company.mobileIsEvent == "1";
         alert = "Events are temporary disabled.";
-        key = serviceKey;
         break;
       case 'mobile_chat_disabled':
         perForm = company.mobileChatDisabled != null &&
             company.mobileChatDisabled != "0";
         alert = "New Chat is temporary disabled.";
-        key = serviceKey;
         break;
       default:
         perForm = true;
-        key = serviceKey;
+        alert = 'Service is temporary disabled.';
         break;
     }
   }
-  print('checkServiceEnableORDisable $key ${company?.mobileIsSubscription}');
+  warningLog(
+      'checkServiceEnableORDisable key: $key perform: $perForm alert: $alert',
+      'checkServiceEnableORDisable');
   if (!perForm) {
     Fluttertoast.showToast(msg: alert ?? '');
     return;

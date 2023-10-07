@@ -33,6 +33,8 @@ class SupportProvider extends ChangeNotifier {
   int hold_ticket = 0;
   int closed_ticket = 0;
   bool loadingTickets = false;
+  int supportPage = 0;
+  int totalTickets = 0;
 
   //get tickets
   Future<void> getTickets([bool? loading]) async {
@@ -81,12 +83,20 @@ class SupportProvider extends ChangeNotifier {
     try {
       if (map != null) {
         try {
-          tickets.clear();
           if (map['ticket_list'] != false && map['ticket_list'].isNotEmpty) {
+            List<TicketModel> _tickets = [];
             map['ticket_list']
-                .forEach((e) => tickets.add(TicketModel.fromJson(e)));
+                .forEach((e) => _tickets.add(TicketModel.fromJson(e)));
+            if (supportPage == 0) {
+              tickets.clear();
+              tickets = _tickets;
+            } else {
+              tickets.addAll(_tickets);
+            }
+            totalTickets = map['total_tickets'] ?? 0;
             tickets.sort((a, b) => (b.lastreply ?? b.date ?? '')
                 .compareTo(a.lastreply ?? a.date ?? ''));
+            supportPage++;
             notifyListeners();
           }
         } catch (e) {

@@ -50,3 +50,9 @@ class CommissionWalletHistory {
     return data;
   }
 }
+
+class HistoryWithDate<T> {
+  DateTime? date;
+  List<T> list;
+  HistoryWithDate({this.date, required this.list});
+}

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/commission_wallet_history_model.dart';
 import '/providers/auth_provider.dart';
 import '/providers/commission_wallet_provider.dart';
-import '/screens/drawerPages/commission_wallet/commission_transfer_to_cash_wallet.dart';
-import '/screens/drawerPages/commission_wallet/commission_withdraw_request.dart';
+import '../commission_wallet/commission_transfer_to_cash_wallet.dart';
+import '../commission_wallet/commission_withdraw_request.dart';
 import '/sl_container.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/picture_utils.dart';
@@ -15,7 +16,7 @@ import '/utils/skeleton.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utils/color.dart';
+import '../../../../utils/color.dart';
 
 class CommissionWalletPage extends StatefulWidget {
   const CommissionWalletPage({Key? key}) : super(key: key);
@@ -26,17 +27,30 @@ class CommissionWalletPage extends StatefulWidget {
 
 class _CommissionWalletPageState extends State<CommissionWalletPage> {
   var currencyIcon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+  late CommissionWalletProvider provider;
   @override
   void initState() {
-    sl.get<CommissionWalletProvider>().getCommissionWallet();
+    provider = sl.get<CommissionWalletProvider>();
+    provider.getCommissionWallet(true);
     super.initState();
   }
 
   @override
   void dispose() {
-    sl.get<CommissionWalletProvider>().btn_transfer = false;
-    sl.get<CommissionWalletProvider>().btn_withdraw = false;
+    provider.btn_transfer = false;
+    provider.btn_withdraw = false;
+    provider.commissionWalletPage = 0;
+    provider.history.clear();
     super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getCommissionWallet();
+  }
+
+  Future<void> _refresh() async {
+    provider.commissionWalletPage = 0;
+    await provider.getCommissionWallet(true);
   }
 
   @override
@@ -56,14 +70,21 @@ class _CommissionWalletPageState extends State<CommissionWalletPage> {
                 opacity: 0.9,
               ),
             ),
-            child: CustomScrollView(
-              slivers: <Widget>[
-                buildSliverAppBar(size, provider),
-                (provider.loadingWallet || provider.history.isNotEmpty)
-                    ? buildSliverList(provider)
-                    : dataNotFound(context),
-              ],
-            ),
+            child: LoadMoreContainer(
+                finishWhen: provider.history.length >= provider.totalHistory,
+                onLoadMore: _loadMore,
+                onRefresh: _refresh,
+                builder: (scrollController, status) {
+                  return CustomScrollView(
+                    controller: scrollController,
+                    slivers: <Widget>[
+                      buildSliverAppBar(size, provider),
+                      (provider.loadingWallet || provider.history.isNotEmpty)
+                          ? buildSliverList(provider)
+                          : dataNotFound(context),
+                    ],
+                  );
+                }),
           ),
           bottomNavigationBar: (provider.btn_withdraw || provider.btn_transfer)
               ? buildBottomButtons(context, provider)

@@ -10,6 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../constants/app_constants.dart';
+import '../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/event_tickets_request_model.dart';
@@ -35,22 +36,28 @@ class EventTicketsPage extends StatefulWidget {
 }
 
 class _EventTicketsPageState extends State<EventTicketsPage> {
+  var provider = sl.get<EventTicketsProvider>();
   @override
   void initState() {
-    sl.get<EventTicketsProvider>().getEventTickets(true);
+    provider.getEventTickets(true);
     super.initState();
   }
 
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
-  void _onRefresh() async {
-    await sl.get<EventTicketsProvider>().getEventTickets(false);
-    _refreshController.refreshCompleted();
+  Future<void> _onRefresh() async {
+    provider.eventTicketsPage = 0;
+    await provider.getEventTickets(false);
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getEventTickets(false);
   }
 
   @override
   void dispose() {
-    _refreshController.dispose();
+    provider.eventTicketsPage = 0;
+    provider.loadingMyTickets = false;
+    provider.totalRequests = 0;
+    provider.ticketRequests.clear();
     super.dispose();
   }
 
@@ -71,51 +78,53 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                     image: userAppBgImageProvider(context),
                     fit: BoxFit.cover,
                     opacity: 1)),
-            child: SmartRefresher(
-              enablePullDown: true,
-              enablePullUp: false,
-              controller: _refreshController,
-              header: MaterialClassicHeader(),
-              onRefresh: _onRefresh,
-              child: CustomScrollView(
-                slivers: [
-                  // SliverAppBar(
-                  //   expandedHeight: Get.height * 0.3,
-                  //   collapsedHeight: kToolbarHeight,
-                  //   backgroundColor: Colors.transparent,
-                  //   iconTheme: IconThemeData(color: Colors.white),
-                  //   floating: true,
-                  //   pinned: true,
-                  //   leading: SizedBox(),
-                  //   flexibleSpace: FlexibleSpaceBar(
-                  //     collapseMode: CollapseMode.parallax,
-                  //     centerTitle: true,
-                  //     background: (provider.loadingMyTickets ||
-                  //             provider.myEvents.isNotEmpty)
-                  //         ? buildEventsList(provider)
-                  //         : buildNoEvents(context),
-                  //   ),
-                  // ),
-                  // SliverToBoxAdapter(child: Divider(color: Colors.white)),
-                  SliverToBoxAdapter(
-                      child: Container(
-                    height: Get.height * 0.3,
-                    child: (provider.loadingMyTickets ||
-                            provider.eventsList.isNotEmpty)
-                        // ? buildEventsList(provider)
-                        ? EventCards()
-                        : buildNoEvents(context),
-                  )),
-                  if (!provider.loadingMyTickets &&
-                      provider.ticketRequests.isEmpty)
-                    SliverToBoxAdapter(child: Divider(color: Colors.white54)),
-                  (provider.loadingMyTickets ||
-                          provider.ticketRequests.isNotEmpty)
-                      ? buildTicketList(provider, tColor)
-                      : buildEmptyTickets(context),
-                ],
-              ),
-            ),
+            child: LoadMoreContainer(
+                finishWhen:
+                    provider.ticketRequests.length >= provider.totalRequests,
+                onLoadMore: _loadMore,
+                onRefresh: _onRefresh,
+                builder: (scrollController, status) {
+                  return CustomScrollView(
+                    controller: scrollController,
+                    slivers: [
+                      // SliverAppBar(
+                      //   expandedHeight: Get.height * 0.3,
+                      //   collapsedHeight: kToolbarHeight,
+                      //   backgroundColor: Colors.transparent,
+                      //   iconTheme: IconThemeData(color: Colors.white),
+                      //   floating: true,
+                      //   pinned: true,
+                      //   leading: SizedBox(),
+                      //   flexibleSpace: FlexibleSpaceBar(
+                      //     collapseMode: CollapseMode.parallax,
+                      //     centerTitle: true,
+                      //     background: (provider.loadingMyTickets ||
+                      //             provider.myEvents.isNotEmpty)
+                      //         ? buildEventsList(provider)
+                      //         : buildNoEvents(context),
+                      //   ),
+                      // ),
+                      // SliverToBoxAdapter(child: Divider(color: Colors.white)),
+                      SliverToBoxAdapter(
+                          child: Container(
+                        height: Get.height * 0.3,
+                        child: (provider.loadingMyTickets ||
+                                provider.eventsList.isNotEmpty)
+                            // ? buildEventsList(provider)
+                            ? EventCards()
+                            : buildNoEvents(context),
+                      )),
+                      if (!provider.loadingMyTickets &&
+                          provider.ticketRequests.isEmpty)
+                        SliverToBoxAdapter(
+                            child: Divider(color: Colors.white54)),
+                      (provider.loadingMyTickets ||
+                              provider.ticketRequests.isNotEmpty)
+                          ? buildTicketList(provider, tColor)
+                          : buildEmptyTickets(context),
+                    ],
+                  );
+                }),
           ),
         );
       },
@@ -581,7 +590,7 @@ class EventDetailsPage extends StatelessWidget {
             padding: EdgeInsets.all(50),
             color: Color(0xFF1F1A40),
             child: Center(
-              child: QrImage(
+              child: QrImageView(
                 backgroundColor: Colors.white,
                 data: request.orderId ?? '',
                 version: QrVersions.auto,

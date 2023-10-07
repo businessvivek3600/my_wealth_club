@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import '../../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/fund_request_model.dart';
@@ -12,8 +13,8 @@ import '/utils/sizedbox_utils.dart';
 import '/utils/skeleton.dart';
 import 'package:provider/provider.dart';
 
-import '../../../utils/picture_utils.dart';
-import '../../../utils/text.dart';
+import '../../../../utils/picture_utils.dart';
+import '../../../../utils/text.dart';
 
 class CashWalletAddFundFromCardPayment extends StatefulWidget {
   const CashWalletAddFundFromCardPayment({Key? key}) : super(key: key);
@@ -25,12 +26,12 @@ class CashWalletAddFundFromCardPayment extends StatefulWidget {
 
 class _CashWalletAddFundFromCardPaymentState
     extends State<CashWalletAddFundFromCardPayment> {
+  var provider = sl.get<CashWalletProvider>();
   String _currentPaymentTypeVal = '';
   String _currentPaymentTypeKey = '';
   @override
   void initState() {
-    var provider = sl.get<CashWalletProvider>();
-    provider.getCardPaymentFundRequest().then((value) {
+    provider.getCardPaymentFundRequest(true).then((value) {
       setState(() {
         if (provider.paymentTypes.entries.isNotEmpty)
           _currentPaymentTypeKey = provider.paymentTypes.entries.first.key;
@@ -41,8 +42,19 @@ class _CashWalletAddFundFromCardPaymentState
 
   @override
   void dispose() {
-    sl.get<CashWalletProvider>().amountController.clear();
+    provider.amountController.clear();
+    provider.cardPaymentPage = 0;
+    provider.cardRequests.clear();
     super.dispose();
+  }
+
+  Future<void> _loadMore() async {
+    await provider.getCardPaymentFundRequest();
+  }
+
+  Future<void> _refresh() async {
+    provider.cardPaymentPage = 0;
+    await provider.getCardPaymentFundRequest(true);
   }
 
   bool isLoading = true;
@@ -73,9 +85,16 @@ class _CashWalletAddFundFromCardPaymentState
               image: userAppBgImageProvider(context),
               fit: BoxFit.cover,
               opacity: 0.5)),
-      child:
-          (provider.loadingCardRequestData || provider.cardRequests.isNotEmpty)
-              ? ListView.builder(
+      child: (provider.loadingCardRequestData ||
+              provider.cardRequests.isNotEmpty)
+          ? LoadMoreContainer(
+              finishWhen:
+                  provider.cardRequests.length >= provider.totalCardPayment,
+              onLoadMore: _loadMore,
+              onRefresh: _refresh,
+              builder: (scrollController, status) {
+                return ListView.builder(
+                  controller: scrollController,
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                   itemCount: !provider.loadingCardRequestData
                       ? provider.cardRequests.length
@@ -99,18 +118,19 @@ class _CashWalletAddFundFromCardPaymentState
                       ),
                     );
                   },
-                )
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    //TODO: dataNotFound
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                      child: assetLottie(Assets.dataNotFound),
-                    ),
-                    titleLargeText('Records not found', context)
-                  ],
+                );
+              })
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                //TODO: dataNotFound
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                  child: assetLottie(Assets.dataNotFound),
                 ),
+                titleLargeText('Records not found', context)
+              ],
+            ),
     );
   }
 
