@@ -36,7 +36,8 @@ class AuthProvider with ChangeNotifier {
 
   late UserData userData;
   CompanyInfoModel? companyInfo;
-  MCC_Content mcc_content = MCC_Content();
+  MWC_Content mwc_content = MWC_Content();
+  List<Cancellation> link_pages = [];
   String? default_referral_id;
   String? privacy;
   String? term;
@@ -218,11 +219,23 @@ class AuthProvider with ChangeNotifier {
         print('company info error on getSignUpInitialData $e');
       }
       try {
-        if (map['mcc_content'] != null && map['mcc_content'] != false)
-          mcc_content = MCC_Content.fromJson(map['mcc_content']);
+        if (map['mwc_content'] != null && map['mwc_content'] != false)
+          mwc_content = MWC_Content.fromJson(map['mwc_content']);
         notifyListeners();
       } catch (e) {
-        print('mcc_content error on getSignUpInitialData $e');
+        print('mwc_content error on getSignUpInitialData $e');
+      }
+      try {
+        if (map['link_pages'] != null && map['link_pages'] != false) {
+          link_pages.clear();
+          map['link_pages']
+              .forEach((e) => link_pages.add(Cancellation.fromJson(e)));
+        }
+
+        notifyListeners();
+      } catch (e) {
+        errorLog(
+            'link_pages error on getSignUpInitialData $e', 'Auth Provider');
       }
       try {
         if (map['countries'] != null && map['countries'].isNotEmpty) {

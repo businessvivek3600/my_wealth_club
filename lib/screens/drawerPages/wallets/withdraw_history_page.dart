@@ -14,6 +14,7 @@ import 'package:mycarclub/utils/text.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 
+import '../../../database/model/response/withdraw_req_his_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/commission_wallet_provider.dart';
 import '../../../sl_container.dart';
@@ -111,7 +112,7 @@ class _WithdrawRequestHistoryPageState
   }
 
   Container buildHeader(
-      HistoryWithDate<CommissionWalletHistory> item, BuildContext context) {
+      HistoryWithDate<WithdrawRequestHistoryModel> item, BuildContext context) {
     return Container(
       padding: EdgeInsetsDirectional.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -126,19 +127,31 @@ class _WithdrawRequestHistoryPageState
     );
   }
 
-  ListTile buildTile(BuildContext context, CommissionWalletHistory history) {
+  ListTile buildTile(
+      BuildContext context, WithdrawRequestHistoryModel history) {
+    String status = history.status ?? '0';
+    Color statusColor = status == '0'
+        ? Colors.amber
+        : status == '1'
+            ? Colors.green
+            : Colors.red;
+    String statusText = status == '0'
+        ? 'Pending'
+        : status == '1'
+            ? 'Approved'
+            : 'Rejected';
+    double amount = double.parse(history.amount ?? '0');
     return ListTile(
       leading:
           assetSvg(Assets.commissionWallet, width: 25, color: Colors.white70),
       title: bodyLargeText(
-          '$currencyIcon ${(Random().nextDouble() * 1000).toStringAsFixed(2)}',
-          context,
+          '$currencyIcon ${amount.toStringAsFixed(2)}', context,
           fontWeight: FontWeight.bold),
       subtitle: Row(
         children: [
-          Icon(Icons.circle, size: 10, color: Colors.green),
+          Icon(Icons.circle, size: 10, color: statusColor),
           width5(),
-          capText('Approved', context, color: Colors.green),
+          capText(statusText, context, color: statusColor),
           width20(),
           capText(formatDate(DateTime.parse(history.createdAt!), 'hh:mm a'),
               context,
@@ -151,9 +164,8 @@ class _WithdrawRequestHistoryPageState
     );
   }
 
-  void _showDetails(CommissionWalletHistory history) {
-    Get.to(
-        WithdrawRequesthHistoryDetailsPage(commissionWalletHistory: history));
+  void _showDetails(WithdrawRequestHistoryModel history) {
+    Get.to(WithdrawRequesthHistoryDetailsPage(history: history));
     // showDialog(
     //     context: context,
     //     builder: (context) {

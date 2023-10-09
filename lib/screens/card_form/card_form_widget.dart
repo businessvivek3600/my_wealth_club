@@ -278,7 +278,7 @@ class _CardFormWidgetState extends State<CardFormWidget> {
                       ],
                     ),
                 cacheManager: CacheManager(Config(
-                    "${AppConstants.appID}_${package.name}",
+                    "${AppConstants.packageID}_${package.name}",
                     stalePeriod: const Duration(days: 7)))),
           ),
         ],

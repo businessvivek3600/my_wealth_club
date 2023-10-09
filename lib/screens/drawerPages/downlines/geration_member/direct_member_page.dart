@@ -187,23 +187,23 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                           provider.directMemberPage = 0;
                           provider.directMemberSelectedStatus = null;
                           provider.loadingDirectMembers = true;
-                          provider.getDirectMembers();
+                          provider.getDirectMembers(true);
                         }
                       },
                     ),
                   )
                 : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       titleLargeText('Direct Members', context,
                           useGradient: true),
-                      height5(),
-                      capText(
-                          'Total: ${provider.totalDirectMembers.toString()}',
-                          context,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 10),
+                      // height5(),
+                      // capText(
+                      //     'Total: ${provider.totalDirectMembers.toString()}',
+                      //     context,
+                      //     color: Colors.white,
+                      //     fontWeight: FontWeight.w500,
+                      //     fontSize: 10),
                     ],
                   )),
         actions: [
@@ -223,6 +223,8 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                           provider.setSearchingDirectMembers(
                               !provider.isSearchingDirectMember);
                           provider.directMemberSearchController.clear();
+                          provider.directMemberPage = 0;
+                          provider.getDirectMembers(true);
                         },
                         icon: Icon(Icons.u_turn_left)),
                   ),
@@ -237,7 +239,24 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                 builder: (_) => _FilterGenerationMemberDialog(),
               );
             },
-            icon: Icon(Icons.filter_alt_outlined),
+            icon: Stack(
+              children: [
+                Icon(Icons.filter_alt_outlined),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    height: 5,
+                    width: 5,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: provider.directMemberSelectedStatus != null
+                            ? Colors.red
+                            : Colors.transparent),
+                  ),
+                )
+              ],
+            ),
           ),
         ]);
   }
@@ -379,58 +398,61 @@ class _FilterGenerationMemberDialogState
                   Divider(color: Colors.white),
                   // select joining date from calender
                   height10(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      titleLargeText('Joining Date :', context,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          useGradient: false),
-                      OutlinedButton(
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(double.minPositive, 30),
-                          side: BorderSide(color: Colors.white),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5)),
-                        ),
-                        onPressed: () async {
-                          DateTime? newDateTime = await showRoundedDatePicker(
-                            height: 300,
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2018),
-                            lastDate: DateTime(2030),
-                            theme: ThemeData(
-                              primaryColor: appLogoColor,
-                              accentColor: appLogoColor,
-                              colorScheme:
-                                  ColorScheme.light(primary: appLogoColor),
-                              buttonTheme: ButtonThemeData(
-                                  textTheme: ButtonTextTheme.primary),
-                            ),
-                          );
-                          setState(() {
-                            selectedDate = newDateTime;
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            Icon(Icons.calendar_month_rounded,
-                                color: Colors.white, size: 15),
-                            width10(),
-                            capText(
-                                selectedDate != null
-                                    ? formatDate(selectedDate!, 'dd MMM yyyy')
-                                    : 'Select Date',
-                                context,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  // select user status from slider
+
+                  /// select joining date from calender
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     titleLargeText('Joining Date :', context,
+                  //         color: Colors.white,
+                  //         fontWeight: FontWeight.bold,
+                  //         useGradient: false),
+                  //     OutlinedButton(
+                  //       style: ElevatedButton.styleFrom(
+                  //         minimumSize: Size(double.minPositive, 30),
+                  //         side: BorderSide(color: Colors.white),
+                  //         shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(5)),
+                  //       ),
+                  //       onPressed: () async {
+                  //         DateTime? newDateTime = await showRoundedDatePicker(
+                  //           height: 300,
+                  //           context: context,
+                  //           initialDate: DateTime.now(),
+                  //           firstDate: DateTime(2018),
+                  //           lastDate: DateTime(2030),
+                  //           theme: ThemeData(
+                  //             primaryColor: appLogoColor,
+                  //             accentColor: appLogoColor,
+                  //             colorScheme:
+                  //                 ColorScheme.light(primary: appLogoColor),
+                  //             buttonTheme: ButtonThemeData(
+                  //                 textTheme: ButtonTextTheme.primary),
+                  //           ),
+                  //         );
+                  //         setState(() {
+                  //           selectedDate = newDateTime;
+                  //         });
+                  //       },
+                  //       child: Row(
+                  //         children: [
+                  //           Icon(Icons.calendar_month_rounded,
+                  //               color: Colors.white, size: 15),
+                  //           width10(),
+                  //           capText(
+                  //               selectedDate != null
+                  //                   ? formatDate(selectedDate!, 'dd MMM yyyy')
+                  //                   : 'Select Date',
+                  //               context,
+                  //               color: Colors.white,
+                  //               fontWeight: FontWeight.bold),
+                  //         ],
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  //
+                  /// select user status from slider
                   height10(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -469,46 +491,46 @@ class _FilterGenerationMemberDialogState
                     ],
                   ),
 
-                  // text field for referrence id search
-                  height20(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      titleLargeText('Reference ID :', context,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          useGradient: false),
-                      Spacer(),
-                      Expanded(
-                        child: SizedBox(
-                          height: 30,
-                          child: TextFormField(
-                            autofocus: false,
-                            controller: refferenceIdController,
-                            cursorColor: Colors.white,
-                            style: TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                  borderSide: BorderSide(color: Colors.white)),
-                              enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                  borderSide: BorderSide(color: Colors.white)),
-                              focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(5),
-                                  borderSide: BorderSide(color: Colors.white)),
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 10),
-                              isDense: true,
-                              hintText: 'Search...',
-                              hintStyle:
-                                  TextStyle(color: fadeTextColor, fontSize: 12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  /// text field for referrence id search
+                  // height20(),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     titleLargeText('Reference ID :', context,
+                  //         color: Colors.white,
+                  //         fontWeight: FontWeight.bold,
+                  //         useGradient: false),
+                  //     Spacer(),
+                  //     Expanded(
+                  //       child: SizedBox(
+                  //         height: 30,
+                  //         child: TextFormField(
+                  //           autofocus: false,
+                  //           controller: refferenceIdController,
+                  //           cursorColor: Colors.white,
+                  //           style: TextStyle(color: Colors.white),
+                  //           decoration: InputDecoration(
+                  //             border: OutlineInputBorder(
+                  //                 borderRadius: BorderRadius.circular(5),
+                  //                 borderSide: BorderSide(color: Colors.white)),
+                  //             enabledBorder: OutlineInputBorder(
+                  //                 borderRadius: BorderRadius.circular(5),
+                  //                 borderSide: BorderSide(color: Colors.white)),
+                  //             focusedBorder: OutlineInputBorder(
+                  //                 borderRadius: BorderRadius.circular(5),
+                  //                 borderSide: BorderSide(color: Colors.white)),
+                  //             contentPadding: EdgeInsets.symmetric(
+                  //                 vertical: 5, horizontal: 10),
+                  //             isDense: true,
+                  //             hintText: 'Search...',
+                  //             hintStyle:
+                  //                 TextStyle(color: fadeTextColor, fontSize: 12),
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -525,10 +547,23 @@ class _FilterGenerationMemberDialogState
                           borderRadius: BorderRadius.circular(5)),
                     ),
                     onPressed: () {
+                      if (provider.directMemberSelectedStatus != null) {
+                        provider.directMemberSelectedDate = selectedDate;
+                        provider.directMemberSelectedStatus = null;
+                        provider.directMemberRefferenceIdController.text =
+                            refferenceIdController.text;
+                        provider.directMemberPage = 0;
+                        provider.getDirectMembers(true);
+                      }
                       Get.back();
                     },
-                    child: capText('Cancel', context,
-                        color: Colors.red, fontWeight: FontWeight.bold),
+                    child: capText(
+                        provider.directMemberSelectedStatus == null
+                            ? 'Cancel'
+                            : 'Clear Filter',
+                        context,
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
                 width20(),
@@ -548,7 +583,7 @@ class _FilterGenerationMemberDialogState
                       provider.directMemberPage = 0;
                       provider.directMembers.clear();
                       provider.loadingDirectMembers = true;
-                      provider.getDirectMembers();
+                      provider.getDirectMembers(true);
                       provider.directMemberSearchController.clear();
                       provider.setSearchingDirectMembers(false);
                       Get.back();

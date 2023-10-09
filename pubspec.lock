@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.1"
+  activity_ring:
+    dependency: "direct main"
+    description:
+      name: activity_ring
+      sha256: "1b74da7e997c23bd00f04158bb546ac6a13d8b61dc735d138fdc804f613a197c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0"
   analyzer:
     dependency: transitive
     description:
@@ -585,6 +593,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
+  floating_chat_button:
+    dependency: "direct main"
+    description:
+      name: floating_chat_button
+      sha256: da302464629036faa234f2d678b895190c3d5055897b8b4db5a734665aced172
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -1312,6 +1328,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.1"
+  percent_indicator:
+    dependency: "direct main"
+    description:
+      name: percent_indicator
+      sha256: c37099ad833a883c9d71782321cb65c3a848c21b6939b6185f0ff6640d05814c
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.3"
   petitparser:
     dependency: transitive
     description:

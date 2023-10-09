@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/model/response/additional/mcc_content_models.dart';
 import '../screens/drawerPages/downlines/my_incomes_page.dart';
 import '../screens/drawerPages/downlines/team_view/fancy_team_view.dart';
 import '../screens/drawerPages/wallets/withdraw_history_page.dart';
@@ -690,6 +691,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
     const String cancellationPolicy = 'Cancellation Policy';
     const String returnPolicy = 'Return Policy';
     const String aboutUs = 'About Us';
+    List<Cancellation> pages = authProvider.link_pages
+        .where((element) =>
+            element.headlines != null && element.headlines!.isNotEmpty)
+        .toList();
 
     return expansionTile(
       title: 'App Pages',
@@ -701,6 +706,43 @@ class _CustomDrawerState extends State<CustomDrawer> {
               dashBoardProvider.selectedDrawerTile == returnPolicy ||
               dashBoardProvider.selectedDrawerTile == aboutUs,
       children: [
+        //Link pages
+        Container(
+          width: double.maxFinite,
+          padding: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            // color: Colors.white.withOpacity(0.03),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10),
+            ),
+          ),
+          child: Column(children: [
+            ...pages.map((e) {
+              var page = e;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: DrawerTileItem(
+                  onTap: () async {
+                    Get.to(HtmlPreviewPage(
+                        title: e.headlines ?? '',
+                        message: e.details ?? '',
+                        file_url: ''));
+                  },
+                  leading: Assets.pages,
+                  title: e.headlines ?? '',
+                  width: size.width * 0.7,
+                  selected: dashBoardProvider.selectedDrawerTile ==
+                      (e.headlines ?? ''),
+                  opacity: 0.7,
+                ),
+              );
+            })
+          ]),
+        ),
+        // one - one pages
+
+/*
         Container(
           width: double.maxFinite,
           padding: const EdgeInsets.all(8),
@@ -727,63 +769,63 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       Widget page = buildDefaultPage();
                       // await future(1000);
                       if (e == privacyPolicy &&
-                          authProvider.mcc_content.privacy != null) {
+                          authProvider.mwc_content.privacy != null) {
                         Get.to(HtmlPreviewPage(
                           title: parseHtmlString(
-                              authProvider.mcc_content.privacy!.headlines ??
+                              authProvider.mwc_content.privacy!.headlines ??
                                   ""),
                           message:
-                              authProvider.mcc_content.privacy!.details ?? "",
+                              authProvider.mwc_content.privacy!.details ?? "",
                           file_url:
-                              authProvider.mcc_content.privacy!.image ?? "",
+                              authProvider.mwc_content.privacy!.image ?? "",
                         ));
                       } else if (e == termsAndConditions &&
-                          authProvider.mcc_content.termCondition != null) {
+                          authProvider.mwc_content.termCondition != null) {
                         Get.to(HtmlPreviewPage(
                           title: parseHtmlString(authProvider
-                                  .mcc_content.termCondition!.headlines ??
+                                  .mwc_content.termCondition!.headlines ??
                               ""),
                           message:
-                              authProvider.mcc_content.termCondition!.details ??
+                              authProvider.mwc_content.termCondition!.details ??
                                   "",
                           file_url:
-                              authProvider.mcc_content.termCondition!.image ??
+                              authProvider.mwc_content.termCondition!.image ??
                                   "",
                         ));
                       } else if (e == cancellationPolicy &&
-                          authProvider.mcc_content.cancellation != null) {
+                          authProvider.mwc_content.cancellation != null) {
                         Get.to(HtmlPreviewPage(
                           title: parseHtmlString(authProvider
-                                  .mcc_content.cancellation!.headlines ??
+                                  .mwc_content.cancellation!.headlines ??
                               ""),
                           message:
-                              authProvider.mcc_content.cancellation!.details ??
+                              authProvider.mwc_content.cancellation!.details ??
                                   "",
                           file_url:
-                              authProvider.mcc_content.cancellation!.image ??
+                              authProvider.mwc_content.cancellation!.image ??
                                   "",
                         ));
                       } else if (e == returnPolicy &&
-                          authProvider.mcc_content.returnPolicy != null) {
+                          authProvider.mwc_content.returnPolicy != null) {
                         Get.to(HtmlPreviewPage(
                             title: parseHtmlString(authProvider
-                                    .mcc_content.returnPolicy!.headlines ??
+                                    .mwc_content.returnPolicy!.headlines ??
                                 ""),
                             message: authProvider
-                                    .mcc_content.returnPolicy!.details ??
+                                    .mwc_content.returnPolicy!.details ??
                                 "",
                             file_url:
-                                authProvider.mcc_content.returnPolicy!.image ??
+                                authProvider.mwc_content.returnPolicy!.image ??
                                     ''));
                       } else if (e == aboutUs &&
-                          authProvider.mcc_content.returnPolicy != null) {
+                          authProvider.mwc_content.returnPolicy != null) {
                         Get.to(HtmlPreviewPage(
                             title: parseHtmlString(authProvider
-                                    .mcc_content.returnPolicy!.headlines ??
+                                    .mwc_content.returnPolicy!.headlines ??
                                 ""),
                             message: aboutUsHtml,
                             file_url:
-                                authProvider.mcc_content.returnPolicy!.image ??
+                                authProvider.mwc_content.returnPolicy!.image ??
                                     ''));
                       }
                     },
@@ -806,6 +848,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
             ],
           ),
         ),
+  */
       ],
     );
   }
@@ -964,7 +1007,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     errorWidget: (context, url, error) => SizedBox(
                         height: 70, child: assetImages(Assets.appWebLogoWhite)),
                     cacheManager: CacheManager(Config(
-                        "${AppConstants.appID}_app_dash_logo",
+                        "${AppConstants.packageID}_app_dash_logo",
                         stalePeriod: const Duration(days: 30))),
                   )),
               Spacer(flex: 1)
@@ -1198,13 +1241,17 @@ class _DrawerTileItemState extends State<DrawerTileItem>
                 children: [
                   assetSvg(widget.leading, color: Colors.white, width: 15),
                   width10(),
-                  bodyMedText(
-                    widget.title,
-                    context,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.bold,
-                    useGradient: true,
-                    opacity: widget.selected ? 1 : widget.opacity,
+                  Expanded(
+                    child: bodyMedText(
+                      widget.title,
+                      context,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.bold,
+                      useGradient: true,
+                      opacity: widget.selected ? 1 : widget.opacity,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   const Spacer(),
                   if (widget.trailing != null) widget.trailing!

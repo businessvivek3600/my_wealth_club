@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
 import 'package:graphview/GraphView.dart';
+import 'package:mycarclub/utils/default_logger.dart';
 import '/database/model/response/abstract_user_model.dart';
 import '../../../constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
@@ -240,46 +241,58 @@ class _MatrixTreeState extends State<_MatrixTree> {
   @override
   Widget build(BuildContext context) {
     return Consumer<TeamViewProvider>(builder: (context, provider, _) {
+      infoLog(
+          'getMatrixUsers provider.matrixUserErrorText ${provider.matrixUserErrorText}');
       return !loadingInitial
-          ? childrenMap.entries.isNotEmpty
-              ? LayoutBuilder(builder: (context, b) {
-                  print('b bound ${b.maxHeight} ${b.maxWidth}');
-                  return OrientationBuilder(builder: (context, orientation) {
-                    double margin =
-                        orientation == Orientation.landscape ? 50 : 0;
-                    return InteractiveViewer(
-                      constrained: false,
-                      boundaryMargin: EdgeInsets.only(
-                          left: margin, right: margin, bottom: margin),
-                      minScale: 1,
-                      maxScale: 10.6,
-                      scaleFactor: 100,
-                      onInteractionEnd: (details) {
-                        print('details ${details}');
-                      },
-                      panAxis: PanAxis.free,
-                      child: GraphView(
-                        graph: graph,
-                        algorithm: BuchheimWalkerAlgorithm(
-                            builder, TreeEdgeRenderer(builder)),
-                        paint: Paint()
-                          ..color = Colors.red
-                          ..strokeWidth = 0.5
-                          ..style = PaintingStyle.stroke,
-                        builder: (Node node) {
-                          // I can decide what widget should be shown here based on the id
-                          var a = node.key!.value as int?;
-                          MatrixUser source = MatrixUser();
-                          return LayoutBuilder(builder: (context, c) {
-                            print('c ${c.maxHeight} ${c.maxWidth}');
-                            return rectangleWidget(a, source);
-                          });
-                        },
-                      ),
-                    );
-                  });
-                })
-              : buildEmptyList(context)
+          ? provider.matrixUserErrorText == null
+              ? (childrenMap.entries.isNotEmpty
+                  ? LayoutBuilder(builder: (context, b) {
+                      print('b bound ${b.maxHeight} ${b.maxWidth}');
+                      return OrientationBuilder(
+                          builder: (context, orientation) {
+                        double margin =
+                            orientation == Orientation.landscape ? 50 : 0;
+                        return InteractiveViewer(
+                          constrained: false,
+                          boundaryMargin: EdgeInsets.only(
+                              left: margin, right: margin, bottom: margin),
+                          minScale: 1,
+                          maxScale: 10.6,
+                          scaleFactor: 100,
+                          onInteractionEnd: (details) {
+                            print('details ${details}');
+                          },
+                          panAxis: PanAxis.free,
+                          child: GraphView(
+                            graph: graph,
+                            algorithm: BuchheimWalkerAlgorithm(
+                                builder, TreeEdgeRenderer(builder)),
+                            paint: Paint()
+                              ..color = Colors.red
+                              ..strokeWidth = 0.5
+                              ..style = PaintingStyle.stroke,
+                            builder: (Node node) {
+                              // I can decide what widget should be shown here based on the id
+                              var a = node.key!.value as int?;
+                              MatrixUser source = MatrixUser();
+                              return LayoutBuilder(builder: (context, c) {
+                                print('c ${c.maxHeight} ${c.maxWidth}');
+                                return rectangleWidget(a, source);
+                              });
+                            },
+                          ),
+                        );
+                      });
+                    })
+                  : buildEmptyList(context))
+              : Column(
+                  children: [
+                    Expanded(child: assetImages(Assets.mlm)),
+                    height20(),
+                    capText(provider.matrixUserErrorText ?? '', context),
+                    height20(),
+                  ],
+                )
           : Center(child: CircularProgressIndicator(color: appLogoColor));
     });
   }

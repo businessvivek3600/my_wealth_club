@@ -362,7 +362,7 @@ class _BuyEventTicketState extends State<BuyEventTicket>
                     color: appLogoColor.withOpacity(0.5)))),
         errorWidget: (context, url, error) => assetImages(Assets.noImage),
         cacheManager: CacheManager(Config(
-            "${AppConstants.appID}_${widget.event.eventName}",
+            "${AppConstants.packageID}_${widget.event.eventName}",
             stalePeriod: const Duration(days: 7))));
   }
 }

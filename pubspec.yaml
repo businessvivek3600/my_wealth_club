@@ -118,6 +118,9 @@ dependencies:
   pdf: ^3.10.1
   printing: ^5.10.4
   open_file: ^3.3.2
+  floating_chat_button: ^1.0.1
+  percent_indicator: ^4.2.3
+  activity_ring: ^0.3.0
 
 
 

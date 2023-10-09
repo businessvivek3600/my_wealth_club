@@ -88,8 +88,9 @@ class _SplashScreenState extends State<SplashScreen> {
         bool isBiometric = sl.get<SettingsRepo>().getBiometric();
         if (isBiometric) {
           AppLockAuthentication.authenticate().then((value) {
+            infoLog('authenticate: authStatus: $value', tag, 'checkLogin');
             if (value[0] == AuthStatus.available) {
-              if (value[1] == AuthStatus.authenticated) {
+              if (value[1] == AuthStatus.success) {
                 Get.offAll(MainPage());
               } else {
                 exitTheApp();

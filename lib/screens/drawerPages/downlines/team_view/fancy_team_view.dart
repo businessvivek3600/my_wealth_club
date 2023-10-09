@@ -117,20 +117,6 @@ class _FancyTeamViewUIState extends State<FancyTeamViewUI> {
 
 class FancyTeamViewTreeUiProvider extends ChangeNotifier {}
 
-class Data {
-  static const Data root = Data._root();
-
-  const Data._root()
-      : id = 0,
-        title = '/';
-
-  static int _uniqueId = 1;
-  Data(this.title) : id = _uniqueId++;
-
-  final int id;
-  final String title;
-}
-
 class LazyLoadingTreeView extends StatefulWidget {
   const LazyLoadingTreeView({super.key, this.indent = 40});
   final double indent;
@@ -309,7 +295,9 @@ class _LazyLoadingTreeViewState extends State<LazyLoadingTreeView> {
                       ? !noChildren
                           ? buildAnimatedTreeView(context)
                           : buildEmptyList(context)
-                      : Center(child: CircularProgressIndicator())),
+                      : Center(
+                          child:
+                              CircularProgressIndicator(color: Colors.white))),
             ],
           ),
         ),

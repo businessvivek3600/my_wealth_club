@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:activity_ring/activity_ring.dart';
 import 'package:banner_carousel/banner_carousel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:floating_chat_button/floating_chat_button.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,7 +17,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
 import 'package:mycarclub/database/repositories/settings_repo.dart';
+import 'package:mycarclub/tawk_chat_page_test.dart';
 import 'package:mycarclub/widgets/app_lock_auth_suggest_view.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import '/database/model/response/videos_model.dart';
 import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/screens/drawerPages/event_tickets/buy_ticket_Page.dart';
@@ -225,136 +229,190 @@ class _MainPageState extends State<MainPage>
                 key: widget.dashScaffoldKey,
                 backgroundColor: Colors.transparent,
                 drawer: CustomDrawer(),
-                body: Container(
-                  height: double.maxFinite,
-                  width: double.maxFinite,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                        image: userAppBgImageProvider(context),
-                        fit: BoxFit.cover,
-                        opacity: 1),
-                  ),
-                  child: Stack(
-                    children: [
-                      SafeArea(
-                        child: Column(
-                          children: [
-                            buildAppLogo(dashBoardProvider),
-                            Expanded(
-                              child: SmartRefresher(
-                                enablePullDown: true,
-                                enablePullUp: false,
-                                controller: _refreshController,
-                                header: MaterialClassicHeader(),
-                                onRefresh: _onRefresh,
-                                // footer:null,
-                                child: SingleChildScrollView(
-                                  physics: const BouncingScrollPhysics(),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      height10(),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          AppLockAuthSuggestionWidget(
-                                            showSuggestion: sl
-                                                .get<SettingsRepo>()
-                                                .getBiometric(),
-                                            margin:
-                                                EdgeInsetsDirectional.symmetric(
-                                                    horizontal: 8),
-                                            backgroundColor: Colors.white12,
-                                          ),
-                                          buildAccountStatistics(context,
-                                              authProvider, dashBoardProvider),
-                                          _buildTeamBuildingReferralLink(
-                                              context, dashBoardProvider),
-                                          height10(),
-
-                                          // _buildPlaceholderIdField(
-                                          //     context, dashBoardProvider),
-                                          // height10(),
-                                          // GestureDetector(
-                                          //   onTap: () =>
-                                          //       _showBottomSheet(context),
-                                          //   child: buildQRCodeContainer(
-                                          //       dashBoardProvider),
-                                          // ),
-
-                                          // Trading view,
-                                          buildTradingViewWidget(
-                                              context, size, dashBoardProvider),
-                                          // height10(),
-                                          // platinum member logo
-
-                                          // Upcommin Events,
-                                          if (dashboardProvider
-                                                      .wevinarEventVideo !=
-                                                  null &&
-                                              dashboardProvider
-                                                      .wevinarEventVideo!
-                                                      .status ==
-                                                  '1')
-                                            Column(
-                                              children: [
-                                                buildUpcomingEvents(context,
-                                                    size, dashBoardProvider),
-                                                // height20(),
-                                              ],
-                                            ),
-                                          // platinum member logo
-                                          // GestureDetector(
-                                          //   onTap: () =>
-                                          //       Get.to(YoutubePlayerDemoApp()),
-                                          //   child: buildPlatinumMemberLogo(
-                                          //       dashBoardProvider),
-                                          // ),
-                                          // buildSubscriptionStatusBar(
-                                          //     context, dashBoardProvider),
-                                          // height30(),
-                                        ],
-                                      ),
-                                      buildSubscriptionHistory(context, size,
-                                          dashBoardProvider, authProvider),
-                                      height20(),
-                                      // Accademic Video
-                                      buildAccademicVideo(context),
-                                      height20(),
-                                      // buildCardFeatureListview(
-                                      //     context, size, dashBoardProvider),
-                                      buildCommissionActivity(
-                                          context, size, dashBoardProvider),
-                                      height20(),
-                                      ...buildTargetProgressCards(
-                                          dashBoardProvider),
-                                      ...buildTiers(context, dashBoardProvider),
-                                      height20(),
-                                      buildEventsTicketCard(context),
-                                      height100(),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // buildDrawerMenuButton(dashBoardProvider),
-                      // buildSQRCodeContainer(dashBoardProvider),
-                    ],
-                  ),
+                body: Stack(
+                  children: [
+                    buildBody(context, dashBoardProvider, authProvider, size),
+                    buildTawkChatButton(authProvider),
+                  ],
                 ),
                 floatingActionButton: authProvider.userData.kyc != '1'
                     ? buildKYCButton(dashBoardProvider)
                     : null,
+                // floatingActionButton: GestureDetector(
+                //   onTap: () => Get.to(TawkChatPage(
+                //       username: authProvider.userData.username ?? '',
+                //       email: authProvider.userData.customerEmail ?? '')),
+                //   child: Container(
+                //     padding: EdgeInsets.all(20),
+                //     color: redDark,
+                //     child: Container(
+                //       padding: EdgeInsets.all(10),
+                //       decoration: BoxDecoration(
+                //         color: Color(0xFF03A84E),
+                //         shape: BoxShape.circle,
+                //       ),
+                //       child: assetSvg(Assets.chat, width: 15),
+                //     ),                //   ),
+                // ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Widget buildTawkChatButton(AuthProvider authProvider) {
+    return FloatingChatButton(
+      shouldPutWidgetInCircle: false,
+      chatIconBackgroundColor: Colors.transparent,
+      chatIconBorderWidth: 0,
+      chatIconBorderColor: Colors.transparent,
+      chatIconColor: Colors.transparent,
+      chatIconVerticalOffset: 120,
+      chatIconHorizontalOffset: 5,
+      onTap: (ctx) => print('Floating Chat Button Tapped!'),
+      chatIconWidget: GestureDetector(
+        onTap: () => Get.to(TawkChatPage()),
+        child: Stack(
+          children: [
+            Container(
+              padding:
+                  EdgeInsets.only(left: 20, top: 20, bottom: 10, right: 10),
+              // color: redDark,
+              child: Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    color: Color(0xFF03A84E), shape: BoxShape.circle),
+                child: assetSvg(Assets.chat, width: 15),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              left: 0,
+              child: assetImages('168-r-br.png'),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Container buildBody(BuildContext context, DashBoardProvider dashBoardProvider,
+      AuthProvider authProvider, Size size) {
+    return Container(
+      height: double.maxFinite,
+      width: double.maxFinite,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+            image: userAppBgImageProvider(context),
+            fit: BoxFit.cover,
+            opacity: 1),
+      ),
+      child: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                buildAppLogo(dashBoardProvider),
+                Expanded(
+                  child: SmartRefresher(
+                    enablePullDown: true,
+                    enablePullUp: false,
+                    controller: _refreshController,
+                    header: MaterialClassicHeader(),
+                    onRefresh: _onRefresh,
+                    // footer:null,
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          height10(),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppLockAuthSuggestionWidget(
+                                showSuggestion:
+                                    sl.get<SettingsRepo>().getBiometric(),
+                                margin: EdgeInsetsDirectional.symmetric(
+                                    horizontal: 8),
+                                backgroundColor: Colors.white12,
+                              ),
+                              buildAccountStatistics(
+                                  context, authProvider, dashBoardProvider),
+                              _buildTeamBuildingReferralLink(
+                                  context, dashBoardProvider),
+                              height10(),
+
+                              // _buildPlaceholderIdField(
+                              //     context, dashBoardProvider),
+                              // height10(),
+                              // GestureDetector(
+                              //   onTap: () =>
+                              //       _showBottomSheet(context),
+                              //   child: buildQRCodeContainer(
+                              //       dashBoardProvider),
+                              // ),
+
+                              // Trading view,
+                              buildTradingViewWidget(
+                                  context, size, dashBoardProvider),
+                              // height10(),
+                              // platinum member logo
+
+                              // Upcommin Events,
+                              if (dashboardProvider.wevinarEventVideo != null &&
+                                  dashboardProvider.wevinarEventVideo!.status ==
+                                      '1')
+                                Column(
+                                  children: [
+                                    buildUpcomingEvents(
+                                        context, size, dashBoardProvider),
+                                    // height20(),
+                                  ],
+                                ),
+                              // platinum member logo
+                              // GestureDetector(
+                              //   onTap: () =>
+                              //       Get.to(YoutubePlayerDemoApp()),
+                              //   child: buildPlatinumMemberLogo(
+                              //       dashBoardProvider),
+                              // ),
+                              // buildSubscriptionStatusBar(
+                              //     context, dashBoardProvider),
+                              // height30(),
+                            ],
+                          ),
+                          buildSubscriptionHistory(
+                              context, size, dashBoardProvider, authProvider),
+                          height20(),
+                          // Accademic Video
+                          buildAccademicVideo(context),
+                          height20(),
+                          // buildCardFeatureListview(
+                          //     context, size, dashBoardProvider),
+                          buildCommissionActivity(
+                              context, size, dashBoardProvider),
+                          height20(),
+                          ...buildTargetProgressCards(dashBoardProvider),
+                          ...buildTiers(context, dashBoardProvider),
+                          height20(),
+                          buildEventsTicketCard(context),
+                          height100(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // buildDrawerMenuButton(dashBoardProvider),
+          // buildSQRCodeContainer(dashBoardProvider),
+        ],
+      ),
     );
   }
 
@@ -650,7 +708,7 @@ class _MainPageState extends State<MainPage>
                       height: 70, child: assetImages(Assets.appWebLogoWhite)),
                   cacheManager: CacheManager(
                     Config(
-                      "${AppConstants.appID}_app_dash_logo",
+                      "${AppConstants.packageID}_app_dash_logo",
                       stalePeriod: const Duration(days: 1),
                     ),
                   ),
@@ -1098,9 +1156,10 @@ class _MainPageState extends State<MainPage>
     } catch (e) {
       expiryDate = null;
     }
+    double remaining = 100 - dashBoardProvider.subs_per.toDouble();
     return (dashBoardProvider.loadingDash || dashBoardProvider.subscriptionVal)
         ? Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(16),
             margin: const EdgeInsets.only(left: 8, right: 8, top: 20),
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10), color: Colors.white10),
@@ -1108,81 +1167,154 @@ class _MainPageState extends State<MainPage>
                 ? Column(
                     children: [
                       if (dashBoardProvider.subscriptionVal)
-                        Column(
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            RichText(
-                              text: TextSpan(
-                                  text: 'Your subscription will expire on',
-                                  children: [
-                                    if (expiryDate != null)
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                    text: 'Your subscription will expire on',
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
+                                    children: [
+                                      if (expiryDate != null)
+                                        TextSpan(
+                                            text:
+                                                ' ${formatDate(expiryDate, 'dd MMMM yyyy')} ',
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold)),
                                       TextSpan(
-                                          text:
-                                              ' ${formatDate(expiryDate, 'dd MMMM yyyy')} ',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold)),
-                                    TextSpan(
-                                      text: '. ',
-                                    ),
-                                    TextSpan(
-                                      text: 'Upgrade Now',
-                                      style: TextStyle(
-                                          color: appLogoColor,
-                                          decoration: TextDecoration.underline,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          Get.to(SubscriptionPage(
-                                              initPurchaseDialog: true));
-                                        },
-                                    ),
-                                    TextSpan(
-                                      text: ' to keep trading.',
-                                    ),
-                                  ]),
+                                        text: '. ',
+                                      ),
+                                      TextSpan(
+                                        text: '\nUpgrade Now',
+                                        style: TextStyle(
+                                            color: appLogoColor,
+                                            decoration:
+                                                TextDecoration.underline,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                        recognizer: TapGestureRecognizer()
+                                          ..onTap = () {
+                                            Get.to(SubscriptionPage(
+                                                initPurchaseDialog: true));
+                                          },
+                                      ),
+                                      TextSpan(
+                                        text: ' to keep trading.',
+                                      ),
+                                    ]),
+                              ),
                             ),
-                            height10(),
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: FAProgressBar(
-                                    currentValue:
-                                        dashBoardProvider.subs_per.toDouble(),
-                                    size: 20,
-                                    maxValue: 100,
-                                    changeColorValue: 100,
-                                    changeProgressColor: appLogoColor,
+                            width10(),
+                            // CircularPercentIndicator(
+                            //   radius: 80.0,
+                            //   lineWidth: 15.0,
+                            //   animation: true,
+                            //   percent: 0.7,
+                            //   center: titleLargeText(
+                            //     '${remaining.toStringAsFixed(1) + '%'}\nremaining',
+                            //     context,
+                            //     useGradient: false,
+                            //     textAlign: TextAlign.center,
+                            //   ),
+                            // footer: Text(
+                            //   "Sales this week",
+                            //   style: TextStyle(
+                            //       fontWeight: FontWeight.bold,
+                            //       fontSize: 17.0),
+                            // ),
+                            //   circularStrokeCap: CircularStrokeCap.round,
+                            //   progressColor: Color(0xFF298AEF),
+                            //   backgroundColor: Colors.white30,
+                            // ),
+                            Container(
+                              // color: redDark,
+                              height: 150,
+                              width: 150,
+                              child: Ring(
+                                percent: remaining,
+                                color: RingColorScheme(
                                     backgroundColor: Colors.white30,
-                                    progressColor:
-                                        Color.fromARGB(255, 153, 233, 156),
-                                    animatedDuration:
-                                        const Duration(milliseconds: 300),
-                                    direction: Axis.horizontal,
-                                    verticalDirection: VerticalDirection.down,
-                                    displayText: '',
-                                    formatValueFixed: 1,
-                                    displayTextStyle: TextStyle(
-                                        fontSize: 0, color: Colors.white),
+                                    ringGradient: [
+                                      //color for danger
+                                      Colors.red,
+                                      //color for warning
+                                      Colors.yellow,
+                                      Colors.yellow,
+                                      //color for success
+                                      Colors.green,
+                                      Colors.green,
+                                      Colors.green,
+                                    ]),
+                                radius: 70,
+                                // showBackground: false,
+                                width: 15,
+                                child: Center(
+                                  child: titleLargeText(
+                                    '${remaining.toStringAsFixed(1) + '%'}\nremaining',
+                                    context,
+                                    useGradient: false,
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
-                                Positioned(
-                                  top: 0,
-                                  bottom: 0,
-                                  left: 0,
-                                  right: 0,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      capText(
-                                          '${dashBoardProvider.subs_per.toDouble().toStringAsFixed(1)} %',
-                                          context),
-                                    ],
-                                  ),
-                                )
-                              ],
+                                // footer: Text(
+                                //   "Sales this week",
+                                //   style: TextStyle(
+                                //       fontWeight: FontWeight.bold,
+                                //       fontSize: 17.0),
+                                // ),
+                                // circularStrokeCap: CircularStrokeCap.round,
+                                // progressColor: Color(0xFF298AEF),
+                                // backgroundColor: Colors.white30,
+                              ),
                             ),
+                            width10(),
+                            // Stack(
+                            //   children: [
+                            //     ClipRRect(
+                            //       borderRadius: BorderRadius.circular(10),
+                            //       child: FAProgressBar(
+                            //         currentValue: remaining,
+                            //         size: 20,
+                            //         maxValue: 100,
+                            //         changeColorValue: 100,
+                            //         changeProgressColor: appLogoColor,
+                            //         backgroundColor: Colors.white30,
+                            //         progressColor:
+                            //             Color.fromARGB(255, 153, 233, 156),
+                            //         animatedDuration:
+                            //             const Duration(milliseconds: 300),
+                            //         direction: Axis.horizontal,
+                            //         verticalDirection: VerticalDirection.down,
+                            //         displayText: '',
+                            //         formatValueFixed: 1,
+                            //         displayTextStyle: TextStyle(
+                            //             fontSize: 0, color: Colors.white),
+                            //       ),
+                            //     ),
+                            //     Positioned(
+                            //       top: 0,
+                            //       bottom: 0,
+                            //       left: 0,
+                            //       right: 0,
+                            //       child: Row(
+                            //         mainAxisAlignment: MainAxisAlignment.center,
+                            //         children: [
+                            //           capText(
+                            //             '${remaining.toStringAsFixed(1)} % remaining',
+                            //             context,
+                            //             color: Colors.black,
+                            //           ),
+                            //         ],
+                            //       ),
+                            //     )
+                            //   ],
+                            // ),
                           ],
                         ),
                     ],
@@ -2807,7 +2939,7 @@ class MainPageRewardImageCard extends StatelessWidget {
                           errorWidget: (context, url, error) =>
                               assetImages(Assets.noImage, width: 200),
                           cacheManager: CacheManager(Config(
-                              "${AppConstants.appID}_$title",
+                              "${AppConstants.packageID}_$title",
                               stalePeriod: const Duration(days: 7))),
                         ),
                         // child: Image.network(url),

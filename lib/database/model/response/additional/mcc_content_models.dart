@@ -1,13 +1,15 @@
-class MCC_Content {
+import 'package:mycarclub/database/functions.dart';
+
+class MWC_Content {
   Cancellation? cancellation;
   Cancellation? privacy;
   Cancellation? termCondition;
   Cancellation? returnPolicy;
 
-  MCC_Content(
+  MWC_Content(
       {this.cancellation, this.privacy, this.termCondition, this.returnPolicy});
 
-  MCC_Content.fromJson(Map<String, dynamic> json) {
+  MWC_Content.fromJson(Map<String, dynamic> json) {
     cancellation = json['cancellation'] != null
         ? new Cancellation.fromJson(json['cancellation'])
         : null;
@@ -39,6 +41,12 @@ class MCC_Content {
     return data;
   }
 }
+// {
+//   'cancellation':{},
+//   'privacy':{},
+//   'term_condition':{},
+//   'return':{}
+// }
 
 class Cancellation {
   String? linkPageId;
@@ -62,7 +70,7 @@ class Cancellation {
     linkPageId = json['link_page_id'];
     pageId = json['page_id'];
     languageId = json['language_id'];
-    headlines = json['headlines'];
+    headlines = parseHtmlString(json['headlines'] ?? '');
     image = json['image'];
     details = json['details'];
     status = json['status'];

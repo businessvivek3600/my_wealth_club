@@ -386,8 +386,9 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                           provider.generationAnalyzerSearchController.clear();
                           provider.setSelectedGeneration(0);
                           provider.generationAnalyzerPage = 0;
-                          provider.setGenerationUsers(
-                              authProvider.userData.username ?? '');
+                          provider.setGenerationUsers(index == 0
+                              ? authProvider.userData.username ?? ''
+                              : '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).child}');
                           scrollGeneration(provider.selectedGeneration);
                         },
                         onSelect: (index) {

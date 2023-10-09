@@ -8,6 +8,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mycarclub/database/functions.dart';
 import 'package:mycarclub/utils/default_logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -273,6 +274,7 @@ class Upgrader with WidgetsBindingObserver {
           print('upgrader: package info appName: ${_packageInfo!.appName}');
           print('upgrader: package info version: ${_packageInfo!.version}');
         }
+        appVersion = _packageInfo!.version;
       }
 
       _installedVersion = _packageInfo!.version;
@@ -1051,8 +1053,10 @@ class _DialogWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(messages.message(UpgraderMessage.releaseNotes) ?? '',
-                  style: TextStyle(color: _textColor,fontWeight: FontWeight.bold)),
-              Text(releaseNotes!, style: TextStyle(color: _textColor.withOpacity(0.9))),
+                  style: TextStyle(
+                      color: _textColor, fontWeight: FontWeight.bold)),
+              Text(releaseNotes!,
+                  style: TextStyle(color: _textColor.withOpacity(0.9))),
             ],
           ));
     }
@@ -1070,7 +1074,8 @@ class _DialogWidget extends StatelessWidget {
             Padding(
                 padding: const EdgeInsets.only(top: 15.0),
                 child: Text(messages.message(UpgraderMessage.prompt) ?? '',
-                    style:  TextStyle(fontWeight: FontWeight.normal,color: _textColor))),
+                    style: TextStyle(
+                        fontWeight: FontWeight.normal, color: _textColor))),
             if (notes != null) notes,
           ],
         )));

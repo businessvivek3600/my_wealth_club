@@ -103,7 +103,7 @@ class _AppLockAuthSuggestionWidgetState
   tryNow() {
     AppLockAuthentication.authenticate().then((value) {
       if (value[0] == AuthStatus.available) {
-        if (value[1] == AuthStatus.authenticated) {
+        if (value[1] == AuthStatus.success) {
           setCanTryNow(false);
           setCanLater(false);
           setDontShowAgain(true);

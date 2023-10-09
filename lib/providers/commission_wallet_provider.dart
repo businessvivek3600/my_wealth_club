@@ -4,6 +4,7 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/model/response/withdraw_req_his_model.dart';
 import 'package:mycarclub/utils/default_logger.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
@@ -347,17 +348,19 @@ class CommissionWalletProvider extends ChangeNotifier {
   int withdrawRequestHistoryPage = 0;
   int totalWithdrawRequestHistory = 0;
   bool loadingWithdrawRequestHistory = false;
-  List<HistoryWithDate<CommissionWalletHistory>> withdrawRequestHistory = [];
+  List<HistoryWithDate<WithdrawRequestHistoryModel>> withdrawRequestHistory =
+      [];
 
   Future<void> getWithdrawRequestHistory([bool loading = false]) async {
     bool cacheExist = await APICacheManager()
-        .isAPICacheKeyExist(AppConstants.commissionWallet);
+        .isAPICacheKeyExist(AppConstants.withdrawRequestHistory);
     Map? map;
     loadingWithdrawRequestHistory = loading;
     notifyListeners();
     if (isOnline) {
       ApiResponse apiResponse = await commissionWalletRepo
-          .getCommissionWallet({'page': withdrawRequestHistoryPage.toString()});
+          .withdrawRequestHistory(
+              {'page': withdrawRequestHistoryPage.toString()});
       infoLog('${apiResponse.response!.data}', 'getCommissionWalletHistory');
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
@@ -373,7 +376,7 @@ class CommissionWalletProvider extends ChangeNotifier {
           if (status) {
             try {
               var cacheModel = APICacheDBModel(
-                  key: AppConstants.commissionWallet,
+                  key: AppConstants.withdrawRequestHistory,
                   syncData: jsonEncode(map));
               await APICacheManager().addCacheData(cacheModel);
             } catch (e) {}
@@ -383,9 +386,9 @@ class CommissionWalletProvider extends ChangeNotifier {
         }
       }
     } else if (!isOnline && cacheExist) {
-      var cacheData =
-          (await APICacheManager().getCacheData(AppConstants.commissionWallet))
-              .syncData;
+      var cacheData = (await APICacheManager()
+              .getCacheData(AppConstants.withdrawRequestHistory))
+          .syncData;
       map = jsonDecode(cacheData);
     } else {
       print('getCommissionWalletHistory not online not cache exist ');
@@ -413,15 +416,14 @@ class CommissionWalletProvider extends ChangeNotifier {
         } catch (e) {}
 
         try {
-          totalWithdrawRequestHistory = int.parse(map['totalRows'] ?? '0');
-          if (map['wallet_history'] != null &&
-              map['wallet_history'].isNotEmpty) {
-            List<HistoryWithDate<CommissionWalletHistory>>
+          totalWithdrawRequestHistory = int.parse(map['total'] ?? '0');
+          if (map['requests'] != null && map['requests'].isNotEmpty) {
+            List<HistoryWithDate<WithdrawRequestHistoryModel>>
                 _withdrawRequestHistory = [];
 
-            map['wallet_history'].forEach((e) {
-              CommissionWalletHistory _history =
-                  CommissionWalletHistory.fromJson(e);
+            map['requests'].forEach((e) {
+              WithdrawRequestHistoryModel _history =
+                  WithdrawRequestHistoryModel.fromJson(e);
               DateTime _date = _history.createdAt != null
                   ? DateTime.parse(_history.createdAt!)
                   : DateTime(1970);
@@ -443,7 +445,7 @@ class CommissionWalletProvider extends ChangeNotifier {
                 list.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
               } else {
                 _withdrawRequestHistory.add(
-                    HistoryWithDate<CommissionWalletHistory>(
+                    HistoryWithDate<WithdrawRequestHistoryModel>(
                         date: _date, list: [_history]));
               }
             });

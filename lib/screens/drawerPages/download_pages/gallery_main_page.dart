@@ -38,8 +38,9 @@ class _GalleryMainPageState extends State<GalleryMainPage> {
       builder: (context, provider, child) {
         print(provider.loadingThumbnails);
         return Scaffold(
-          appBar:
-              AppBar(title: titleLargeText('Gallery', context,useGradient: true), elevation: 0),
+          appBar: AppBar(
+              title: titleLargeText('Gallery', context, useGradient: true),
+              elevation: 0),
           body: GridView.builder(
             padding: EdgeInsets.all(10),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -89,8 +90,7 @@ class _GalleryMainPageState extends State<GalleryMainPage> {
                                       width: 100,
                                       child: Center(
                                         child: CircularProgressIndicator(
-                                          color:
-                                              appLogoColor.withOpacity(0.5),
+                                          color: appLogoColor.withOpacity(0.5),
                                         ),
                                       ),
                                     ),
@@ -105,7 +105,7 @@ class _GalleryMainPageState extends State<GalleryMainPage> {
                                       ),
                                     ),
                                     cacheManager: CacheManager(Config(
-                                      "${AppConstants.appID}_${thumbnail.defaultImage}",
+                                      "${AppConstants.packageID}_${thumbnail.defaultImage}",
                                       stalePeriod: const Duration(days: 7),
                                       //one week cache period
                                     )),

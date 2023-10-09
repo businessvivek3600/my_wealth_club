@@ -36,6 +36,17 @@ class CommissionWalletRepo {
     }
   }
 
+  Future<ApiResponse> withdrawRequestHistory(Map<String, dynamic> map) async {
+    try {
+      Response response = await dioClient
+          .post(AppConstants.withdrawRequestHistory, token: true, data: map);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
   Future<ApiResponse> commissionWithdrawRequestSubmit(
       Map<String, dynamic> data) async {
     try {

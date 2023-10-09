@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mycarclub/constants/app_constants.dart';
 import 'package:mycarclub/providers/auth_provider.dart';
 import 'package:mycarclub/utils/color.dart';
 import 'package:mycarclub/utils/default_logger.dart';
@@ -20,13 +22,14 @@ import 'package:printing/printing.dart';
 
 import 'package:open_file/open_file.dart';
 
+import '../../../database/model/response/withdraw_req_his_model.dart';
 import '../../../sl_container.dart';
+import '../../../utils/picture_utils.dart';
 
 class WithdrawRequesthHistoryDetailsPage extends StatefulWidget {
-  const WithdrawRequesthHistoryDetailsPage(
-      {Key? key, this.commissionWalletHistory})
+  const WithdrawRequesthHistoryDetailsPage({Key? key, required this.history})
       : super(key: key);
-  final CommissionWalletHistory? commissionWalletHistory;
+  final WithdrawRequestHistoryModel history;
   @override
   _WithdrawRequesthHistoryDetailsPageState createState() =>
       new _WithdrawRequesthHistoryDetailsPageState();
@@ -52,34 +55,15 @@ class _WithdrawRequesthHistoryDetailsPageState
       appBar: AppBar(
           title:
               titleLargeText('Withdraw Details', context, useGradient: true)),
-      body: Container(
-        color: redDark,
-        child: PDFScreen(),
-      ),
-    );
-  }
-}
-
-class PDFViewerScaffold extends StatelessWidget {
-  const PDFViewerScaffold({super.key, required this.path});
-  final String path;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Document"),
-        actions: <Widget>[
-          IconButton(icon: Icon(Icons.share), onPressed: () {})
-        ],
-      ),
-      body: PDFScreen(),
+      body:
+          Container(color: redDark, child: PDFScreen(history: widget.history)),
     );
   }
 }
 
 class PDFScreen extends StatefulWidget {
-  const PDFScreen({Key? key}) : super(key: key);
-
+  const PDFScreen({Key? key, required this.history}) : super(key: key);
+  final WithdrawRequestHistoryModel history;
   @override
   PDFScreenState createState() {
     return PDFScreenState();
@@ -94,6 +78,7 @@ class PDFScreenState extends State<PDFScreen>
 
   var _hasData = false;
   var _pending = false;
+  String? pdfFileName;
 
   @override
   void initState() {
@@ -116,13 +101,17 @@ class PDFScreenState extends State<PDFScreen>
     //     setState(() {
     _hasData = true;
     _pending = false;
+    pdfFileName =
+        '${(widget.history.type ?? '') + (widget.history.createdAt ?? '') + '-' + Random().nextInt(1000000000).toString()}}';
+    infoLog('File Path: ${pdfFileName ?? ''}');
+
     // });
     // }
     // });
   }
 
   void _showPrintedToast(BuildContext context) {
-    Fluttertoast.showToast(msg: 'Preparing for print...');
+    Fluttertoast.showToast(msg: 'File saved.');
   }
 
   void _showSharedToast(BuildContext context) {
@@ -138,8 +127,8 @@ class PDFScreenState extends State<PDFScreen>
 
     final appDocDir = await getApplicationDocumentsDirectory();
     final appDocPath = appDocDir.path;
-    final file = File('$appDocPath/document.pdf');
-    print('Save as file ${file.path} ...');
+    final file = File(
+        '$appDocPath/${pdfFileName ?? DateTime.now().toIso8601String()}.pdf');
     await file.writeAsBytes(bytes);
     await OpenFile.open(file.path);
   }
@@ -155,14 +144,26 @@ class PDFScreenState extends State<PDFScreen>
     return Center(
       child: PdfPreview(
         maxPageWidth: 800,
-        build: (format) => generateInvoice(format),
+        build: (format) => generateInvoice(format, widget.history),
         actions: actions,
+        // useActions: false,
         allowPrinting: true,
         allowSharing: true,
         canDebug: false,
         canChangeOrientation: false,
+        canChangePageFormat: false,
         onPrinted: _showPrintedToast,
         onShared: _showSharedToast,
+        pdfFileName: pdfFileName,
+        shareActionExtraBody:
+            'I hope you find this document useful in your work 👨‍💻 👩‍💻. Download the application from the givel url ${AppConstants.getDownloadUrl()}',
+        shareActionExtraEmails: [
+          'Download the application from the givel url ${AppConstants.getDownloadUrl()}'
+        ],
+        shareActionExtraSubject: 'My Wealth Club',
+        scrollViewDecoration: BoxDecoration(
+            image: DecorationImage(
+                image: userAppBgImageProvider(context), fit: BoxFit.cover)),
       ),
     );
   }
@@ -196,12 +197,18 @@ class PDFScreenState extends State<PDFScreen>
   }
 }
 
-Future<Uint8List> generateInvoice(PdfPageFormat pageFormat) async {
+enum _PaymentType { usdtt, usdtb, bank, none }
+
+Future<Uint8List> generateInvoice(
+    PdfPageFormat pageFormat, WithdrawRequestHistoryModel history) async {
   final lorem = pw.LoremText();
 
   final products = <Product>[
-    Product('Withdraw Amount', lorem.sentence(4), 3.99, 2),
-    Product('Processing Charges (5%)', lorem.sentence(6), 15, 2),
+    Product('Withdraw Amount',
+        double.parse(history.amount ?? '0').toStringAsFixed(2)),
+    Product(
+        'Processing Charges (${double.parse(history.adminPer ?? '0').toStringAsFixed(1) + '%'})',
+        double.parse(history.adminCharge ?? '0').toStringAsFixed(2)),
     // Product('28375', lorem.sentence(4), 6.95, 3),
     // Product('95673', lorem.sentence(3), 49.99, 4),
     // Product('23763', lorem.sentence(2), 560.03, 1),
@@ -216,14 +223,44 @@ Future<Uint8List> generateInvoice(PdfPageFormat pageFormat) async {
     // Product('98387', lorem.sentence(5), 7.99, 2),
   ];
   var user = sl.get<AuthProvider>().userData;
+  String status = history.status ?? '0';
+  Color statusColor = status == '0'
+      ? Colors.amber
+      : status == '1'
+          ? Colors.green
+          : Colors.red;
+  String statusText = status == '0'
+      ? 'Pending'
+      : status == '1'
+          ? 'Approved'
+          : 'Rejected';
+
+  _PaymentType paymentType = history.paymentType == 'USDTT'
+      ? _PaymentType.usdtt
+      : history.paymentType == 'USDTB'
+          ? _PaymentType.usdtb
+          : history.paymentType == 'BANK'
+              ? _PaymentType.bank
+              : _PaymentType.none;
+  String paymentAddress = paymentType == _PaymentType.usdtt
+      ? 'USDT TRC20 Address: ${history.usdttAddress ?? ""}'
+      : paymentType == _PaymentType.usdtb
+          ? 'USDT BEP20 Address: ${history.usdtbAddress ?? ""}'
+          : paymentType == _PaymentType.bank
+              ? 'Bank: ${history.bank ?? ""}\n Account Holder Name: ${history.accountHolderName ?? ""}\n Account Number: ${history.accountNo ?? ""}\n IFSC Code: ${history.ifscCode ?? ""}'
+              : "";
 
   final invoice = Invoice(
-    invoiceNumber: '982347',
+    history: history,
+    status: statusText,
+    date: _formatDate(DateTime.parse(history.createdAt ?? '0')),
     products: products,
-    customerAddress: '54 rue de Rivoli\n75001 Paris, France',
+    statusColor: statusColor,
+    customerAddress:
+        '${user.customerAddress1 ?? user.customerAddress2 ?? ''}\n${user.city ?? ''}, ${user.state ?? ''} ${user.zip ?? ''}\n${user.countryText ?? ''}',
     customerName: user.customerName ?? '',
     paymentInfo:
-        '4509 Wiseman Street\nKnoxville, Tennessee(TN), 37929\n865-372-0425',
+        'Payment Type: ${paymentType.name.toUpperCase()}\n${paymentAddress}',
     tax: .15,
     baseColor: PdfColor.fromInt(appLogoColor.value),
     // baseColor: PdfColors.teal,
@@ -236,24 +273,30 @@ Future<Uint8List> generateInvoice(PdfPageFormat pageFormat) async {
 
 class Invoice {
   Invoice({
+    required this.history,
     required this.products,
     required this.customerName,
     required this.customerAddress,
-    required this.invoiceNumber,
+    required this.status,
+    required this.date,
     required this.tax,
     required this.paymentInfo,
     required this.baseColor,
     required this.accentColor,
+    required this.statusColor,
   });
 
   final List<Product> products;
   final String customerName;
   final String customerAddress;
-  final String invoiceNumber;
+  final String status;
+  final Color statusColor;
   final double tax;
   final String paymentInfo;
   final PdfColor baseColor;
   final PdfColor accentColor;
+  final String date;
+  final WithdrawRequestHistoryModel history;
 
   static const _darkColor = PdfColors.white;
   static const _lightColor = PdfColors.white;
@@ -262,15 +305,16 @@ class Invoice {
 
   PdfColor get _accentTextColor => baseColor.isLight ? _lightColor : _darkColor;
 
-  double get _total =>
-      products.map<double>((p) => p.total).reduce((a, b) => a + b);
-
-  double get _grandTotal => _total * (1 + tax);
-
   pw.MemoryImage? _logo;
 
   pw.MemoryImage? _bgShape;
   final textColor = PdfColor.fromInt(appLogoColor.value);
+
+  double fs1 = 12;
+  double fs2 = 14;
+  double fs3 = 16;
+  double fs4 = 18;
+  double fs5 = 20;
   Future<Uint8List> buildPdf(PdfPageFormat pageFormat) async {
     // Create a PDF document.
     final doc = pw.Document();
@@ -303,6 +347,7 @@ class Invoice {
         build: (context) => [
           pw.SizedBox(height: 20),
           _contentHeader(context),
+          pw.SizedBox(height: 20),
           _contentTable(context),
           pw.SizedBox(height: 20),
           _contentFooter(context),
@@ -338,7 +383,7 @@ class Invoice {
                       style: pw.TextStyle(
                         color: baseColor,
                         fontWeight: pw.FontWeight.bold,
-                        fontSize: 25,
+                        fontSize: fs5 * 1.5,
                       ),
                     ),
                   ),
@@ -352,19 +397,23 @@ class Invoice {
                     padding: const pw.EdgeInsets.only(
                         left: 40, top: 10, bottom: 10, right: 20),
                     alignment: pw.Alignment.centerLeft,
-                    height: 50,
+                    height: 60,
                     child: pw.DefaultTextStyle(
-                      style: pw.TextStyle(
-                        color: _accentTextColor,
-                        fontSize: 12,
-                      ),
+                      style:
+                          pw.TextStyle(color: _accentTextColor, fontSize: fs4),
                       child: pw.GridView(
                         crossAxisCount: 2,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 10,
                         children: [
-                          pw.Text('Invoice #'),
-                          pw.Text(invoiceNumber),
+                          pw.Text('Status'),
+                          pw.Text(
+                            status,
+                            style: pw.TextStyle(
+                                color: PdfColor.fromInt(statusColor.value)),
+                          ),
                           pw.Text('Date:'),
-                          pw.Text(_formatDate(DateTime.now())),
+                          pw.Text(date),
                         ],
                       ),
                     ),
@@ -403,7 +452,7 @@ class Invoice {
       children: [
         pw.Divider(color: pw.GridPaper.lineColor),
         pw.Text(
-          '© 2023 My Wealth Club. All Rights Reserved.',
+          '© ${DateTime.now().year} My Wealth Club. All Rights Reserved.',
           style: const pw.TextStyle(fontSize: 12, color: PdfColors.white),
         ),
       ],
@@ -414,6 +463,7 @@ class Invoice {
       PdfPageFormat pageFormat, pw.Font base, pw.Font bold, pw.Font italic) {
     return pw.PageTheme(
       pageFormat: pageFormat,
+      margin: pw.EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 20),
       theme: pw.ThemeData.withFont(base: base, bold: bold, italic: italic)
           .copyWith(),
       buildBackground: (context) => pw.FullPage(
@@ -437,7 +487,8 @@ class Invoice {
             margin: const pw.EdgeInsets.symmetric(horizontal: 20),
             height: 50,
             child: pw.FittedBox(
-              child: pw.Text('Total: ${_formatCurrency(_grandTotal)}',
+              child: pw.Text(
+                  'Total: ${_formatCurrency(double.parse(history.amount ?? '0'))}',
                   style: pw.TextStyle(
                       color: baseColor, fontStyle: pw.FontStyle.italic)),
             ),
@@ -456,7 +507,7 @@ class Invoice {
                         style: pw.TextStyle(
                           color: _darkColor,
                           fontWeight: pw.FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: fs4,
                         ),
                         children: [
                       const pw.TextSpan(
@@ -469,7 +520,7 @@ class Invoice {
                         text: customerAddress,
                         style: pw.TextStyle(
                           fontWeight: pw.FontWeight.normal,
-                          fontSize: 10,
+                          fontSize: fs3,
                         ),
                       ),
                     ])),
@@ -493,24 +544,24 @@ class Invoice {
               pw.Text(
                 'Thank you for your business',
                 style: pw.TextStyle(
-                  color: _darkColor,
-                  fontWeight: pw.FontWeight.bold,
-                ),
+                    color: _darkColor,
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: fs2),
               ),
               pw.Container(
                 margin: const pw.EdgeInsets.only(top: 20, bottom: 8),
                 child: pw.Text(
                   'Payment Info:',
                   style: pw.TextStyle(
-                    color: baseColor,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
+                      color: baseColor,
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: fs3),
                 ),
               ),
               pw.Text(
                 paymentInfo,
-                style: const pw.TextStyle(
-                  fontSize: 8,
+                style: pw.TextStyle(
+                  fontSize: fs1,
                   lineSpacing: 5,
                   color: _darkColor,
                 ),
@@ -538,7 +589,8 @@ class Invoice {
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text('Net Payable: '),
-                      pw.Text(_formatCurrency(_total)),
+                      pw.Text(_formatCurrency(
+                          double.parse(history.netPayable ?? '0'))),
                     ],
                   ),
                 ),
@@ -558,13 +610,15 @@ class Invoice {
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
+              pw.SizedBox(height: 30),
               pw.Container(
                 decoration: pw.BoxDecoration(
-                  border: pw.Border(top: pw.BorderSide(color: accentColor)),
+                  border: pw.Border(
+                      top: pw.BorderSide(color: accentColor, width: .5)),
                 ),
                 padding: const pw.EdgeInsets.only(top: 10, bottom: 4),
                 child: pw.Text(
-                  'Terms & Conditions',
+                  'CFO Signature',
                   style: pw.TextStyle(
                     fontSize: 12,
                     color: baseColor,
@@ -572,8 +626,9 @@ class Invoice {
                   ),
                 ),
               ),
+              pw.SizedBox(height: 10),
               pw.Text(
-                pw.LoremText().paragraph(40),
+                'Stamp & Signature',
                 textAlign: pw.TextAlign.justify,
                 style: const pw.TextStyle(
                   fontSize: 6,
@@ -593,7 +648,7 @@ class Invoice {
 
   pw.Widget _contentTable(pw.Context context) {
     const tableHeaders = [
-      'Type',
+      'Description',
       // 'Item Description',
       // 'Price',
       // 'Quantity',
@@ -617,8 +672,8 @@ class Invoice {
         1: pw.Alignment.centerRight,
       },
       headerStyle: pw.TextStyle(
-          color: _baseTextColor, fontSize: 10, fontWeight: pw.FontWeight.bold),
-      cellStyle: const pw.TextStyle(color: _darkColor, fontSize: 10),
+          color: _baseTextColor, fontSize: fs3, fontWeight: pw.FontWeight.bold),
+      cellStyle: pw.TextStyle(color: _darkColor, fontSize: fs2),
       rowDecoration: pw.BoxDecoration(
           border:
               pw.Border(bottom: pw.BorderSide(color: accentColor, width: .5))),
@@ -634,7 +689,9 @@ class Invoice {
 }
 
 String _formatCurrency(double amount) {
-  return '\$${amount.toStringAsFixed(2)}';
+  var icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+  var currency = NumberFormat.currency(symbol: icon, decimalDigits: 2);
+  return currency.format(amount);
 }
 
 String _formatDate(DateTime date) {
@@ -644,30 +701,24 @@ String _formatDate(DateTime date) {
 
 class Product {
   const Product(
-    this.sku,
     this.productName,
     this.price,
-    this.quantity,
   );
 
-  final String sku;
   final String productName;
-  final double price;
-  final int quantity;
-  double get total => price * quantity;
+  final String price;
 
   String getIndex(int index) {
     switch (index) {
       case 0:
-        return sku;
-      // case 1:
-      //   return productName;
+        // case 1:
+        return productName;
       // case 2:
       //   return _formatCurrency(price);
       // case 3:
       //   return quantity.toString();
       case 1:
-        return _formatCurrency(total);
+        return price;
     }
     return '';
   }

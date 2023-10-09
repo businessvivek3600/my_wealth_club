@@ -337,7 +337,7 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
                             errorWidget: (context, url, error) =>
                                 assetImages(Assets.noImage),
                             cacheManager: CacheManager(Config(
-                                "${AppConstants.appID}_${e.eventName}",
+                                "${AppConstants.packageID}_${e.eventName}",
                                 stalePeriod: const Duration(days: 7)))),
                         Positioned(
                           bottom: 0,
@@ -436,7 +436,7 @@ class EventCards extends StatelessWidget {
                             errorWidget: (context, url, error) =>
                                 assetImages(Assets.noImage),
                             cacheManager: CacheManager(Config(
-                              "${AppConstants.appID}_${e.eventName}",
+                              "${AppConstants.packageID}_${e.eventName}",
                               stalePeriod: const Duration(days: 7),
                               //one week cache period
                             )),
@@ -518,7 +518,7 @@ class EventDetailsPage extends StatelessWidget {
                         color: appLogoColor.withOpacity(0.5)))),
             errorWidget: (context, url, error) => assetImages(Assets.noImage),
             cacheManager: CacheManager(Config(
-              "${AppConstants.appID}_event_tickets_${request.image ?? ''}",
+              "${AppConstants.packageID}_event_tickets_${request.image ?? ''}",
               stalePeriod: const Duration(days: 7),
               //one week cache period
             )),

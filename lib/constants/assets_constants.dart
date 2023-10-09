@@ -8,6 +8,7 @@ class Assets {
   static const teamView = 'people-svgrepo-com.svg';
   static const teamMember = 'people-svgrepo-com_team_member.svg';
   static const layer = 'layers-svgrepo-com.svg';
+  static const chat = 'talk-chat.svg';
 
   static const analyzer = 'graph2-svgrepo-com.svg';
   static const subscription = 'subscriptions-svgrepo-com.svg';

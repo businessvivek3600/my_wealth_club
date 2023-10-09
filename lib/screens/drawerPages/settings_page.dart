@@ -197,7 +197,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void setAppLock() async {
     AppLockAuthentication.authenticate().then((value) {
       if (value[0] == AuthStatus.available) {
-        if (value[1] == AuthStatus.authenticated) {
+        if (value[1] == AuthStatus.success) {
           setState(() {
             biometric = !biometric;
             repo.setBiometric(biometric);
@@ -210,7 +210,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void deleteAccount() async {
     AppLockAuthentication.authenticate().then((value) async {
       if (value[0] == AuthStatus.available) {
-        if (value[1] == AuthStatus.authenticated) {
+        if (value[1] == AuthStatus.success) {
           showLoading();
           await Future.delayed(Duration(seconds: 3));
           Get.back();

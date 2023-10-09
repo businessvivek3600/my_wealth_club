@@ -518,10 +518,12 @@ class TeamViewProvider extends ChangeNotifier {
   }
 
 // get matrix user api
+  String? matrixUserErrorText;
 
   Future<List<MatrixUser>> getMatrixUsers(Map<String, dynamic> data) async {
     List<MatrixUser> matrixUsers = [];
-
+    matrixUserErrorText = null;
+    notifyListeners();
     Map? map;
     if (isOnline) {
       ApiResponse apiResponse = await teamViewRepo.matrixAnalyzer(data);
@@ -544,6 +546,11 @@ class TeamViewProvider extends ChangeNotifier {
     try {
       if (map != null) {
         try {
+          matrixUserErrorText = map['message'];
+          errorLog('getMatrixUsers error: $matrixUserErrorText');
+          notifyListeners();
+          if (matrixUserErrorText != null) return matrixUsers;
+
           if (map['client_tree'] != null && map['client_tree'].isNotEmpty) {
             matrixUsers.clear();
             map['client_tree']

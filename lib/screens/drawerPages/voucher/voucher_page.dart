@@ -478,7 +478,7 @@ class VoucherCarousel extends StatelessWidget {
                                   assetImages(Assets.noImage, fit: BoxFit.fill),
                             ),
                             cacheManager: CacheManager(Config(
-                                "${AppConstants.appID}_${package.giftImg ?? 'package.giftImg${package.name ?? ''}'}",
+                                "${AppConstants.packageID}_${package.giftImg ?? 'package.giftImg${package.name ?? ''}'}",
                                 stalePeriod: const Duration(days: 7))),
                           ),
                         ])))),
@@ -601,7 +601,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                                 errorWidget: (context, url, error) =>
                                     assetImages(Assets.noImage),
                                 cacheManager: CacheManager(Config(
-                                  "${AppConstants.appID}_${e}",
+                                  "${AppConstants.packageID}_${e}",
                                   stalePeriod: const Duration(days: 7),
                                   //one week cache period
                                 )),

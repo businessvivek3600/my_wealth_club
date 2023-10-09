@@ -10,7 +10,7 @@ enum AuthStatus {
   notDetermined,
   notAvailable,
   available,
-  authenticated,
+  success,
   failed,
   canceled,
   error
@@ -28,6 +28,8 @@ class AppLockAuthentication {
     var canCheckBiometrics = await checkBiometrics();
     if (canCheckBiometrics == AuthStatus.available) {
       var authStatus = await authenticateWithBiometrics();
+
+      infoLog('authenticate: authStatus: $authStatus', tag);
       return [canCheckBiometrics, authStatus];
     } else {
       return [canCheckBiometrics, AuthStatus.notAvailable];
@@ -81,11 +83,15 @@ class AppLockAuthentication {
       );
       infoLog(
           '_authenticateWithBiometrics: authenticated ? $authenticated', tag);
-      return authenticated ? AuthStatus.authenticated : AuthStatus.failed;
+      // return AuthStatus.success;
+      return authenticated ? AuthStatus.success : AuthStatus.failed;
     } on PlatformException catch (e) {
-      errorLog('PlatformException: ${e.message} s ${e}', tag,
+      errorLog('PlatformException: ${e.message} ${e.code} ${e}', tag,
           '_authenticateWithBiometrics');
-      if (e.code == 'NotAvailable') {
+      // await authenticateWithBiometrics();
+      if (e.code == 'auth_in_progress') {
+        await authenticateWithBiometrics();
+      } else if (e.code == 'NotAvailable') {
         Fluttertoast.showToast(msg: 'Biometric not available');
         return AuthStatus.notAvailable;
       } else if (e.code == 'NotEnrolled') {
@@ -104,7 +110,7 @@ class AppLockAuthentication {
         Fluttertoast.showToast(msg: 'Permanently locked out');
         return AuthStatus.failed;
       } else if (e.code == 'Other') {
-        Fluttertoast.showToast(msg: 'Unknown error');
+        Fluttertoast.showToast(msg: 'Biometric failed');
         return AuthStatus.error;
       }
       return AuthStatus.error;

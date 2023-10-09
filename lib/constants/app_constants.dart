@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class AppConstants {
   // static const String authorizationToken = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
   static const String authorizationToken = 'MyWealthClub@741852963';
@@ -8,7 +10,7 @@ class AppConstants {
 
   /// app settings
   static const bool testMode = false;
-  static const String appID = 'com.mywealthclub';
+  static const String packageID = 'com.mywealthclub';
   static const String appAppleStoreId = '6449289696';
   static const String testCanRun = 'testCanRun';
   static const String canRun = 'canRun';
@@ -73,6 +75,7 @@ class AppConstants {
   static const String commissionWallet = 'myWallet/commission-wallet';
   static const String getCommissionWithdrawRequest =
       'myWallet/add-commission-withdraw-request';
+  static const String withdrawRequestHistory = 'myWallet/withdraw-request';
   static const String getWithdrawEmailToken = 'myWallet/get-withdraw-email-otp';
   static const String commissionWithdrawRequestSubmit =
       'myWallet/commission-withdraw-request-submit';
@@ -133,6 +136,13 @@ class AppConstants {
 
   //local database name
   static const String notificationLocalDBName = 'trial7';
+
+  static String getDownloadUrl() {
+    String storeUrl = Platform.isAndroid
+        ? 'https://play.google.com/store/apps/details?id=$packageID'
+        : 'https://apps.apple.com/us/app/my-wealth-club/$appAppleStoreId';
+    return storeUrl;
+  }
 }
 
 class SPConstants {
