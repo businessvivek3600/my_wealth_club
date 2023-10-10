@@ -1,4 +1,4 @@
-import 'package:mycarclub/database/functions.dart';
+import '/database/functions.dart';
 
 class MWC_Content {
   Cancellation? cancellation;

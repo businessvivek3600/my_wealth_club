@@ -40,10 +40,8 @@ class SubscriptionRepo {
 
   Future<ApiResponse> buySubscription(Map<String, dynamic> data) async {
     try {
-      Response response = await dioClient.post(
-          AppConstants.subscriptionRequestHistory,
-          token: true,
-          data: data);
+      Response response = await dioClient.post(AppConstants.buySubscription,
+          token: true, data: data);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -66,6 +64,18 @@ class SubscriptionRepo {
   Future<ApiResponse> hitPaymentResponse(String url) async {
     try {
       Response response = await dioClient.get(url);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+//verify coupon
+
+  Future<ApiResponse> verifyCoupon(String url, Map<String, String> map) async {
+    try {
+      Response response = await dioClient.post(url, data: map, token: true);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {

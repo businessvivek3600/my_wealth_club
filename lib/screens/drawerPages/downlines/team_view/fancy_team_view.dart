@@ -3,7 +3,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mycarclub/utils/color.dart';
+import '/utils/color.dart';
 import 'package:path_drawing/path_drawing.dart';
 import 'package:provider/provider.dart';
 

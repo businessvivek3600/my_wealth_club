@@ -61,10 +61,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
         key: globalKey,
         backgroundColor: mainColor,
         appBar: AppBar(
-            title: titleLargeText(
-                'Team Members ${teamViewProvider.customerTeamMembers.length}/${teamViewProvider.totalTeamMembers} ${teamViewProvider.customerTeamMembers.length == teamViewProvider.totalTeamMembers}',
-                context,
-                useGradient: true)),
+            title: titleLargeText('Team Members', context, useGradient: true)),
         body: Container(
           height: double.maxFinite,
           width: double.maxFinite,

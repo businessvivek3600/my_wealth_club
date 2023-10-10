@@ -4,10 +4,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:loadmore/loadmore.dart';
-import 'package:mycarclub/database/model/response/income_activity_model.dart';
-import 'package:mycarclub/providers/dashboard_provider.dart';
-import 'package:mycarclub/sl_container.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/database/model/response/income_activity_model.dart';
+import '/providers/dashboard_provider.dart';
+import '/sl_container.dart';
+import '/utils/text.dart';
 import 'package:provider/provider.dart';
 import 'package:timelines/timelines.dart';
 

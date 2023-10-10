@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/constants/assets_constants.dart';
-import 'package:mycarclub/database/functions.dart';
-import 'package:mycarclub/database/model/response/commission_wallet_history_model.dart';
-import 'package:mycarclub/screens/drawerPages/wallets/commission_wallet/commission_withdraw_request.dart';
-import 'package:mycarclub/screens/drawerPages/wallets/withdraw_request_history_details_page.dart';
-import 'package:mycarclub/utils/color.dart';
-import 'package:mycarclub/utils/picture_utils.dart';
-import 'package:mycarclub/utils/sizedbox_utils.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/constants/assets_constants.dart';
+import '/database/functions.dart';
+import '/database/model/response/commission_wallet_history_model.dart';
+import '/screens/drawerPages/wallets/commission_wallet/commission_withdraw_request.dart';
+import '/screens/drawerPages/wallets/withdraw_request_history_details_page.dart';
+import '/utils/color.dart';
+import '/utils/picture_utils.dart';
+import '/utils/sizedbox_utils.dart';
+import '/utils/text.dart';
 import 'package:provider/provider.dart';
 import 'package:sticky_headers/sticky_headers/widget.dart';
 

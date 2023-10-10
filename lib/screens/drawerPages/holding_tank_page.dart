@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 import 'package:swipeable_tile/swipeable_tile.dart';
 import '../../database/functions.dart';
 import '../../database/model/response/base/user_model.dart';

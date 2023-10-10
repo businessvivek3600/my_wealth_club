@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mycarclub/utils/default_logger.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/utils/default_logger.dart';
+import '/utils/text.dart';
 
 enum LoadMoreStatus { idle, loading, error, done, noMore }
 

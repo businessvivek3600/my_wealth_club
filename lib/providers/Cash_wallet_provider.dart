@@ -4,7 +4,7 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 import '../utils/app_web_view_page.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
@@ -496,7 +496,7 @@ class CashWalletProvider extends ChangeNotifier {
                     // getVoucherList(false);
                   },
                 ));
-                errorLog('redirect result from webview $res');
+                warningLog('redirect result from webview $res');
                 // launchTheLink(redirectUrl!);
               }
               // if (currency != null && orderId != null) {
@@ -595,7 +595,7 @@ Future<void> hitPaymentResponse(
         bool status = false;
         String message = '';
         try {
-          status = map["status"];
+          status = map["status"] ?? false;
           if (map['is_logged_in'] == 0) {
             logOut('hitPaymentResponse');
           }
@@ -606,9 +606,8 @@ Future<void> hitPaymentResponse(
 
         if (status) {
           onSuccess != null ? await onSuccess() : null;
-          Get.back();
         } else {
-          Toasts.showErrorNormalToast(message);
+          if (message.isNotEmpty) Toasts.showErrorNormalToast(message);
         }
       }
     } else {

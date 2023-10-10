@@ -5,11 +5,11 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mycarclub/constants/app_constants.dart';
-import 'package:mycarclub/providers/auth_provider.dart';
-import 'package:mycarclub/utils/color.dart';
-import 'package:mycarclub/utils/default_logger.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/constants/app_constants.dart';
+import '/providers/auth_provider.dart';
+import '/utils/color.dart';
+import '/utils/default_logger.dart';
+import '/utils/text.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../database/model/response/commission_wallet_history_model.dart';

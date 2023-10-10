@@ -5,7 +5,7 @@ import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/database/model/response/trade_idea_model.dart';
+import '/database/model/response/trade_idea_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../sl_container.dart';

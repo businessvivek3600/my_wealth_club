@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/utils/default_logger.dart';
+import '/utils/default_logger.dart';
 
 import '../constants/assets_constants.dart';
 import '../utils/picture_utils.dart';

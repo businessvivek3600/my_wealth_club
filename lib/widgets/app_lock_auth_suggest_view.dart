@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mycarclub/database/repositories/settings_repo.dart';
-import 'package:mycarclub/sl_container.dart';
-import 'package:mycarclub/utils/app_lock_authentication.dart';
-import 'package:mycarclub/utils/color.dart';
-import 'package:mycarclub/utils/default_logger.dart';
-import 'package:mycarclub/utils/picture_utils.dart';
-import 'package:mycarclub/utils/sizedbox_utils.dart';
+import '/database/repositories/settings_repo.dart';
+import '/sl_container.dart';
+import '/utils/app_lock_authentication.dart';
+import '/utils/color.dart';
+import '/utils/default_logger.dart';
+import '/utils/picture_utils.dart';
+import '/utils/sizedbox_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/assets_constants.dart';

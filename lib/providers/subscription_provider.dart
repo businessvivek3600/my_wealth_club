@@ -4,8 +4,8 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/utils/app_web_view_page.dart';
-import 'package:mycarclub/utils/default_logger.dart';
+import '/utils/app_web_view_page.dart';
+import '/utils/default_logger.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/database/model/response/base/api_response.dart';
@@ -32,6 +32,9 @@ class SubscriptionProvider extends ChangeNotifier {
   double cashNBal = 0.0;
   bool customerRenewal = false;
   String? joiningPriceId;
+  String? tap_paymnet_return_url;
+  String? stripe_paymnet_success_url;
+  String? stripe_paymnet_cancel_url;
 
   ///subscription history
   bool loadingSub = false;
@@ -119,12 +122,24 @@ class SubscriptionProvider extends ChangeNotifier {
           print('SubscriptionPackage error $e');
         }
         try {
+          if (map['payment_return_url'] != null) {
+            tap_paymnet_return_url =
+                map['payment_return_url']?['tap']?['return'] ?? '';
+            stripe_paymnet_success_url =
+                map['payment_return_url']?['stripe']?['success'] ?? '';
+            stripe_paymnet_cancel_url =
+                map['payment_return_url']?['stripe']?['cancel'] ?? '';
+            successLog(
+                'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
+                'getSubscription');
+          }
+        } catch (e) {}
+        try {
           if (map['payment_type'] != null) {
             map['payment_type'].entries.toList().forEach(
                 (e) => _paymentTypes.addEntries([MapEntry(e.key, e.value)]));
             paymentTypes.clear();
             paymentTypes = _paymentTypes;
-
             notifyListeners();
           }
         } catch (e) {
@@ -214,11 +229,12 @@ class SubscriptionProvider extends ChangeNotifier {
 
   ///subscription selection
   TextEditingController typeController = TextEditingController();
-  TextEditingController voucherController = TextEditingController();
+  TextEditingController voucherCodeController = TextEditingController();
   SubscriptionPackage? selectedPackage;
   String? selectedPaymentTypeKey;
   setSelectedTypeKey(val) {
     selectedPaymentTypeKey = val;
+    couponVerified = null;
     notifyListeners();
   }
 
@@ -229,7 +245,12 @@ class SubscriptionProvider extends ChangeNotifier {
         ApiResponse apiResponse = await subscriptionRepo.buySubscription({
           "package": '${selectedPackage?.packageId ?? ' '}',
           "payment_type": selectedPaymentTypeKey ?? '',
-          "epin_code": voucherController.text
+          "epin_code": selectedPaymentTypeKey == 'E-Pin'
+              ? voucherCodeController.text
+              : '',
+          'coupon_code': selectedPaymentTypeKey != 'E-Pin'
+              ? voucherCodeController.text
+              : '',
         });
         infoLog('buySubscription online hit  ${apiResponse.response?.data}');
         Get.back();
@@ -256,9 +277,6 @@ class SubscriptionProvider extends ChangeNotifier {
             message = map["message"];
           } catch (e) {}
           try {
-            sl.get<AuthProvider>().updateUser(map["userData"]);
-          } catch (e) {}
-          try {
             if (orderId == null) {
               await getSubscription(false);
             }
@@ -270,10 +288,13 @@ class SubscriptionProvider extends ChangeNotifier {
                   allowBack: false,
                   allowCopy: false,
                   conditions: [
-                    'https://mywealthclub.com/api/customer/card-subscription-request-status'
+                    tap_paymnet_return_url ?? '',
+                    stripe_paymnet_success_url ?? '',
+                    stripe_paymnet_cancel_url ?? '',
                   ],
                   onResponse: (res) {
-                    print('request url matched <res> $res');
+                    successLog(
+                        'request url matched <res> $res', 'buySubscription');
                     Get.back();
                     hitPaymentResponse(
                         () => subscriptionRepo.hitPaymentResponse(res),
@@ -282,7 +303,8 @@ class SubscriptionProvider extends ChangeNotifier {
                     // getVoucherList(false);
                   },
                 ));
-                errorLog('redirect result from webview $res');
+                warningLog(
+                    'redirect result from webview $res', 'buySubscription');
                 // launchTheLink(redirectUrl!);
               }
               //else if (orderId != null) {
@@ -311,6 +333,64 @@ class SubscriptionProvider extends ChangeNotifier {
       print('buySubscription failed ${e}');
     }
     Get.back();
+  }
+
+// verify coupon
+  bool loadingVerifyCoupon = false;
+  bool? couponVerified;
+  Future<void> verifyCoupon(String couponCode) async {
+    couponVerified = null;
+    try {
+      if (isOnline) {
+        loadingVerifyCoupon = true;
+        notifyListeners();
+        // await Future.delayed(Duration(seconds: 3));
+        // couponVerified = true;
+        // showLoading(dismissable: true);
+        var path = selectedPaymentTypeKey == 'E-Pin'
+            ? AppConstants.verifyVoucherCode
+            : AppConstants.verifyCouponCode;
+        var data = selectedPaymentTypeKey == 'E-Pin'
+            ? {
+                "voucher_code": couponCode,
+                "sale_type": packages.first.sale_type ?? ''
+              }
+            : {"coupon_code": couponCode};
+        ApiResponse apiResponse =
+            await subscriptionRepo.verifyCoupon(path, data);
+        infoLog('verifyCoupon online hit  ${apiResponse.response?.data}');
+        // Get.back();
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          Map map = apiResponse.response!.data;
+          String message = '';
+          bool status = false;
+          try {
+            status = map["status"];
+            if (map['is_logged_in'] == 0) {
+              logOut('verifyCoupon');
+            }
+          } catch (e) {}
+          try {
+            message = map["message"] ?? '';
+          } catch (e) {}
+
+          if (status) {
+            couponVerified = true;
+            Toasts.showSuccessNormalToast(message);
+            Get.back();
+          } else {
+            Toasts.showErrorNormalToast(message);
+          }
+        }
+      } else {
+        Toasts.showWarningNormalToast('You are offline');
+      }
+    } catch (e) {
+      print('verifyCoupon failed ${e}');
+    }
+    loadingVerifyCoupon = false;
+    notifyListeners();
   }
 
   // Future<void> hitPaymentResponses(url) async {
@@ -370,7 +450,7 @@ class SubscriptionProvider extends ChangeNotifier {
     cashNBal = 0.0;
     loadingSub = false;
     typeController = TextEditingController();
-    voucherController = TextEditingController();
+    voucherCodeController = TextEditingController();
     selectedPackage = null;
     selectedPaymentTypeKey = null;
   }

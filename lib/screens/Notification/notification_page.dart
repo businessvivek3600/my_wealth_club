@@ -158,7 +158,13 @@ class _NotificationPageState extends State<NotificationPage> {
         Center(
             child: titleLargeText('There is no notifications yet.', context)),
         height20(),
-        ElevatedButton(
+        OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.white),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: () {
               Get.back();
               Get.back();

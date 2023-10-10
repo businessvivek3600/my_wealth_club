@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/database/model/response/videos_model.dart';
-import 'package:mycarclub/utils/default_logger.dart';
-import 'package:mycarclub/utils/skeleton.dart';
+import '/database/model/response/videos_model.dart';
+import '/utils/default_logger.dart';
+import '/utils/skeleton.dart';
 import '/constants/assets_constants.dart';
 import '/providers/GalleryProvider.dart';
 import '/screens/drawerPages/download_pages/videos/player.dart';

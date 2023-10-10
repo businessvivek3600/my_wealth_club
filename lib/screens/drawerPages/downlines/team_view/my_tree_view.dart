@@ -250,21 +250,26 @@ class _MyTreeViewPageState extends State<MyTreeViewPage> {
   Padding buildEmptyList(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Column(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           //TODO: teamViewLottie
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              assetLottie(Assets.teamViewLottie, width: 200),
-            ],
-          ),
-          titleLargeText(
-              'Create team & join more people to enlarge the system.', context,
-              color: Colors.white, textAlign: TextAlign.center),
-          height20(),
-          buildTeamBuildingReferralLink(context, linkColor: Colors.white)
+          Expanded(child: assetLottie(Assets.teamViewLottie, width: 200)),
+          width10(),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                titleLargeText(
+                    'Create team & join more people to enlarge the system.',
+                    context,
+                    color: Colors.white,
+                    textAlign: TextAlign.center),
+                height20(),
+                buildTeamBuildingReferralLink(context, linkColor: Colors.white),
+              ],
+            ),
+          )
         ],
       ),
     );

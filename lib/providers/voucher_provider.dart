@@ -26,6 +26,10 @@ class VoucherProvider extends ChangeNotifier {
 
   int currentIndex = 0;
   VoucherPackageModel? currentPackage;
+
+  String? tap_paymnet_return_url;
+  String? stripe_paymnet_success_url;
+  String? stripe_paymnet_cancel_url;
   void setCurrentIndex(int page) {
     currentIndex = page;
     currentPackage = packages[page];
@@ -114,6 +118,19 @@ class VoucherProvider extends ChangeNotifier {
         } catch (e) {
           print('voucher_list error $e');
         }
+        try {
+          if (map['payment_return_url'] != null) {
+            tap_paymnet_return_url =
+                map['payment_return_url']?['tap']?['return'] ?? '';
+            stripe_paymnet_success_url =
+                map['payment_return_url']?['stripe']?['success'] ?? '';
+            stripe_paymnet_cancel_url =
+                map['payment_return_url']?['stripe']?['cancel'] ?? '';
+            successLog(
+                'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
+                'getSubscription');
+          }
+        } catch (e) {}
 
         try {
           if (map['packages'] != null &&
@@ -186,17 +203,21 @@ class VoucherProvider extends ChangeNotifier {
                 allowBack: false,
                 allowCopy: false,
                 conditions: [
-                  'https://mywealthclub.com/api/customer/card-voucher-request-status'
+                  tap_paymnet_return_url ?? '',
+                  stripe_paymnet_success_url ?? '',
+                  stripe_paymnet_cancel_url ?? '',
                 ],
                 onResponse: (res) {
-                  print('request url matched <res> $res');
+                  successLog(
+                      'request url matched <res> $res', 'createVoucherSubmit');
                   Get.back();
                   hitPaymentResponse(() => voucherRepo.hitPaymentResponse(res),
                       () => getVoucherList(false),
                       tag: 'createVoucherSubmit');
                 },
               ));
-              errorLog('redirect result from webview $res');
+              warningLog(
+                  'redirect result from webview $res', 'createVoucherSubmit');
               // launchTheLink(redirect_url!);
             } else {
               Toasts.showSuccessNormalToast(message.split('.').first);

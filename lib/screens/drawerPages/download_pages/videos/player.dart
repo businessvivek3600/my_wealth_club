@@ -2,7 +2,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
+import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/videos_model.dart';
 import '/providers/GalleryProvider.dart';

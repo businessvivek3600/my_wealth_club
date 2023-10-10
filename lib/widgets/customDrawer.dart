@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/database/model/response/additional/mcc_content_models.dart';
+import '/database/model/response/additional/mcc_content_models.dart';
 import '../screens/drawerPages/downlines/my_incomes_page.dart';
 import '../screens/drawerPages/downlines/team_view/fancy_team_view.dart';
 import '../screens/drawerPages/wallets/withdraw_history_page.dart';

@@ -2,6 +2,7 @@ class SubscriptionPackage {
   String? id;
   String? name;
   String? packageId;
+  String? sale_type;
   String? amount;
   String? offerPrice;
   String? joiningFee;
@@ -17,6 +18,7 @@ class SubscriptionPackage {
       {this.id,
       this.name,
       this.packageId,
+      this.sale_type,
       this.amount,
       this.offerPrice,
       this.joiningFee,
@@ -31,6 +33,7 @@ class SubscriptionPackage {
     id = json['id'];
     name = json['name'];
     packageId = json['package_id'];
+    sale_type = json['sale_type'];
     amount = json['amount'];
     offerPrice = json['offer_price'];
     joiningFee = json['joining_fee'];
@@ -48,6 +51,7 @@ class SubscriptionPackage {
     data['id'] = this.id;
     data['name'] = this.name;
     data['package_id'] = this.packageId;
+    data['sale_type'] = this.sale_type;
     data['amount'] = this.amount;
     data['offer_price'] = this.offerPrice;
     data['joining_fee'] = this.joiningFee;

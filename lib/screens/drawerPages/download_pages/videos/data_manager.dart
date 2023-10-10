@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flick_video_player/flick_video_player.dart';
-import 'package:mycarclub/screens/drawerPages/subscription/subscription_page.dart';
+import '/screens/drawerPages/subscription/subscription_page.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/sl_container.dart';

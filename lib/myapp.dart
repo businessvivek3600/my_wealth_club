@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/providers/web_view_provider.dart';
-import 'package:mycarclub/screens/drawerPages/event_tickets/event_tickets_page.dart';
+import '/providers/web_view_provider.dart';
+import '/screens/drawerPages/event_tickets/event_tickets_page.dart';
 import '/screens/youtube_video_play_widget.dart';
 import 'package:video_player/video_player.dart';
 import '/database/my_notification_setup.dart';
@@ -82,7 +82,6 @@ class _MyCarClubState extends State<MyCarClub> {
     MyNotification.configureSelectNotificationSubject();
     super.initState();
   }
-
 
   @override
   void dispose() {

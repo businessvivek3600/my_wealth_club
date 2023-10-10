@@ -1,14 +1,10 @@
 import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/database/model/response/subscription_package_model.dart';
-import '../constants/app_constants.dart';
-import '/constants/assets_constants.dart';
 import '/providers/auth_provider.dart';
 import '/providers/subscription_provider.dart';
 import '/sl_container.dart';
@@ -44,7 +40,8 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
     var provider = sl.get<SubscriptionProvider>();
     provider.selectedPaymentTypeKey = null;
     provider.selectedPackage = null;
-    provider.voucherController.clear();
+    provider.couponVerified = null;
+    provider.voucherCodeController.clear();
     provider.typeController.clear();
     super.dispose();
   }
@@ -155,16 +152,16 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
                                                 : null,
                                             onTap: (value) {
                                               Get.back();
+                                              if (provider
+                                                      .selectedPaymentTypeKey !=
+                                                  value.key) {
+                                                provider.voucherCodeController
+                                                    .clear();
+                                              }
                                               provider.setSelectedTypeKey(
                                                   value.key);
                                               provider.typeController.text =
                                                   value.value;
-                                              print(provider
-                                                  .selectedPaymentTypeKey);
-                                              if (value != 'E-Pin') {
-                                                provider.voucherController
-                                                    .clear();
-                                              }
                                             }),
                                     // buildDraggableScrollableSheet(provider),
                                   );
@@ -214,39 +211,63 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
                       ],
                     ),
                   ),
-                  if (provider.selectedPaymentTypeKey == 'E-Pin')
+                  if (provider.selectedPaymentTypeKey != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: <Widget>[
                               Expanded(
                                 child: TextFormField(
-                                  controller: provider.voucherController,
-                                  enabled: true,
+                                  controller: provider.voucherCodeController,
+                                  readOnly: provider.couponVerified != null,
                                   cursorColor: Colors.white,
                                   style: TextStyle(color: Colors.white),
                                   decoration: InputDecoration(
-                                    hintText: 'Enter voucher code',
-                                    hintStyle: TextStyle(color: Colors.white),
-                                    border: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white),
-                                        borderRadius: BorderRadius.circular(5)),
-                                    enabledBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white),
-                                        borderRadius: BorderRadius.circular(5)),
-                                    focusedBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white),
-                                        borderRadius: BorderRadius.circular(5)),
-                                  ),
+                                      hintText:
+                                          provider.selectedPaymentTypeKey ==
+                                                  'E-Pin'
+                                              ? 'Enter voucher code'
+                                              : 'Enter MCC Coupon Code',
+                                      hintStyle:
+                                          TextStyle(color: Colors.white70),
+                                      border: OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      enabledBorder: OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      focusedBorder: OutlineInputBorder(
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
+                                          borderRadius:
+                                              BorderRadius.circular(5)),
+                                      suffixIcon:
+                                          buildCouponFieldSuffix(provider)),
                                 ),
                               ),
                             ],
                           ),
+                          height10(5),
+                          if (provider.couponVerified != null)
+                            RichText(
+                                text: TextSpan(children: [
+                              TextSpan(
+                                  text: 'Coupon Applied: ',
+                                  style: TextStyle(color: Colors.green)),
+                              TextSpan(
+                                  text: provider.voucherCodeController.text,
+                                  style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
+                            ])),
                           height10(16),
                         ],
                       ),
@@ -261,48 +282,67 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
                       children: [
                         ...provider.packages.map((package) {
                           bool selected = provider.selectedPackage == package;
-                          return GestureDetector(
-                            onTap: () {
-                              provider.selectedPackage = package;
-                              setState(() {});
-                              AwesomeDialog(
-                                dialogType: DialogType.info,
-                                dismissOnBackKeyPress: false,
-                                dismissOnTouchOutside: false,
-                                animType: AnimType.bottomSlide,
-                                title: 'Do you want to add subscription?',
-                                context: context,
-                                btnCancelText: 'No',
-                                btnOkText: 'Yes Sure!',
-                                btnCancelOnPress: () {},
-                                btnOkOnPress: () {
-                                  print(provider.selectedPaymentTypeKey);
-                                  primaryFocus?.unfocus();
-                                  provider.buySubscription(package);
+                          return Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  provider.selectedPackage = package;
+                                  setState(() {});
+                                  AwesomeDialog(
+                                    dialogType: DialogType.info,
+                                    dismissOnBackKeyPress: false,
+                                    dismissOnTouchOutside: false,
+                                    animType: AnimType.bottomSlide,
+                                    title: 'Do you want to add subscription?',
+                                    context: context,
+                                    btnCancelText: 'No',
+                                    btnOkText: 'Yes Sure!',
+                                    btnCancelOnPress: () {},
+                                    btnOkOnPress: () {
+                                      print(provider.selectedPaymentTypeKey);
+                                      primaryFocus?.unfocus();
+                                      provider.buySubscription(package);
+                                    },
+                                    reverseBtnOrder: true,
+                                  ).show();
                                 },
-                                reverseBtnOrder: true,
-                              ).show();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8.0, vertical: 4),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: (selected
-                                              ? appLogoColor
-                                              : Colors.white)
-                                          .withOpacity(0.7),
-                                      width: selected ? 2 : 1),
-                                  borderRadius: BorderRadius.circular(10),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0, vertical: 4),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: (selected
+                                                  ? appLogoColor
+                                                  : Colors.white)
+                                              .withOpacity(0.7),
+                                          width: selected ? 2 : 1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: buildCachedNetworkImage(
+                                            package.image ?? '')),
+                                  ),
+                                  // child: Image.network(package.image ?? ''),
                                 ),
-                                child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: buildCachedNetworkImage(
-                                        package.image ?? '')),
                               ),
-                              // child: Image.network(package.image ?? ''),
-                            ),
+
+                              // if (selected)
+                              if (selected)
+                                Positioned(
+                                    right: 15,
+                                    top: 15,
+                                    child: Container(
+                                      padding: EdgeInsets.all(3),
+                                      decoration: BoxDecoration(
+                                        color: appLogoColor,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Icon(Icons.check,
+                                          color: Colors.white, size: 15),
+                                    ))
+                            ],
                           );
                         }),
                       ],
@@ -315,6 +355,66 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
         );
       },
     );
+  }
+
+  AnimatedContainer buildCouponFieldSuffix(SubscriptionProvider provider) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      width: provider.loadingVerifyCoupon ? 60 : 80,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        gradient: LinearGradient(
+            colors: textGradiantColors.map((e) => e.withOpacity(0.4)).toList(),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+      ),
+      child: TextButton(
+        onPressed: provider.loadingVerifyCoupon
+            ? null
+            : () => _handleCoupuon(provider),
+        child: provider.loadingVerifyCoupon
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 25,
+                    height: 25,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  ),
+                ],
+              )
+            : Text(
+                provider.couponVerified == null
+                    ? (provider.selectedPaymentTypeKey == 'E-Pin'
+                        ? 'Apply'
+                        : 'Check')
+                    : 'Clear',
+                style: TextStyle(color: Colors.white),
+              ),
+      ),
+    );
+  }
+
+  _handleCoupuon(SubscriptionProvider provider) {
+    FocusScope.of(context).unfocus();
+    bool couponAdded = provider.couponVerified != null;
+    if (couponAdded) {
+      provider.voucherCodeController.clear();
+      provider.couponVerified = null;
+    } else {
+      if (provider.voucherCodeController.text.isNotEmpty) {
+        if (provider.packages.isNotEmpty) {
+          provider.verifyCoupon(provider.voucherCodeController.text);
+        } else {
+          Fluttertoast.showToast(msg: 'Please select a subscription pack');
+        }
+      } else {
+        Fluttertoast.showToast(msg: 'Please enter coupon code');
+      }
+    }
+    setState(() {});
   }
 }
 

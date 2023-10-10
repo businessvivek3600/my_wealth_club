@@ -273,7 +273,7 @@ class _BuyEventTicketState extends State<BuyEventTicket>
                                   });
                                 })))),
                     height50(),
-                    ElevatedButton(
+                    OutlinedButton(
                         onPressed: selectedPayment != '' && selectedType != ''
                             ? () => provider.buyTicketSubmit(
                                 payment_type: selectedPayment,
@@ -282,12 +282,14 @@ class _BuyEventTicketState extends State<BuyEventTicket>
                                 event_id: widget.event.id ?? '')
                             : null,
                         style: ElevatedButton.styleFrom(
+                            backgroundColor: appLogoColor,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30)),
                             disabledBackgroundColor: Colors.grey),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 18.0),
-                          child: bodyLargeText('Buy Now', context),
+                          child: bodyLargeText('Buy Now', context,
+                              useGradient: false),
                         )),
                   ],
                 )
@@ -317,7 +319,7 @@ class _BuyEventTicketState extends State<BuyEventTicket>
           expandedTitleScale: 1.3,
           titlePadding: EdgeInsets.zero,
           title: Container(
-              padding: EdgeInsets.only(left: 40),
+              padding: EdgeInsets.only(left: 40, bottom: 15, right: 40),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5),
                 gradient: LinearGradient(colors: [

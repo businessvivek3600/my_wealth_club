@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mycarclub/widgets/load_more_container.dart';
+import '/widgets/load_more_container.dart';
 import '../../../utils/default_logger.dart';
 import '/database/model/response/subscription_request_history_model.dart';
 import '/providers/auth_provider.dart';

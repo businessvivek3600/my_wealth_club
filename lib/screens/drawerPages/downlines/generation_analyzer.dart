@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_breadcrumb/flutter_breadcrumb.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mycarclub/constants/assets_constants.dart';
+import '/constants/assets_constants.dart';
 import '/utils/default_logger.dart';
 import '/providers/auth_provider.dart';
 import '/providers/dashboard_provider.dart';

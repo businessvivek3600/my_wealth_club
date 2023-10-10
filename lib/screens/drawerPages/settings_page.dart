@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:mycarclub/utils/app_lock_authentication.dart';
+import '/utils/app_lock_authentication.dart';
 import '/constants/assets_constants.dart';
 import '/database/functions.dart';
 import '/database/repositories/settings_repo.dart';

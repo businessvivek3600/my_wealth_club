@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mycarclub/utils/default_logger.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/utils/default_logger.dart';
+import '/utils/text.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/providers/dashboard_provider.dart';

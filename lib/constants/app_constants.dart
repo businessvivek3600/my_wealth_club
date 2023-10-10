@@ -45,6 +45,9 @@ class AppConstants {
   static const String subscriptionRequestHistory =
       'customer/subscription-request-history';
   static const String buySubscription = 'customer/buy-subscription';
+  static const String verifyVoucherCode = 'customer/check-voucher-code';
+  static const String verifyCouponCode = 'customer/check-coupon-code';
+
   static const String submitCardInvoice =
       'customer/stripe-payment-subscription-submit';
 
