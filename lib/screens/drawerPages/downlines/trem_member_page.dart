@@ -218,8 +218,8 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
   Widget buildMember(UserData e) {
     Color tColor = Colors.white;
     return Container(
-      decoration:
-          BoxDecoration(color: bColor, borderRadius: BorderRadius.circular(5)),
+      decoration: BoxDecoration(
+          color: bColor(), borderRadius: BorderRadius.circular(5)),
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.only(bottom: 10),
       child: Column(

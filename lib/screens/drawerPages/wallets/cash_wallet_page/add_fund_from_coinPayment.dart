@@ -492,7 +492,7 @@ class _CashWalletAddFundFromCoinPaymentState
                                                   BorderRadius.circular(15),
                                               iconEnabledColor: Colors.black,
                                               menuMaxHeight: double.maxFinite,
-                                              dropdownColor: bColor,
+                                              dropdownColor: bColor(),
                                               focusColor: Colors.transparent,
                                               elevation: 10,
                                             )

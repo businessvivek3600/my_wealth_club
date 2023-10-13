@@ -27,16 +27,10 @@ class CashWalletAddFundFromCardPayment extends StatefulWidget {
 class _CashWalletAddFundFromCardPaymentState
     extends State<CashWalletAddFundFromCardPayment> {
   var provider = sl.get<CashWalletProvider>();
-  String _currentPaymentTypeVal = '';
-  String _currentPaymentTypeKey = '';
+
   @override
   void initState() {
-    provider.getCardPaymentFundRequest(true).then((value) {
-      setState(() {
-        if (provider.paymentTypes.entries.isNotEmpty)
-          _currentPaymentTypeKey = provider.paymentTypes.entries.first.key;
-      });
-    });
+    provider.getCardPaymentFundRequest(true).then((value) {});
     super.initState();
   }
 
@@ -324,179 +318,15 @@ class _CashWalletAddFundFromCardPaymentState
       BuildContext context, CashWalletProvider provider) {
     var currencyIcon = sl.get<AuthProvider>().userData.currency_icon ?? '';
     return showModalBottomSheet(
+        backgroundColor: bColor(1),
+        elevation: 1,
+        barrierColor: Colors.white.withOpacity(0.05),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20), topLeft: Radius.circular(20))),
         context: context,
-        builder: (context) => Container(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  height5(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        height: 2,
-                        width: 30,
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      )
-                    ],
-                  ),
-                  height5(),
-                  bodyLargeText('Amount', context,
-                      color: Colors.black, fontWeight: FontWeight.w500),
-                  height5(),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: provider.amountController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            hintText: 'Enter amount',
-                            prefix: Text(currencyIcon),
-                            hintStyle: TextStyle(color: Colors.black),
-                            border: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black)),
-                            enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black)),
-                            focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black)),
-                            errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black)),
-                          ),
-                          onChanged: (val) {
-                            setState(() {});
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  height5(),
-                  bodyLargeText('Payment Type', context,
-                      color: Colors.black, fontWeight: FontWeight.w500),
-                  height5(),
-                  Container(
-                    child: Row(
-                      children: <Widget>[
-                        Expanded(child: FormField<String>(
-                          builder: (FormFieldState<String> state) {
-                            return InputDecorator(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: Colors.black)),
-                                enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: Colors.black)),
-                                focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: Colors.black)),
-                                disabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: Colors.black)),
-                              ),
-                              isEmpty: _currentPaymentTypeKey == '',
-                              child: provider.paymentTypes.entries.isNotEmpty
-                                  ? DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: _currentPaymentTypeKey == ''
-                                            ? provider.paymentTypes.entries
-                                                    .isNotEmpty
-                                                ? provider.paymentTypes.entries
-                                                    .first.key
-                                                : _currentPaymentTypeKey
-                                            : _currentPaymentTypeKey,
-                                        isDense: true,
-                                        alignment:
-                                            AlignmentDirectional.bottomCenter,
-                                        onChanged: (String? newValue) {
-                                          setState(() {
-                                            _currentPaymentTypeVal = newValue!;
-                                            state.didChange(newValue);
-                                          });
-                                        },
-                                        selectedItemBuilder: (context) {
-                                          return provider.paymentTypes.entries
-                                              .map<Center>((e) => Center(
-                                                    child: Text(
-                                                      e.value,
-                                                      style: TextStyle(
-                                                          color: Colors.black),
-                                                    ),
-                                                  ))
-                                              .toList();
-                                        },
-                                        items: <DropdownMenuItem<String>>[
-                                          ...provider.paymentTypes.entries
-                                              .toList()
-                                              .map<DropdownMenuItem<String>>(
-                                                  (type) {
-                                            return DropdownMenuItem<String>(
-                                              value: type.key,
-                                              child: Text(
-                                                type.value,
-                                                style: TextStyle(
-                                                    color: Colors.white),
-                                              ),
-                                              onTap: () {
-                                                setState(() {
-                                                  _currentPaymentTypeKey =
-                                                      type.key;
-                                                });
-                                              },
-                                            );
-                                          }).toList(),
-                                        ],
-                                        borderRadius: BorderRadius.circular(15),
-                                        iconEnabledColor: Colors.black,
-                                        style: TextStyle(color: Colors.black),
-                                        menuMaxHeight: double.maxFinite,
-                                        dropdownColor: bColor,
-                                        focusColor: Colors.transparent,
-                                        elevation: 10,
-                                      ),
-                                    )
-                                  : Container(),
-                            );
-                          },
-                        )),
-                      ],
-                    ),
-                  ),
-                  Spacer(),
-                  Row(
-                    children: <Widget>[
-                      Expanded(
-                          child: ElevatedButton(
-                              onPressed: _currentPaymentTypeKey != '' &&
-                                      provider.amountController.text.isNotEmpty
-                                  ? () {
-                                      double? amount = getValidDouble(
-                                          provider.amountController.text);
-                                      print(amount);
-                                      if (amount != null) {
-                                        provider.getCardPaymentOrderId(
-                                            amount, _currentPaymentTypeKey);
-                                      }
-                                    }
-                                  : null,
-                              child: Text('Submit')))
-                    ],
-                  ),
-                  height5(),
-                ],
-              ),
-            ));
+        builder: (context) => _CashWalletAddFundFromCardPaymentBottomSheet(
+            paymentTypes: provider.paymentTypes));
   }
 }
 
@@ -509,4 +339,200 @@ double? getValidDouble(val, {bool? showToast}) {
     Fluttertoast.showToast(msg: 'Invalid amount');
   }
   return value;
+}
+
+class _CashWalletAddFundFromCardPaymentBottomSheet extends StatefulWidget {
+  const _CashWalletAddFundFromCardPaymentBottomSheet(
+      {required this.paymentTypes});
+  final Map<String, dynamic> paymentTypes;
+
+  @override
+  State<_CashWalletAddFundFromCardPaymentBottomSheet> createState() =>
+      _CashWalletAddFundFromCardPaymentBottomSheetState();
+}
+
+class _CashWalletAddFundFromCardPaymentBottomSheetState
+    extends State<_CashWalletAddFundFromCardPaymentBottomSheet> {
+  String _currentPaymentTypeVal = '';
+  String _currentPaymentTypeKey = '';
+
+  @override
+  void initState() {
+    setState(() {
+      if (widget.paymentTypes.entries.isNotEmpty)
+        _currentPaymentTypeKey = widget.paymentTypes.entries.first.key;
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    sl.get<CashWalletProvider>().amountController.clear();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var currencyIcon = sl.get<AuthProvider>().userData.currency_icon ?? '';
+    return Consumer<CashWalletProvider>(builder: (context, provider, child) {
+      return Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            height5(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  height: 2,
+                  width: 30,
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                )
+              ],
+            ),
+            height5(),
+            bodyLargeText('Amount', context,
+                color: Colors.black, fontWeight: FontWeight.w500),
+            height5(),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: provider.amountController,
+                    keyboardType: TextInputType.number,
+                    cursorColor: Colors.white,
+                    style: TextStyle(color: Colors.white),
+                    inputFormatters: [NoDoubleDecimalFormatter()],
+                    decoration: InputDecoration(
+                      hintText: 'Enter amount',
+                      prefix: Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: bodyLargeText(currencyIcon, context,
+                            useGradient: false),
+                      ),
+                      hintStyle: TextStyle(color: Colors.white70),
+                      border: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white70)),
+                      enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white70)),
+                      focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white70)),
+                      errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white70)),
+                    ),
+                    onChanged: (val) {
+                      setState(() {});
+                    },
+                  ),
+                ),
+              ],
+            ),
+            height5(),
+            bodyLargeText('Payment Type', context,
+                color: Colors.black, fontWeight: FontWeight.w500),
+            height5(),
+            Container(
+              child: Row(
+                children: <Widget>[
+                  Expanded(child: FormField<String>(
+                    builder: (FormFieldState<String> state) {
+                      return InputDecorator(
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                              borderSide: BorderSide(color: Colors.white70)),
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                              borderSide: BorderSide(color: Colors.white70)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                              borderSide: BorderSide(color: Colors.white70)),
+                          disabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                              borderSide: BorderSide(color: Colors.white70)),
+                        ),
+                        isEmpty: _currentPaymentTypeKey == '',
+                        child: provider.paymentTypes.entries.isNotEmpty
+                            ? DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _currentPaymentTypeKey == ''
+                                      ? null
+                                      : _currentPaymentTypeKey,
+                                  onChanged: (String? newValue) => setState(() {
+                                    _currentPaymentTypeVal = newValue!;
+                                    state.didChange(newValue);
+                                  }),
+                                  selectedItemBuilder: (context) =>
+                                      provider.paymentTypes.entries
+                                          .map<Center>((e) => Center(
+                                                child: bodyLargeText(
+                                                    e.value, context,
+                                                    useGradient: false),
+                                              ))
+                                          .toList(),
+                                  items: <DropdownMenuItem<String>>[
+                                    ...provider.paymentTypes.entries
+                                        .toList()
+                                        .map<DropdownMenuItem<String>>((type) {
+                                      return DropdownMenuItem<String>(
+                                        value: type.key,
+                                        child: bodyMedText(
+                                          type.value,
+                                          context,
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                        onTap: () {
+                                          setState(() {
+                                            _currentPaymentTypeKey = type.key;
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ],
+                                  borderRadius: BorderRadius.circular(15),
+                                  iconEnabledColor: Colors.white70,
+                                  menuMaxHeight: double.maxFinite,
+                                  dropdownColor: Colors.white,
+                                  elevation: 10,
+                                  alignment: AlignmentDirectional.bottomEnd,
+                                  isDense: true,
+                                ),
+                              )
+                            : Container(),
+                      );
+                    },
+                  )),
+                ],
+              ),
+            ),
+            Spacer(),
+            Row(
+              children: <Widget>[
+                Expanded(
+                    child: ElevatedButton(
+                        onPressed: _currentPaymentTypeKey != '' &&
+                                provider.amountController.text.isNotEmpty
+                            ? () {
+                                double? amount = getValidDouble(
+                                    provider.amountController.text);
+                                print(amount);
+                                if (amount != null) {
+                                  provider.getCardPaymentOrderId(
+                                      amount, _currentPaymentTypeKey);
+                                }
+                              }
+                            : null,
+                        child: Text('Submit')))
+              ],
+            ),
+            height5(),
+          ],
+        ),
+      );
+    });
+  }
 }

@@ -59,19 +59,25 @@ class _SplashScreenState extends State<SplashScreen> {
         warningLog('SplashScreen video initialized: ${_controller.value}', tag,
             'initState');
         duration = _controller.value.duration.inMilliseconds;
-        _controller.setVolume(0.0);
+        // _controller.setVolume(0.0);
       });
-    _controller
-      ..addListener(() {
-        position = _controller.value.position.inMilliseconds;
-        infoLog(
-            'SplashScreen video position: $position - $duration  ${position == duration}',
-            tag,
-            'initState');
-        if ((position >= 2960)) {
-          checkLogin2();
-        }
-      });
+    _controller.addListener(_listner);
+  }
+
+  void _listner() {
+    setState(() {});
+    if (_controller.value.hasError) {
+      errorLog('video error: ${_controller.value.errorDescription}', tag,
+          'initState');
+    }
+    if (_controller.value.isInitialized) {
+      infoLog('video initialized: ${_controller.value}', tag, 'initState');
+      duration = _controller.value.duration.inMilliseconds;
+      _controller.setVolume(0.0);
+    }
+    if (_controller.value.position.inMilliseconds >= 2960) {
+      checkLogin2();
+    }
   }
 
   checkLogin2() async {

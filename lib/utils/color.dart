@@ -33,7 +33,10 @@ const Color colorF9EED2 = Color(0xffF9EED2);
 const Color colorFFFFFD = Color(0xffFFFFFD);
 
 const Color fadeTextColor = Color.fromARGB(255, 169, 175, 179);
-Color bColor = Color.fromARGB(255, 51, 58, 59).withOpacity(0.9);
+Color bColorNoOpacity([double opacity = 1]) =>
+    Color.fromARGB(255, 51, 58, 59).withOpacity(opacity);
+Color bColor([double opacity = 0.9]) =>
+    Color.fromARGB(255, 51, 58, 59).withOpacity(opacity);
 // const Color defaultBottomSheetColor = Color(0xff083261);
 const Color defaultBottomSheetColor = Color(0xff023c5b);
 

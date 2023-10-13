@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mj_image_slider/mj_image_slider.dart';
 import 'package:mj_image_slider/mj_options.dart';
-import '/database/functions.dart';
+import 'package:mycarclub/screens/drawerPages/pofile/profile_screen.dart';
 import '/providers/dashboard_provider.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,7 @@ class _MainPageRequiredActionSliderState
           options: MjOptions(
               onPageChanged: (i) {},
               scrollDirection: Axis.vertical,
-              height: 100,
+              height: 70,
               viewportFraction: 1),
           widgets: [
             ...provider.alerts
@@ -36,18 +37,14 @@ class _MainPageRequiredActionSliderState
                       color: Colors.white10,
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    child: Column(
+                    child: Row(
                       children: [
-                        bodyLargeText(alert.text ?? '', context),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            ElevatedButton(
-                                onPressed: () =>
-                                    launchTheLink(alert.link ?? ''),
-                                child: Text('Verify'))
-                          ],
-                        ),
+                        Expanded(child: capText(alert.info ?? '', context)),
+                        ElevatedButton(
+                            onPressed: () =>
+                                _handleAlertAction(alert.action ?? '', context),
+                            child: capText(
+                                (alert.action ?? '').capitalize!, context)),
                       ],
                     ),
                   ),
@@ -57,5 +54,11 @@ class _MainPageRequiredActionSliderState
         );
       },
     );
+  }
+
+  _handleAlertAction(String s, BuildContext context) {
+    if (s == 'verify email') {
+      Get.to(ProfileScreen());
+    }
   }
 }

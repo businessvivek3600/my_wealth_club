@@ -160,7 +160,7 @@ class GalleryProvider extends ChangeNotifier {
     try {
       if (isOnline) {
         ApiResponse apiResponse = await galleryRepo
-            .galleryVideos({'lng': getVideoLanguage() ?? 'english'});
+            .galleryVideos({'language_id': getVideoLanguage() ?? '1'});
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
           map = apiResponse.response!.data;
@@ -266,7 +266,7 @@ class GalleryProvider extends ChangeNotifier {
     try {
       if (isOnline) {
         ApiResponse apiResponse = await galleryRepo
-            .getImportantDownloads({'lng': getFilesLanguage() ?? 'english'});
+            .getImportantDownloads({'language_id': getFilesLanguage() ?? '1'});
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
           map = apiResponse.response!.data;

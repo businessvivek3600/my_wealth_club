@@ -5,6 +5,8 @@ import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import '../database/repositories/subscription_repo.dart';
+import '../sl_container.dart';
 import '../utils/app_web_view_page.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
@@ -50,17 +52,21 @@ class VoucherProvider extends ChangeNotifier {
   Map<String, dynamic> packageTypes = {};
   Map<String, dynamic> admin_per = {};
   double walletBalance = 0.0;
+  String? discount_note;
 
   bool loadingVoucher = false;
   int voucherPage = 0;
   int totalVouchers = 0;
 
-  Future<void> getVoucherList(bool loading) async {
+  Future<void> getVoucherList(bool loading, [int? page]) async {
     bool cacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.voucherList);
     List<VoucherModel> _history = [];
     List<VoucherPackageModel> _packages = [];
     Map? map;
+    if (page != null) {
+      voucherPage = page;
+    }
     loadingVoucher = loading;
     notifyListeners();
     if (isOnline) {
@@ -119,6 +125,7 @@ class VoucherProvider extends ChangeNotifier {
           print('voucher_list error $e');
         }
         try {
+          discount_note = map['discount_note'];
           if (map['payment_return_url'] != null) {
             tap_paymnet_return_url =
                 map['payment_return_url']?['tap']?['return'] ?? '';
@@ -173,7 +180,9 @@ class VoucherProvider extends ChangeNotifier {
         ApiResponse apiResponse = await voucherRepo.createVoucherSubmit({
           'payment_type': payment_type,
           'package_id': package_id,
-          'sale_type': sale_type
+          'sale_type': sale_type,
+          'coupon_code':
+              couponVerified == true ? voucherCodeController.text : '',
         });
         infoLog('create voucher submit ${apiResponse.response?.data}');
         Get.back();
@@ -212,7 +221,7 @@ class VoucherProvider extends ChangeNotifier {
                       'request url matched <res> $res', 'createVoucherSubmit');
                   Get.back();
                   hitPaymentResponse(() => voucherRepo.hitPaymentResponse(res),
-                      () => getVoucherList(false),
+                      () => getVoucherList(false, 0),
                       tag: 'createVoucherSubmit');
                 },
               ));
@@ -234,142 +243,60 @@ class VoucherProvider extends ChangeNotifier {
     }
   }
 
-  // Future<void> hitPaymentResponse(url) async {
-  //   try {
-  //     if (isOnline) {
-  //       showLoading(useRootNavigator: true);
-  //       ApiResponse apiResponse = await voucherRepo.hitPaymentResponse(url);
-  //       infoLog(
-  //           'create voucher hitPaymentResponse: ${apiResponse.response?.data}');
-  //       Get.back();
-  //       if (apiResponse.response != null &&
-  //           apiResponse.response!.statusCode == 200) {
-  //         Map map = apiResponse.response!.data;
-  //         bool status = false;
-  //         String message = '';
-
-  //         try {
-  //           status = map["status"];
-  //           if (map['is_logged_in'] == 0) {
-  //             logOut('hitPaymentResponse');
-  //           }
-  //         } catch (e) {}
-  //         try {
-  //           message = map["message"] ?? '';
-  //         } catch (e) {}
-
-  //         if (status) {
-  //           await getVoucherList(false);
-  //           Get.back();
-  //         } else {
-  //           Toasts.showErrorNormalToast(message.split('.').first);
-  //         }
-  //       }
-  //     } else {
-  //       Toasts.showWarningNormalToast('You are offline');
-  //     }
-  //   } catch (e) {
-  //     print('createVoucherSubmit failed ${e}');
-  //   }
-  // }
-
-/*
-  ///voucherList selection
-  TextEditingController amountController = TextEditingController();
-
-  bool loadingVoucherPackages = false;
-  Future<void> getPackageType() async {
-    List<VoucherPackageTypeModel> _package1 = [];
-    List<VoucherPackageTypeModel> _package2 = [];
-    Map? map;
-    loadingVoucherPackages = true;
-    notifyListeners();
-    bool cacheExist =
-    await APICacheManager().isAPICacheKeyExist(AppConstants.createVoucher);
+// verify coupon
+  TextEditingController voucherCodeController = TextEditingController();
+  bool loadingVerifyCoupon = false;
+  bool? couponVerified;
+  Future<void> verifyCoupon(String couponCode) async {
+    couponVerified = null;
     try {
       if (isOnline) {
-        ApiResponse apiResponse = await voucherRepo.getPackageType();
+        loadingVerifyCoupon = true;
+        notifyListeners();
+        // await Future.delayed(Duration(seconds: 3));
+        // couponVerified = true;
+        // showLoading(dismissable: true);
+        var path = AppConstants.verifyCouponCode;
+        var data = {
+          "coupon_code": couponCode,
+          'sale_type': packages.first.saleType ?? ''
+        };
+        ApiResponse apiResponse =
+            await sl.get<SubscriptionRepo>().verifyCoupon(path, data);
+        infoLog('verifyCoupon online hit  ${apiResponse.response?.data}');
+        // Get.back();
         if (apiResponse.response != null &&
             apiResponse.response!.statusCode == 200) {
-          map = apiResponse.response!.data;
+          Map map = apiResponse.response!.data;
+          String message = '';
           bool status = false;
           try {
-            status = map?["status"];
-            if (map?['is_logged_in'] != 1) {
-              logOut();
+            status = map["status"];
+            if (map['is_logged_in'] == 0) {
+              logOut('verifyCoupon');
             }
           } catch (e) {}
           try {
-            if (status && map != null) {
-              try {
-                var cacheModel = APICacheDBModel(
-                    key: AppConstants.createVoucher, syncData: jsonEncode(map));
-                await APICacheManager().addCacheData(cacheModel);
-              } catch (e) {}
-            }
-          } catch (e) {
-            print('getPackageType online hit failed \n $e');
+            message = map["message"] ?? '';
+          } catch (e) {}
+
+          if (status) {
+            couponVerified = true;
+            Toasts.showSuccessNormalToast(message);
+            Get.back();
+          } else {
+            Toasts.showErrorNormalToast(message);
           }
-        } else if (!isOnline && cacheExist) {
-          var cacheData =
-              (await APICacheManager().getCacheData(AppConstants.createVoucher))
-                  .syncData;
-          map = jsonDecode(cacheData);
-        } else {
-          print('getPackageType not online not cache exist ');
         }
       } else {
         Toasts.showWarningNormalToast('You are offline');
       }
     } catch (e) {
-      print('getPackageType failed ${e}');
+      print('verifyCoupon failed ${e}');
     }
-    if (map != null) {
-      try {
-        if (map['wallet_balance'] != null && map['wallet_balance'] != '') {
-          walletBalance = double.parse(map['wallet_balance']);
-          notifyListeners();
-        }
-      } catch (e) {}
-      try {
-        if (map['package_1'] != null && map['package_1'].isNotEmpty) {
-          map['package_1'].forEach(
-                  (e) => _package1.add(VoucherPackageTypeModel.fromJson(e)));
-          package1.clear();
-          package1 = _package1;
-          notifyListeners();
-        }
-      } catch (e) {
-        print('package_1 error $e');
-      }
-      try {
-        if (map['package_2'] != null && map['package_2'].isNotEmpty) {
-          map['package_2'].forEach(
-                  (e) => _package2.add(VoucherPackageTypeModel.fromJson(e)));
-          package2.clear();
-          package2 = _package2;
-          notifyListeners();
-        }
-      } catch (e) {
-        print('package_2 error $e');
-      }
-      try {
-        if (map['package_type'] != null) {
-          packageTypes.clear();
-          map['package_type'].entries.toList().forEach(
-                  (e) => packageTypes.addEntries([MapEntry(e.key, e.value)]));
-          print('package_type types ${packageTypes} ');
-          notifyListeners();
-        }
-      } catch (e) {
-        print('package_type error === $e');
-      }
-    }
-    loadingVoucherPackages = false;
+    loadingVerifyCoupon = false;
     notifyListeners();
-    print('types ${packageTypes}, package 1 ${package1}  package2 ${package2}');
   }
-*/
 
   clear() {
     history.clear();

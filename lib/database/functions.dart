@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -441,25 +440,6 @@ Future<dynamic> future(int ms,
   return await Future.delayed(Duration(milliseconds: ms));
 }
 
-class NoDoubleDecimalFormatter extends TextInputFormatter {
-  NoDoubleDecimalFormatter({this.allowOneDecimal = 0});
-  final int allowOneDecimal;
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    // Check if the new value contains more than one decimal point
-    final decimalCount = newValue.text.split('.').length - 1;
-    if (decimalCount > allowOneDecimal) {
-      // Return the old value to prevent the double decimal input
-      return oldValue;
-    }
-
-    return newValue;
-  }
-}
-
 void copyToClipboard(String text, [String? message]) {
   Clipboard.setData(ClipboardData(text: text));
   // AdvanceToasts.showNormalElegant(context, 'Link copied successfully!',
@@ -485,7 +465,7 @@ checkForUpdate(BuildContext context) async {
       print(
           'appcast.willDisplayUpgrade $appStoreVersion $display $installedVersion $minAppVersion');
     },
-    backgroundColor: bColor,
+    backgroundColor: bColor(),
     borderRadius: 10,
     textColor: Platform.isIOS ? Colors.black : Colors.white,
   );

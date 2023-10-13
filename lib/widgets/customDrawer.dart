@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:get/get.dart';
+import '../screens/drawerPages/whats_new_page.dart';
 import '/database/model/response/additional/mcc_content_models.dart';
 import '../screens/drawerPages/downlines/my_incomes_page.dart';
 import '../screens/drawerPages/downlines/team_view/fancy_team_view.dart';
@@ -75,6 +76,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     String eventTicket = 'Event Ticket';
     String holdingTank = 'Holding Tank';
     String matrixAnalyzer = 'Matrix Analyzer';
+    String whatsNew = 'What\'s New';
     return Container(
       color: Colors.blueGrey.shade900,
       height: double.maxFinite,
@@ -222,6 +224,33 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             height10(),
                             ...drawerOtherItems.map((e) => buildOthersTile(
                                 e, context, size, dashBoardProvider)),
+
+                            // whatsNew
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile(whatsNew);
+                                Widget page = const WhatsNewPage();
+                                Get.to(page);
+                              },
+                              leading: Assets.pages,
+                              title: whatsNew,
+                              width: size.width * 0.7,
+                              selected: dashBoardProvider.selectedDrawerTile ==
+                                  whatsNew,
+                              trailing: Container(
+                                padding: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: capText('New', context,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 7),
+                              ),
+                            ),
+                            height10(),
+
                             buildAppPagesExpansionTile(
                                 size, dashBoardProvider, authProvider),
                             height10(),

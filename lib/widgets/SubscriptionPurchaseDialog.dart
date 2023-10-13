@@ -60,7 +60,7 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
             color: Colors.transparent,
             child: Container(
               height: MediaQuery.of(context).size.height * 0.8,
-              color: bColor,
+              color: bColor(),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,6 +211,7 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
                       ],
                     ),
                   ),
+                  //coupon code field
                   if (provider.selectedPaymentTypeKey != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -272,6 +273,26 @@ class _SubscriptionPurchaseDialogState extends State<SubscriptionPurchaseDialog>
                         ],
                       ),
                     ),
+
+                  //discount note
+                  if (provider.discount_note != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: [
+                          capText(
+                            provider.discount_note!,
+                            context,
+                            useGradient: true,
+                            fontWeight: FontWeight.w500,
+                            textAlign: TextAlign.center,
+                          ),
+                          height10(16),
+                        ],
+                      ),
+                    ),
+
+                  //packs
                   Expanded(
                     child: ListView(
                       scrollDirection: Axis.vertical,
@@ -489,7 +510,7 @@ class SelectPaymentMethodDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: bColor,
+      color: bColor(),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
@@ -501,7 +522,7 @@ class SelectPaymentMethodDialog extends StatelessWidget {
         height: MediaQuery.of(context).size.height * 0.6,
         decoration: BoxDecoration(
           // color: Color(0xff0d193e),
-          color: bColor,
+          color: bColor(),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(15),
             topRight: Radius.circular(15),

@@ -55,7 +55,7 @@ class _HoldingTankPageState extends State<HoldingTankPage> {
                           padding:
                               EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                           decoration: BoxDecoration(
-                            color: bColor.withOpacity(0.4),
+                            color: bColor().withOpacity(0.4),
                           ),
                           child: capText('Swipe to place', context,
                               textAlign: TextAlign.center),
@@ -160,8 +160,8 @@ class _MemberTile extends StatelessWidget {
     bool active = user.salesActive == '1';
     return Container(
       padding: EdgeInsets.all(10),
-      decoration:
-          BoxDecoration(color: bColor, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+          color: bColor(), borderRadius: BorderRadius.circular(8)),
       child: Column(
         children: [
           Row(

@@ -170,7 +170,7 @@ class _WithdrawRequestHistoryPageState
     //     context: context,
     //     builder: (context) {
     //       return AlertDialog(
-    //         backgroundColor: bColor,
+    //         backgroundColor: bColor(),
     //         shape:
     //             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     //         title: titleLargeText('Withdraw Request Details', context),

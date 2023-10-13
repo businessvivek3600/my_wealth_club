@@ -9,17 +9,17 @@ import 'package:floating_chat_button/floating_chat_button.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animation_progress_bar/flutter_animation_progress_bar.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import '../../database/databases/firebase_database.dart';
+import '../drawerPages/main_page_required_action_slider.dart';
 import '/database/repositories/settings_repo.dart';
-import '/tawk_chat_page_test.dart';
+import '../tawk_chat_page.dart';
 import '/widgets/app_lock_auth_suggest_view.dart';
-import 'package:percent_indicator/percent_indicator.dart';
 import '/database/model/response/videos_model.dart';
 import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/screens/drawerPages/event_tickets/buy_ticket_Page.dart';
@@ -87,6 +87,7 @@ class _MainPageState extends State<MainPage>
   var dashboardProvider = sl.get<DashBoardProvider>();
   var galleryProvider = sl.get<GalleryProvider>();
   var authProvider = sl.get<AuthProvider>();
+  FirebaseDatabase firebaseDatabase = sl.get<FirebaseDatabase>();
 
   @override
   void initState() {
@@ -96,7 +97,7 @@ class _MainPageState extends State<MainPage>
           (value) => showDashboardInitialPopUp(dashboardProvider, context));
       sl.get<NotificationProvider>().getUnRead();
       dashboardProvider.getDownloadsData();
-      sl.get<SubscriptionProvider>().getSubscription();
+      sl.get<SubscriptionProvider>().mySubscriptions();
       authProvider.getSignUpInitialData();
       galleryProvider.getGalleryData(false);
       sl.get<EventTicketsProvider>().getEventTickets(true);
@@ -204,7 +205,7 @@ class _MainPageState extends State<MainPage>
         .getCustomerDashboard()
         .then((value) => showDashboardInitialPopUp(dashboardProvider, context));
     sl.get<NotificationProvider>().getUnRead();
-    sl.get<SubscriptionProvider>().getSubscription();
+    sl.get<SubscriptionProvider>().mySubscriptions();
     authProvider.getSignUpInitialData();
     sl.get<EventTicketsProvider>().getEventTickets(true);
     galleryProvider.getGalleryData(false);
@@ -220,7 +221,6 @@ class _MainPageState extends State<MainPage>
       builder: (context, authProvider, child) {
         return Consumer<DashBoardProvider>(
           builder: (context, dashBoardProvider, child) {
-            ///TODO:SHOW POP UP
             return GestureDetector(
               onTap: () {
                 primaryFocus?.unfocus();
@@ -333,6 +333,10 @@ class _MainPageState extends State<MainPage>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              //alerts
+                              if (dashboardProvider.alerts.isNotEmpty)
+                                MainPageRequiredActionSlider(),
+                              height10(),
                               AppLockAuthSuggestionWidget(
                                 showSuggestion:
                                     sl.get<SettingsRepo>().getBiometric(),
@@ -365,7 +369,8 @@ class _MainPageState extends State<MainPage>
                               // Upcommin Events,
                               if (dashboardProvider.wevinarEventVideo != null &&
                                   dashboardProvider.wevinarEventVideo!.status ==
-                                      '1')
+                                      '1' &&
+                                  authProvider.userData.salesActive == '1')
                                 Column(
                                   children: [
                                     buildUpcomingEvents(
@@ -388,7 +393,8 @@ class _MainPageState extends State<MainPage>
                           buildSubscriptionHistory(
                               context, size, dashBoardProvider, authProvider),
                           height20(),
-                          // Accademic Video
+
+                          /// Accademic Video
                           buildAccademicVideo(context),
                           height20(),
                           // buildCardFeatureListview(
@@ -419,7 +425,8 @@ class _MainPageState extends State<MainPage>
   Widget buildEventsTicketCard(BuildContext context) {
     return Consumer<EventTicketsProvider>(
         builder: (context, eventTicketsProvider, _) =>
-            !eventTicketsProvider.loadingMyTickets
+            !eventTicketsProvider.loadingMyTickets &&
+                    eventTicketsProvider.eventsList.isNotEmpty
                 ? Column(
                     children: [
                       Row(
@@ -469,13 +476,12 @@ class _MainPageState extends State<MainPage>
                       ph: 400,
                       pw: Get.width)),
                       */
-                      if (eventTicketsProvider.eventsList.isNotEmpty)
-                        _EventsSliderWidget(
-                            listBanners: eventTicketsProvider.eventsList
-                                .map((e) => BannerModel(
-                                    imagePath: e.eventBanner ?? '',
-                                    id: e.id.toString()))
-                                .toList()),
+                      _EventsSliderWidget(
+                          listBanners: eventTicketsProvider.eventsList
+                              .map((e) => BannerModel(
+                                  imagePath: e.eventBanner ?? '',
+                                  id: e.id.toString()))
+                              .toList()),
                     ],
                   )
                 : SizedBox());
@@ -534,7 +540,7 @@ class _MainPageState extends State<MainPage>
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        color: bColor,
+        color: bColor(),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1234,8 +1240,8 @@ class _MainPageState extends State<MainPage>
                             // ),
                             Container(
                               // color: redDark,
-                              height: 150,
-                              width: 150,
+                              height: 100,
+                              width: 100,
                               child: Ring(
                                 percent: remaining,
                                 color: RingColorScheme(
@@ -1251,11 +1257,11 @@ class _MainPageState extends State<MainPage>
                                       Colors.green,
                                       Colors.green,
                                     ]),
-                                radius: 70,
+                                radius: 50,
                                 // showBackground: false,
-                                width: 15,
+                                width: 10,
                                 child: Center(
-                                  child: titleLargeText(
+                                  child: bodyLargeText(
                                     '${remaining.toStringAsFixed(1) + '%'}\nremaining',
                                     context,
                                     useGradient: false,
@@ -1419,7 +1425,7 @@ class _MainPageState extends State<MainPage>
 
   Widget _buildPlaceholderIdField(
       BuildContext context, DashBoardProvider dashBoardProvider) {
-    return MainPagePlacementIdWidget();
+    return _MainPagePlacementIdWidget();
   }
 
   Widget _buildTeamBuildingReferralLink(
@@ -1567,7 +1573,7 @@ class _MainPageState extends State<MainPage>
         }
         double per = ((members / pair) * 100);
         return active || completed
-            ? DashBoardCustomerRewardTile(
+            ? _DashBoardCustomerRewardTile(
                 customerReward: e,
                 completed: completed,
                 active: active,
@@ -1913,7 +1919,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
                         margin: const EdgeInsetsDirectional.only(end: 8),
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
-                          color: bColor,
+                          color: bColor(),
                           border: Border.all(
                               color: appLogoColor.withOpacity(0.9), width: 1),
                           borderRadius: BorderRadius.circular(5),
@@ -1937,7 +1943,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
                               margin: const EdgeInsetsDirectional.only(end: 8),
                               padding: const EdgeInsets.all(5),
                               decoration: BoxDecoration(
-                                color: bColor,
+                                color: bColor(),
                                 border: Border.all(
                                     color: appLogoColor.withOpacity(0.9),
                                     width: 1),
@@ -2360,17 +2366,18 @@ class UiCategoryTitleContainer extends StatelessWidget {
   }
 }
 
-class MainPagePlacementIdWidget extends StatefulWidget {
-  const MainPagePlacementIdWidget({
+class _MainPagePlacementIdWidget extends StatefulWidget {
+  const _MainPagePlacementIdWidget({
     super.key,
   });
 
   @override
-  State<MainPagePlacementIdWidget> createState() =>
+  State<_MainPagePlacementIdWidget> createState() =>
       _MainPagePlacementIdWidgetState();
 }
 
-class _MainPagePlacementIdWidgetState extends State<MainPagePlacementIdWidget> {
+class _MainPagePlacementIdWidgetState
+    extends State<_MainPagePlacementIdWidget> {
   FocusNode _focusNode = FocusNode();
   var dashboardProvider = sl.get<DashBoardProvider>();
   var authProvider = sl.get<AuthProvider>();
@@ -2635,8 +2642,8 @@ class _MainPagePlacementIdWidgetState extends State<MainPagePlacementIdWidget> {
   }
 }
 
-class DashBoardCustomerRewardTile extends StatefulWidget {
-  const DashBoardCustomerRewardTile({
+class _DashBoardCustomerRewardTile extends StatefulWidget {
+  const _DashBoardCustomerRewardTile({
     super.key,
     required this.completed,
     required this.active,
@@ -2656,12 +2663,12 @@ class DashBoardCustomerRewardTile extends StatefulWidget {
   final List<double> data;
 
   @override
-  State<DashBoardCustomerRewardTile> createState() =>
+  State<_DashBoardCustomerRewardTile> createState() =>
       _DashBoardCustomerRewardTileState();
 }
 
 class _DashBoardCustomerRewardTileState
-    extends State<DashBoardCustomerRewardTile> {
+    extends State<_DashBoardCustomerRewardTile> {
   bool expanded = false;
   @override
   Widget build(BuildContext context) {
@@ -2769,7 +2776,7 @@ class _DashBoardCustomerRewardTileState
                       margin: EdgeInsets.only(top: 10),
                       height: 200,
                       // child: BarChartRace(data: widget.data),
-                      child: BarChartWidget(
+                      child: _BarChartWidget(
                         legs: dashBoardProvider.get_active_Leg,
                         customerReward: widget.customerReward,
                         color: widget.completed
@@ -2788,8 +2795,8 @@ class _DashBoardCustomerRewardTileState
   }
 }
 
-class BarChartWidget extends StatefulWidget {
-  const BarChartWidget(
+class _BarChartWidget extends StatefulWidget {
+  const _BarChartWidget(
       {Key? key,
       required this.legs,
       required this.customerReward,
@@ -2800,10 +2807,10 @@ class BarChartWidget extends StatefulWidget {
   final Color color;
 
   @override
-  State<BarChartWidget> createState() => _BarChartWidgetState();
+  State<_BarChartWidget> createState() => _BarChartWidgetState();
 }
 
-class _BarChartWidgetState extends State<BarChartWidget> {
+class _BarChartWidgetState extends State<_BarChartWidget> {
   late List<GetActiveLegModel> _chartData;
   late TooltipBehavior _tooltipBehavior;
 

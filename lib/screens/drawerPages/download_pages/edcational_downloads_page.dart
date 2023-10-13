@@ -80,6 +80,17 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
   }
 
   Column buildLanguageButton(GalleryProvider provider, BuildContext context) {
+    String currentLanguage;
+    if (provider.filesLanguages.isNotEmpty) {
+      try {
+        currentLanguage =
+            provider.filesLanguages[provider.currentFilesLanguage] ?? '';
+      } catch (e) {
+        currentLanguage = 'Select Language';
+      }
+    } else {
+      currentLanguage = 'Select Language';
+    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -97,8 +108,7 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
                 children: [
                   Icon(Icons.language, color: Colors.white, size: 15),
                   width5(),
-                  capText(provider.currentFilesLanguage ?? 'English', context,
-                      color: Colors.white),
+                  capText(currentLanguage, context, color: Colors.white),
                 ],
               ),
             ),
@@ -113,7 +123,7 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
               return provider.filesLanguages.entries
                   .map<PopupMenuItem<String>>((MapEntry<String, String> value) {
                 return PopupMenuItem<String>(
-                    value: value.value,
+                    value: value.key,
                     child: Text(value.value,
                         style: TextStyle(
                             color: Colors.black,

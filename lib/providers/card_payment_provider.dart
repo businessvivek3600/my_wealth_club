@@ -485,7 +485,7 @@ class CardPaymentProvider extends ChangeNotifier {
             sl.get<CashWalletProvider>().getCardPaymentFundRequest();
             sl.get<CashWalletProvider>().getCashWallet();
           } else {
-            await sl.get<SubscriptionProvider>().getSubscription();
+            await sl.get<SubscriptionProvider>().mySubscriptions();
             await sl.get<DashBoardProvider>().getCustomerDashboard();
           }
           // Toasts.showNormalToast(message.split('.').first, error: !status);

@@ -378,7 +378,7 @@ class _FilterGenerationMemberDialogState
       onTap: () => FocusScope.of(context).unfocus(),
       child: Container(
         padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(color: bColor),
+        decoration: BoxDecoration(color: bColor()),
         child: Column(
           children: [
             Row(
@@ -612,8 +612,8 @@ class _MemberTile extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(10),
       margin: EdgeInsets.only(bottom: 10),
-      decoration:
-          BoxDecoration(color: bColor, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+          color: bColor(), borderRadius: BorderRadius.circular(8)),
       child: Column(
         children: [
           Row(

@@ -111,4 +111,5 @@ class Assets {
   static const done = '50465-done.zip';
   static const tradingSignals = 'kaRTgezOn1.json';
   static const mail = 'mail.json';
+  static const loading_mwc = 'loading_mwc.json';
 }

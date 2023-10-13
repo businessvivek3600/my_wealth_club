@@ -346,7 +346,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           capText(e.usedBy ?? 'Not Yet', context,
-                              color: e.usedBy != null ? bColor : textColor,
+                              color: e.usedBy != null ? bColor() : textColor,
                               textAlign: TextAlign.center,
                               fontWeight: FontWeight.bold),
                           if (e.updatedAt != null)
@@ -563,21 +563,6 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                 ],
               ),
               height20(),
-/*
-              Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                Container(
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          bottomLeft: Radius.circular(20)),
-                      color: appLogoColor),
-                  child: bodyLargeText(
-                      'Cash Wallet Balance ${sl.get<AuthProvider>().userData.currency_icon ?? '\$'}${provider.walletBalance.toStringAsFixed(2)}',
-                      context),
-                )
-              ]),
-*/
               Expanded(
                 child: ListView(
                   padding: EdgeInsets.all(16),
@@ -609,94 +594,10 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                           ]),
                     ),
                     height20(),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // bodyLargeText('This is package name', context,
-                        //     color: Colors.white)
-                      ],
-                    ),
-                    // height20(),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //   children: [
-                    //     bodyLargeText('No of Vouchers', context,
-                    //         color: Colors.white,
-                    //         fontWeight: FontWeight.w600,
-                    //         fontSize: 18),
-                    //     width10(),
-                    //     Row(
-                    //       children: [
-                    //         GestureDetector(
-                    //           onTap: quantity > 1 ? decrement : null,
-                    //           child: Container(
-                    //               width: 30,
-                    //               height: 30,
-                    //               decoration: BoxDecoration(
-                    //                   borderRadius: BorderRadius.circular(7),
-                    //                   color: quantity > 1
-                    //                       ? Colors.white
-                    //                       : Colors.grey[700],
-                    //                   boxShadow: [
-                    //                     BoxShadow(
-                    //                         color: Colors.black26,
-                    //                         blurRadius: quantity > 1 ? 5 : 0,
-                    //                         spreadRadius: quantity > 1 ? 1 : 0)
-                    //                   ]),
-                    //               child: Center(
-                    //                   child: Icon(Icons.remove,
-                    //                       color: quantity <= 1
-                    //                           ? Colors.white
-                    //                           : Colors.black))),
-                    //         ),
-                    //         width10(),
-                    //         bodyLargeText('$quantity', context,
-                    //             color: Colors.white, fontSize: 22),
-                    //         width10(),
-                    //         GestureDetector(
-                    //           onTap: increment,
-                    //           child: Container(
-                    //               width: 30,
-                    //               height: 30,
-                    //               decoration: BoxDecoration(
-                    //                   borderRadius: BorderRadius.circular(7),
-                    //                   color: Colors.white,
-                    //                   boxShadow: [
-                    //                     BoxShadow(
-                    //                         color: Colors.black26,
-                    //                         blurRadius: 5,
-                    //                         spreadRadius: 1)
-                    //                   ]),
-                    //               child: Center(
-                    //                   child: Icon(Icons.add,
-                    //                       color: Colors.black))),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //     // Expanded(
-                    //     //   child: TextField(
-                    //     //     readOnly: true,
-                    //     //     controller: countController,
-                    //     //     decoration: InputDecoration(
-                    //     //       hintStyle: TextStyle(color: Colors.black),
-                    //     //       border: OutlineInputBorder(
-                    //     //           borderSide: BorderSide(color: Colors.black),
-                    //     //           borderRadius: BorderRadius.circular(10)),
-                    //     //       enabledBorder: OutlineInputBorder(
-                    //     //           borderSide: BorderSide(color: Colors.black),
-                    //     //           borderRadius: BorderRadius.circular(10)),
-                    //     //       focusedBorder: OutlineInputBorder(
-                    //     //           borderSide: BorderSide(color: Colors.black),
-                    //     //           borderRadius: BorderRadius.circular(10)),
-                    //     //       errorBorder: OutlineInputBorder(
-                    //     //           borderSide: BorderSide(color: Colors.black),
-                    //     //           borderRadius: BorderRadius.circular(10)),
-                    //     //     ),
-                    //     //   ),
-                    //     // ),
-                    //   ],
-                    // ),
+
                     height10(),
+
+                    //payment mode
                     titleLargeText('Payment Methods', context,
                         color: Colors.white, fontWeight: FontWeight.w500),
                     height5(),
@@ -726,6 +627,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                       ],
                     ),
                     height10(),
+                    //crypto type
                     if (paymentMode == 'Crypto')
                       Builder(builder: (context) {
                         var cryptoTypes = provider.paymentTypes.entries
@@ -769,6 +671,73 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                           ),
                         );
                       }),
+
+                    //coupon code
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: <Widget>[
+                            Expanded(
+                              child: TextFormField(
+                                controller: provider.voucherCodeController,
+                                readOnly: provider.couponVerified != null,
+                                cursorColor: Colors.white,
+                                style: TextStyle(color: Colors.white),
+                                decoration: InputDecoration(
+                                    hintText: 'Enter MCC Coupon Code',
+                                    hintStyle: TextStyle(color: Colors.white70),
+                                    border: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white),
+                                        borderRadius: BorderRadius.circular(5)),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white),
+                                        borderRadius: BorderRadius.circular(5)),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderSide:
+                                            BorderSide(color: Colors.white),
+                                        borderRadius: BorderRadius.circular(5)),
+                                    suffixIcon:
+                                        buildCouponFieldSuffix(provider)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        height10(5),
+                        if (provider.couponVerified != null)
+                          RichText(
+                              text: TextSpan(children: [
+                            TextSpan(
+                                text: 'Coupon Applied: ',
+                                style: TextStyle(color: Colors.green)),
+                            TextSpan(
+                                text: provider.voucherCodeController.text,
+                                style: TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold)),
+                          ])),
+                        height10(16),
+                      ],
+                    ),
+
+                    //discount note
+                    if (provider.discount_note != null)
+                      Column(
+                        children: [
+                          capText(
+                            provider.discount_note!,
+                            context,
+                            useGradient: true,
+                            fontWeight: FontWeight.w500,
+                            textAlign: TextAlign.center,
+                          ),
+                          height10(16),
+                        ],
+                      ),
+
                     // bodyLargeText('Package Type', context,
                     //     color: Colors.black, fontWeight: FontWeight.w500),
                     // height5(),
@@ -942,6 +911,8 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                 ),
               ),
               height10(),
+
+              //button
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
@@ -957,6 +928,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20))),
                           onPressed: paymentMode != null &&
+                                  provider.loadingVerifyCoupon == false &&
                                   (paymentMode == 'Crypto'
                                       ? cryptoType != null
                                       : true)
@@ -987,6 +959,62 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
         );
       },
     );
+  }
+
+  AnimatedContainer buildCouponFieldSuffix(VoucherProvider provider) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      width: provider.loadingVerifyCoupon ? 60 : 80,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        gradient: LinearGradient(
+            colors: textGradiantColors.map((e) => e.withOpacity(0.4)).toList(),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+      ),
+      child: TextButton(
+        onPressed: provider.loadingVerifyCoupon
+            ? null
+            : () => _handleCoupuon(provider),
+        child: provider.loadingVerifyCoupon
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 25,
+                    height: 25,
+                    child: Center(
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white)),
+                  ),
+                ],
+              )
+            : Text(
+                provider.couponVerified == null ? 'Check' : 'Clear',
+                style: TextStyle(color: Colors.white),
+              ),
+      ),
+    );
+  }
+
+  _handleCoupuon(VoucherProvider provider) {
+    FocusScope.of(context).unfocus();
+    bool couponAdded = provider.couponVerified != null;
+    if (couponAdded) {
+      provider.voucherCodeController.clear();
+      provider.couponVerified = null;
+    } else {
+      if (provider.voucherCodeController.text.isNotEmpty) {
+        if (provider.packages.isNotEmpty) {
+          provider.verifyCoupon(provider.voucherCodeController.text);
+        } else {
+          Fluttertoast.showToast(msg: 'Please select a subscription pack');
+        }
+      } else {
+        Fluttertoast.showToast(msg: 'Please enter coupon code');
+      }
+    }
+    setState(() {});
   }
 }
 

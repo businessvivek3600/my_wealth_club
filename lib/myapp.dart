@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/screens/dashboard/company_trade_ideas_page.dart';
 import '/providers/web_view_provider.dart';
 import '/screens/drawerPages/event_tickets/event_tickets_page.dart';
 import '/screens/youtube_video_play_widget.dart';
@@ -134,6 +135,7 @@ class _MyCarClubState extends State<MyCarClub> {
             debugShowCheckedModeBanner: false,
             theme: lightTheme,
             darkTheme: lightTheme,
+            //  locale: DevicePreview.of(context).device.p,
             // home: SplashScreen.routeName,
             // home: SignUpScreen(),
             onGenerateRoute: (settings) {
@@ -152,6 +154,7 @@ class _MyCarClubState extends State<MyCarClub> {
               NotificationPage.routeName: (_) => NotificationPage(
                   notificationAppLaunchDetails:
                       widget.notificationAppLaunchDetails),
+              CompanyTradeIdeasPage.routeName: (_) => CompanyTradeIdeasPage(),
             },
             navigatorObservers: [routeObserver],
           );

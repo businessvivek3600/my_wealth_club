@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/utils/color.dart';
 import 'package:simple_gradient_text/simple_gradient_text.dart';
@@ -245,5 +246,36 @@ class ShadowText extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class NoDoubleDecimalFormatter extends TextInputFormatter {
+  NoDoubleDecimalFormatter({this.allowOneDecimal = 0});
+  final int allowOneDecimal;
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    // Check if the new value contains more than one decimal point
+    final decimalCount = newValue.text.split('.').length - 1;
+    if (decimalCount > allowOneDecimal) {
+      // Return the old value to prevent the double decimal input
+      return oldValue;
+    }
+
+    return newValue;
+  }
+}
+
+class LetterAndSpaceInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Replace any non-letter or space characters with empty strings.
+    newValue = newValue.copyWith(
+        text: newValue.text.replaceAll(RegExp(r'[^a-zA-Z ]'), ''));
+
+    return newValue;
   }
 }

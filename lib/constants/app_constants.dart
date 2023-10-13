@@ -8,6 +8,9 @@ class AppConstants {
   static const String baseUrl = 'https://mywealthclub.com/api/';
   static const String appName = 'My Wealth Club';
 
+  //firebase
+  static const String firebaseCollectionName = 'mywealthclub';
+
   /// app settings
   static const bool testMode = false;
   static const String packageID = 'com.mywealthclub';
@@ -25,9 +28,10 @@ class AppConstants {
   static const String updateProfile = 'update_profile';
   static const String LOGIN_URI = 'do_login';
   static const String USER_INFO = 'userinfo';
-  static const String forgetPassword = 'forget_password';
+  static const String forgetPassword = 'forget-password';
   static const String forgetPasswordSubmit = 'forget-password-submit';
   static const String getEmailToken = 'customer/get-email-otp';
+  static const String verifyEmail = 'customer/verify-email';
 
   //dashboard
   static const String customerDashboard = 'customer_dashboard';

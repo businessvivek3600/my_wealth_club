@@ -34,6 +34,7 @@ import '/utils/notification_sqflite_helper.dart';
 import '/utils/sp_utils.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'database/databases/firebase_database.dart';
 import 'database/dio/dio/logging_interceptor.dart';
 import 'database/repositories/support_repo.dart';
 import 'providers/web_view_provider.dart';
@@ -57,6 +58,10 @@ Future<void> initRepos() async {
   }
   if (!sl.isRegistered<SpUtil>()) {
     sl.registerLazySingleton(() => SpUtil(sharedPreferences: sl()));
+  }
+  if (!sl.isRegistered<FirebaseDatabase>()) {
+    sl.registerLazySingleton(() =>
+        FirebaseDatabase(collectionName: AppConstants.firebaseCollectionName));
   }
 
   //Repositories

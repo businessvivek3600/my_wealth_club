@@ -1,18 +1,21 @@
 class DashboardAlert {
-  String? text;
-  String? link;
+  String? info;
+  String? action;
+  int? status;
 
-  DashboardAlert({this.text, this.link});
+  DashboardAlert({this.info, this.action, this.status});
 
   DashboardAlert.fromJson(Map<String, dynamic> json) {
-    text = json['text'];
-    link = json['link'];
+    info = json['info'];
+    action = json['action'];
+    status = json['status'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['text'] = this.text;
-    data['link'] = this.link;
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['info'] = this.info;
+    data['action'] = this.action;
+    data['status'] = this.status;
     return data;
   }
 }

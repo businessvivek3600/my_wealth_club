@@ -35,7 +35,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   void initState() {
     super.initState();
     provider.subPage = 0;
-    provider.getSubscription(true).then((value) {
+    provider.mySubscriptions(true).then((value) {
       if (widget.initPurchaseDialog) {
         showModalBottomSheet(
             context: context,
@@ -55,12 +55,12 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   }
 
   Future<void> _loadMore() async {
-    await provider.getSubscription(false);
+    await provider.mySubscriptions(false);
   }
 
   Future<void> _refresh() async {
     provider.subPage = 0;
-    await provider.getSubscription(true);
+    await provider.mySubscriptions(true);
   }
 
   @override

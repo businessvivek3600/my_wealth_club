@@ -46,6 +46,7 @@ class _CashWalletPageState extends State<CashWalletPage> {
     provider.btn_fund_coinpayment = false;
     provider.btn_fund_card = false;
     provider.btn_fund_cash_wallet = false;
+    provider.paymentTypes.clear();
     super.dispose();
   }
 
@@ -179,7 +180,7 @@ class _CashWalletPageState extends State<CashWalletPage> {
           margin: const EdgeInsets.only(bottom: 10, left: 8, right: 8),
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: bColor,
+            color: bColor(),
             // border: Border.all(color: Colors.grey),
             borderRadius: BorderRadius.circular(5),
           ),
@@ -396,7 +397,7 @@ class _CashWalletPageState extends State<CashWalletPage> {
       width: 350,
       margin: const EdgeInsets.only(),
       decoration: BoxDecoration(
-          // color: bColor,
+          // color: bColor(),
           borderRadius: BorderRadius.circular(0)),
       padding: const EdgeInsets.all(15),
       child: Column(

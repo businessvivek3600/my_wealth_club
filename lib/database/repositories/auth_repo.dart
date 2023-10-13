@@ -75,7 +75,7 @@ class AuthRepo {
     try {
       var fcmToken = await getDeviceToken(username: loginBody.username);
       loginBody.device_id = fcmToken;
-      print(loginBody.device_id);
+      warningLog('loginBody. device token : ${loginBody.device_id}', tag);
       Response response = await dioClient.post(AppConstants.LOGIN_URI,
           data: loginBody.toJson());
       return ApiResponse.withSuccess(response);
@@ -226,7 +226,7 @@ class AuthRepo {
     }
   }
 
-  // for verify Email
+  // for send- commission withdrawal-Email
   Future<ApiResponse> getCommissionWithdrawalsEmailOtp() async {
     try {
       Response response = await dioClient
@@ -281,6 +281,17 @@ class AuthRepo {
       }
     } catch (e) {
       errorLog('handleSubscription $e', tag);
+    }
+  }
+
+  // send verify Email
+  Future<ApiResponse> verifyEmail(Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient.post(AppConstants.verifyEmail,
+          token: true, data: data);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
 

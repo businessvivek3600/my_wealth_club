@@ -275,7 +275,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                     padding: EdgeInsets.all(10),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        color: bColor,
+                        color: bColor(),
                         boxShadow: [
                           BoxShadow(
                               offset: Offset(0, 1),

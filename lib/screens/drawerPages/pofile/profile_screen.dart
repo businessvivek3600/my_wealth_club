@@ -57,9 +57,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool initializing = false;
   var authProvider = sl.get<AuthProvider>();
   initialiseFields() async {
-    setState(() {
-      initializing = true;
-    });
     var u = authProvider.userData;
 
     await Future(() {
@@ -119,7 +116,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void initState() {
-    initialiseFields();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {
+        initializing = true;
+      });
+      authProvider.userInfo().then((value) => initialiseFields());
+    });
     super.initState();
   }
 
@@ -130,49 +132,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
+  AnimatedContainer buildVerifyEmailSuffix(AuthProvider provider) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 300),
+      width: provider.loadingVerifyEmail ? 60 : 80,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        gradient: LinearGradient(
+            colors: textGradiantColors.map((e) => e.withOpacity(0.4)).toList(),
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+      ),
+      child: TextButton(
+        onPressed:
+            provider.loadingVerifyEmail ? null : () => provider.verifyemail(),
+        child: provider.loadingVerifyEmail
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                      width: 25,
+                      height: 25,
+                      child: Center(
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white)))
+                ],
+              )
+            : Text(
+                'verify',
+                style: TextStyle(color: Colors.white),
+              ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    return Scaffold(
-      key: _scaffoldKey,
-      body: DefaultTabController(
-        length: 3,
-        child: Stack(
-          children: [
-            Scaffold(
-                backgroundColor: mainColor,
-                appBar: buildAppBar(),
-                body: Stack(
-                  children: [
-                    Container(
-                        height: double.maxFinite,
-                        width: double.maxFinite,
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                image: userAppBgImageProvider(context),
-                                fit: BoxFit.cover,
-                                opacity: 1))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: !initializing
-                          ? TabBarView(
-                              children: <Widget>[
-                                buildPersonalForm(size.height),
-                                buildAddressForm(size.height),
-                                buildSocialMediaLinkForm(size.height),
-                                // buildPositionedForm(size.height),
-                              ],
-                            )
-                          : Center(
-                              child: CircularProgressIndicator(
-                                  color: Colors.white)),
-                    ),
-                  ],
-                )),
-          ],
+    return Consumer<AuthProvider>(builder: (context, authProvider, _) {
+      return Scaffold(
+        key: _scaffoldKey,
+        body: DefaultTabController(
+          length: 3,
+          child: Stack(
+            children: [
+              Scaffold(
+                  backgroundColor: mainColor,
+                  appBar: buildAppBar(),
+                  body: Stack(
+                    children: [
+                      Container(
+                          height: double.maxFinite,
+                          width: double.maxFinite,
+                          decoration: BoxDecoration(
+                              image: DecorationImage(
+                                  image: userAppBgImageProvider(context),
+                                  fit: BoxFit.cover,
+                                  opacity: 1))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: !initializing
+                            ? TabBarView(
+                                children: <Widget>[
+                                  buildPersonalForm(size.height, authProvider),
+                                  buildAddressForm(size.height),
+                                  buildSocialMediaLinkForm(size.height),
+                                  // buildPositionedForm(size.height),
+                                ],
+                              )
+                            : Center(
+                                child: CircularProgressIndicator(
+                                    color: Colors.white)),
+                      ),
+                    ],
+                  )),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   AppBar buildAppBar() {
@@ -241,6 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget buildPositionedForm(double height) {
     bool emailVerified = authProvider.userData.verifyEmail == "1";
     bool kycDone = authProvider.userData.kyc == '1';
+
     return ListView(
       padding: EdgeInsets.symmetric(horizontal: 5),
       physics: BouncingScrollPhysics(),
@@ -267,7 +306,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget buildPersonalForm(double height) {
+  Widget buildPersonalForm(double height, AuthProvider authProvider) {
     bool emailVerified = authProvider.userData.verifyEmail == "1";
     bool kycDone = authProvider.userData.kyc == '1';
     return ListView(
@@ -368,20 +407,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   textStyle: TextStyle(color: Colors.white),
                 ),
                 decoration: InputDecoration(
-                    hintText: 'Email Id',
-                    suffixIcon: emailVerified
-                        ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Padding(
+                  hintText: 'Email Id',
+                  suffixIcon: emailVerified
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Padding(
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: bodyMedText('Verified', context,
-                                    color: Colors.green),
-                              ),
-                            ],
-                          )
-                        : null),
+                                    color: Colors.green))
+                          ],
+                        )
+                      : buildVerifyEmailSuffix(authProvider),
+                ),
               ),
             ),
           ],
@@ -401,7 +440,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           initialCountryCode: signUpCountry?.sortname,
           pickerDialogStyle: PickerDialogStyle(
               listTilePadding: EdgeInsets.zero,
-              // backgroundColor: bColor,
+              // backgroundColor: bColor(),
               // countryCodeStyle: TextStyle(color: Colors.white70),
               // countryNameStyle: TextStyle(color: Colors.white70),
               // searchFieldCursorColor: Colors.white,

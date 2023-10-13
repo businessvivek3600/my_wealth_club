@@ -610,7 +610,7 @@ class _CreditCardPurchaseScreenState extends State<CreditCardPurchaseScreen>
                     iconEnabledColor: Colors.white,
                     style: TextStyle(color: Colors.white),
                     menuMaxHeight: double.maxFinite,
-                    dropdownColor: bColor,
+                    dropdownColor: bColor(),
                     validator: (val) {
                       if (val == null) {
                         return 'Please select delivery type.';
@@ -650,7 +650,7 @@ class _CreditCardPurchaseScreenState extends State<CreditCardPurchaseScreen>
                     iconEnabledColor: Colors.white,
                     style: TextStyle(color: Colors.white),
                     menuMaxHeight: double.maxFinite,
-                    dropdownColor: bColor,
+                    dropdownColor: bColor(),
                     validator: (val) {
                       if (val == null) {
                         return 'Please select payment type.';

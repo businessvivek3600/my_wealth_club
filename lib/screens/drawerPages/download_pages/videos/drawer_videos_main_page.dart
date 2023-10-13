@@ -60,57 +60,7 @@ class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 1)))
                   : provider.videoLanguages.isNotEmpty
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 30,
-                              child: PopupMenuButton<String>(
-                                child: Container(
-                                  margin: EdgeInsets.only(right: 10),
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.0),
-                                      border: Border.all(color: Colors.white),
-                                      borderRadius: BorderRadius.circular(5)),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.language,
-                                          color: Colors.white, size: 15),
-                                      width5(),
-                                      capText(
-                                          provider.currentVideoLanguage ??
-                                              'English',
-                                          context,
-                                          color: Colors.white),
-                                    ],
-                                  ),
-                                ),
-                                onSelected: (String value) {
-                                  provider.setVideoLanguage(value);
-                                  provider.getVideos(false);
-                                },
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5)),
-                                offset: Offset(0, 50),
-                                itemBuilder: (BuildContext context) {
-                                  return provider.videoLanguages.entries
-                                      .map<PopupMenuItem<String>>(
-                                          (MapEntry<String, String> value) {
-                                    return PopupMenuItem<String>(
-                                        value: value.value,
-                                        child: Text(value.value,
-                                            style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight:
-                                                    FontWeight.normal)));
-                                  }).toList();
-                                },
-                              ),
-                            ),
-                          ],
-                        )
+                      ? buildLanguageChangeButton(provider, context)
                       : Container(),
             ],
           ),
@@ -128,6 +78,64 @@ class _DrawerVideosMainPageState extends State<DrawerVideosMainPage> {
           ),
         );
       },
+    );
+  }
+
+  Column buildLanguageChangeButton(
+      GalleryProvider provider, BuildContext context) {
+    String currentLanguage;
+    if (provider.videoLanguages.isNotEmpty) {
+      try {
+        currentLanguage =
+            provider.videoLanguages[provider.currentVideoLanguage] ?? '';
+      } catch (e) {
+        currentLanguage = 'Select Language';
+      }
+    } else {
+      currentLanguage = 'Select Language';
+    }
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        SizedBox(
+          height: 30,
+          child: PopupMenuButton<String>(
+            child: Container(
+              margin: EdgeInsets.only(right: 10),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.0),
+                  border: Border.all(color: Colors.white),
+                  borderRadius: BorderRadius.circular(5)),
+              child: Row(
+                children: [
+                  Icon(Icons.language, color: Colors.white, size: 15),
+                  width5(),
+                  capText(currentLanguage, context, color: Colors.white),
+                ],
+              ),
+            ),
+            onSelected: (String value) {
+              provider.setVideoLanguage(value);
+              provider.getVideos(false);
+            },
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            offset: Offset(0, 50),
+            itemBuilder: (BuildContext context) {
+              return provider.videoLanguages.entries
+                  .map<PopupMenuItem<String>>((MapEntry<String, String> value) {
+                return PopupMenuItem<String>(
+                    value: value.key,
+                    child: Text(value.value,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.normal)));
+              }).toList();
+            },
+          ),
+        ),
+      ],
     );
   }
 

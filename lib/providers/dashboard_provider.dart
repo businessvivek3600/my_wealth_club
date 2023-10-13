@@ -288,11 +288,11 @@ class DashBoardProvider extends ChangeNotifier {
           }
         } catch (e) {}
         try {
-          if (map['alert'] != null &&
-              map['alert'] != false &&
-              map['alert'] is List) {
+          if (map['alerts'] != null &&
+              map['alerts'] != false &&
+              map['alerts'] is List) {
             List<DashboardAlert> _alerts = [];
-            map['alert']
+            map['alerts']
                 .forEach((e) => _alerts.add(DashboardAlert.fromJson(e)));
             alerts = _alerts;
             notifyListeners();

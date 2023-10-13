@@ -272,6 +272,8 @@ class AuthProvider with ChangeNotifier {
 
     if (isOnline) {
       showLoading(dismissable: false, useRootNavigator: true);
+      // return false;
+      // await Future.delayed(Duration(milliseconds: 10000));
       ApiResponse apiResponse = await authRepo.login(loginBody);
       Get.back();
       if (apiResponse.response != null &&
@@ -763,5 +765,49 @@ class AuthProvider with ChangeNotifier {
     list.update(key, (value) => pass);
     var sp = sl.get<SpUtil>();
     await sp.setData(SPConstants.savedCredentials, list);
+  }
+
+// verify coupon
+  bool loadingVerifyEmail = false;
+  Future<void> verifyemail() async {
+    FocusScope.of(Get.context!).unfocus();
+    try {
+      if (isOnline) {
+        loadingVerifyEmail = true;
+        notifyListeners();
+        await Future.delayed(Duration(milliseconds: 3000));
+        ApiResponse apiResponse =
+            await authRepo.verifyEmail({'username': userData.username ?? ''});
+        infoLog('verify Email online hit  ${apiResponse.response?.data}');
+        // Get.back();
+        if (apiResponse.response != null &&
+            apiResponse.response!.statusCode == 200) {
+          Map map = apiResponse.response!.data;
+          String message = '';
+          bool status = false;
+          try {
+            status = map["status"];
+            if (map['is_logged_in'] == 0) {
+              logOut('verify Email');
+            }
+          } catch (e) {}
+          try {
+            message = map["message"] ?? '';
+          } catch (e) {}
+
+          if (status) {
+            Toasts.showSuccessNormalToast(message);
+          } else {
+            Toasts.showErrorNormalToast(message);
+          }
+        }
+      } else {
+        Toasts.showWarningNormalToast('You are offline');
+      }
+    } catch (e) {
+      print('verify Email failed ${e}');
+    }
+    loadingVerifyEmail = false;
+    notifyListeners();
   }
 }

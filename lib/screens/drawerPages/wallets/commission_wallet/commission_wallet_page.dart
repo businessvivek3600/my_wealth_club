@@ -319,7 +319,7 @@ class CH_CM_Transaction_Tile_Widget extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 5, left: 10, right: 10),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: bColor,
+        color: bColor(),
         // border: Border.all(color: Colors.white),
         borderRadius: BorderRadius.circular(5),
       ),

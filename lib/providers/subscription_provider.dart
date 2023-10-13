@@ -32,6 +32,7 @@ class SubscriptionProvider extends ChangeNotifier {
   double cashNBal = 0.0;
   bool customerRenewal = false;
   String? joiningPriceId;
+  String? discount_note;
   String? tap_paymnet_return_url;
   String? stripe_paymnet_success_url;
   String? stripe_paymnet_cancel_url;
@@ -41,7 +42,7 @@ class SubscriptionProvider extends ChangeNotifier {
   int subPage = 0;
   int totalSubscriptions = 0;
 
-  Future<void> getSubscription([bool? loading]) async {
+  Future<void> mySubscriptions([bool? loading, int? page]) async {
     bool cacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.mySubscription);
     List<SubscriptionHistory> _history = [];
@@ -49,6 +50,9 @@ class SubscriptionProvider extends ChangeNotifier {
     List<SubscriptionRequestHistory> _requestHistory = [];
     Map<String, dynamic> _paymentTypes = {};
     Map? map;
+    if (page != null) {
+      subPage = page;
+    }
     loadingSub = loading ?? true;
     notifyListeners();
     if (isOnline) {
@@ -111,6 +115,7 @@ class SubscriptionProvider extends ChangeNotifier {
           }
         } catch (e) {}
         try {
+          discount_note = map['discount_note'];
           if (map['packages'] != null && map['packages'].isNotEmpty) {
             map['packages']
                 .forEach((e) => _packages.add(SubscriptionPackage.fromJson(e)));
@@ -278,7 +283,7 @@ class SubscriptionProvider extends ChangeNotifier {
           } catch (e) {}
           try {
             if (orderId == null) {
-              await getSubscription(false);
+              await mySubscriptions(false);
             }
             if (status) {
               Get.back();
@@ -298,7 +303,7 @@ class SubscriptionProvider extends ChangeNotifier {
                     Get.back();
                     hitPaymentResponse(
                         () => subscriptionRepo.hitPaymentResponse(res),
-                        () => getSubscription(false),
+                        () => mySubscriptions(false, 0),
                         tag: 'buySubscription');
                     // getVoucherList(false);
                   },

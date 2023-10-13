@@ -7,14 +7,14 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'providers/auth_provider.dart';
-import 'providers/web_view_provider.dart';
-import 'sl_container.dart';
-import 'utils/default_logger.dart';
+import '../providers/auth_provider.dart';
+import '../providers/web_view_provider.dart';
+import '../sl_container.dart';
+import '../utils/default_logger.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-import 'utils/picture_utils.dart';
+import '../utils/picture_utils.dart';
 
 class TawkChatPage extends StatelessWidget {
   TawkChatPage({super.key});

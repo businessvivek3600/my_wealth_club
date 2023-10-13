@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart' hide Response;
+import 'package:mycarclub/screens/dashboard/company_trade_ideas_page.dart';
 import '/screens/youtube_video_play_widget.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
@@ -276,6 +277,8 @@ class MyNotification {
               'videoId': data['videoId'],
               'isLive': data['isLive'].toString() == true.toString()
             });
+          } else if (_matchType(_type, notificationType.signal)) {
+            routeName = CompanyTradeIdeasPage.routeName;
           } else {
             routeName = NotificationPage.routeName;
           }
@@ -398,7 +401,10 @@ Future<void> _handleNotificationData(
       var user = localUser != '' ? localUser : topic;
       infoLog('this is topic notification : ${topic}, user:$user',
           MyNotification.tag);
-      if (!_matchType(type, notificationType.ytLive)) {
+
+      /// 8. store notification if not match
+      if (!_matchType(type, notificationType.ytLive) &&
+          !_matchType(type, notificationType.signal)) {
         _saveNotification(_title, user, user, data: message.data);
       }
       if (!fromBg) {
@@ -643,7 +649,14 @@ Future<void> myBackgroundMessageHandler(RemoteMessage message) async {
       fromBg: true);
 }
 
-enum notificationType { inbox, notification, subscription, ytLive, none }
+enum notificationType {
+  inbox,
+  notification,
+  subscription,
+  ytLive,
+  signal,
+  none
+}
 
 enum topics {
   none,

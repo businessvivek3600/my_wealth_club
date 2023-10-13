@@ -512,7 +512,7 @@ class _MatrixTreeState extends State<_MatrixTree> {
     return Container(
       height: 20,
       width: 20,
-      color: bColor,
+      color: bColor(),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,

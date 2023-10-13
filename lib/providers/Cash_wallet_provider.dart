@@ -12,7 +12,6 @@ import '/database/model/response/base/api_response.dart';
 import '/database/model/response/fund_request_model.dart';
 import '/database/repositories/cash_wallet_repo.dart';
 import '/providers/auth_provider.dart';
-import '/screens/card_form/card_form_widget.dart';
 import '/sl_container.dart';
 import '/utils/app_default_loading.dart';
 import '/utils/toasts.dart';
@@ -441,7 +440,9 @@ class CashWalletProvider extends ChangeNotifier {
   }
 
   bool loadingCardPaymentOrderId = false;
-  Future<void> getCardPaymentOrderId(double amount, String paymentType) async {
+  Future<void> getCardPaymentOrderId(double amount, String paymentType,
+      [int? page]) async {
+    if (page != null) cardPaymentPage = page;
     loadingCardPaymentOrderId = true;
     notifyListeners();
     try {
@@ -489,7 +490,7 @@ class CashWalletProvider extends ChangeNotifier {
                     Get.back();
                     hitPaymentResponse(
                       () => cashWalletRepo.hitPaymentResponse(res),
-                      () => getCardPaymentOrderId(amount, paymentType),
+                      () => getCardPaymentOrderId(amount, paymentType, 0),
                       tag: 'cardPaymentOrderId',
                     );
 
@@ -581,7 +582,7 @@ class CashWalletProvider extends ChangeNotifier {
 }
 
 Future<void> hitPaymentResponse(
-    Future<ApiResponse> Function() request, Future<void> Function()? onSuccess,
+    Future<ApiResponse> Function() request, Future<void> Function() onSuccess,
     {String? tag}) async {
   try {
     if (isOnline) {
@@ -605,7 +606,9 @@ Future<void> hitPaymentResponse(
         } catch (e) {}
 
         if (status) {
-          onSuccess != null ? await onSuccess() : null;
+          Toasts.showSuccessNormalToast(message);
+          infoLog('onSuccess method called #${onSuccess}', tag);
+          await onSuccess();
         } else {
           if (message.isNotEmpty) Toasts.showErrorNormalToast(message);
         }
