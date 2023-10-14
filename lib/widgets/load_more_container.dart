@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:mycarclub/utils/color.dart';
 import '/utils/default_logger.dart';
 import '/utils/text.dart';
 
@@ -98,6 +99,7 @@ class _LoadMoreContainerState extends State<LoadMoreContainer> {
     if (widget.onRefresh == null) return child;
     return RefreshIndicator(
       onRefresh: widget.onRefresh!,
+      triggerMode: RefreshIndicatorTriggerMode.anywhere,
       child: child,
     );
   }

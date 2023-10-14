@@ -61,7 +61,8 @@ class _MyTreeViewPageState extends State<MyTreeViewPage> {
                 ? Colors.white
                 : mainColor,
         appBar: AppBar(
-            title: titleLargeText('My Tree View', context, useGradient: true),
+            title: titleLargeText('Generation Tree View', context,
+                useGradient: true),
             shadowColor: Colors.white24),
         body: isOnline
             ? Stack(

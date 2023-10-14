@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
           'initState');
     }
     if (_controller.value.isInitialized) {
-      infoLog('video initialized: ${_controller.value}', tag, 'initState');
+      // infoLog('video initialized: ${_controller.value}', tag, 'initState');
       duration = _controller.value.duration.inMilliseconds;
       _controller.setVolume(0.0);
     }

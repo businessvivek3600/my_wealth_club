@@ -15,6 +15,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
+import 'package:mycarclub/screens/drawerPages/wallets/cash_wallet_page/cash_wallet_page.dart';
+import 'package:mycarclub/screens/drawerPages/wallets/commission_wallet/commission_wallet_page.dart';
 import '../../database/databases/firebase_database.dart';
 import '../drawerPages/main_page_required_action_slider.dart';
 import '/database/repositories/settings_repo.dart';
@@ -93,6 +95,13 @@ class _MainPageState extends State<MainPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (notificationPaylod != null) {
+        selectNotificationStream.add(notificationPaylod);
+        warningLog(
+            'notificationPaylod is not null  data is : ${jsonEncode(notificationPaylod)}',
+            'Main Page');
+        notificationPaylod = null;
+      }
       dashboardProvider.getCustomerDashboard().then(
           (value) => showDashboardInitialPopUp(dashboardProvider, context));
       sl.get<NotificationProvider>().getUnRead();
@@ -215,6 +224,10 @@ class _MainPageState extends State<MainPage>
 
   @override
   Widget build(BuildContext context) {
+    // FirebaseMessaging.instance.subscribeToTopic(topic.signal.name);
+    // infoLog(' device token ${getDeviceToken()}');
+    warningLog(
+        'Main Page Build  route: ${ModalRoute.of(context)?.settings.name}  observer ${routeObserver.navigator!.context}}');
     final size = MediaQuery.of(context).size;
     print(size);
     return Consumer<AuthProvider>(
@@ -517,9 +530,14 @@ class _MainPageState extends State<MainPage>
           ),
           children: [
             _buildStatisticsGridViewItem(
-                context, 'Commission Balance', bal_commission, currency_icon),
+                context, 'Commission Balance', bal_commission, currency_icon,
+                onTap: () {
+              Get.to(CommissionWalletPage());
+            }),
             _buildStatisticsGridViewItem(
-                context, 'Cash Balance', bal_cash, currency_icon),
+                context, 'Cash Balance', bal_cash, currency_icon, onTap: () {
+              Get.to(CashWalletPage());
+            }),
             _buildStatisticsGridViewItem(
                 context, 'Total Member', member.toDouble(), currency_icon,
                 isCount: true),
@@ -530,29 +548,32 @@ class _MainPageState extends State<MainPage>
     );
   }
 
-  Container _buildStatisticsGridViewItem(
+  Widget _buildStatisticsGridViewItem(
       BuildContext context, String title, double value, String icon,
-      {bool isCount = false}) {
+      {bool isCount = false, Function()? onTap}) {
     var _value = isCount ? value.toInt() : value.toStringAsFixed(2);
-    return Container(
-      // height: 100,
-      // width: 100,
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: bColor(),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          bodyLargeText(title, context,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              useGradient: false),
-          height10(),
-          titleLargeText('${isCount ? '' : icon} ${_value}', context,
-              useGradient: true, color: Colors.white),
-        ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        // height: 100,
+        // width: 100,
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: bColor(),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            bodyLargeText(title, context,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                useGradient: false),
+            height10(),
+            titleLargeText('${isCount ? '' : icon} ${_value}', context,
+                useGradient: true, color: Colors.white),
+          ],
+        ),
       ),
     );
   }

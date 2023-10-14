@@ -34,6 +34,17 @@ class DashboardRepo {
     }
   }
 
+  ///:tradeIdeasDetails
+  Future<ApiResponse> tradeIdeasDetails(Map<String, String> map) async {
+    try {
+      Response response = await dioClient.post(AppConstants.tradeIdeasDetails,
+          token: true, data: map);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
   ///:Registration
   Future<ApiResponse> getDownloadsData() async {
     try {

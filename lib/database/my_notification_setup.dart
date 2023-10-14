@@ -31,6 +31,8 @@ import '../screens/Notification/notification_page.dart';
 
 int notificationId = 0;
 
+String? notificationPaylod;
+
 final StreamController<ReceivedNotification> didReceiveLocalNotificationStream =
     StreamController<ReceivedNotification>.broadcast();
 
@@ -165,6 +167,11 @@ class MyNotification {
       //todo: handle initial message
       warningLog('messaging.getInitialMessage ${initialMessages.data}', tag,
           'initialMessages');
+      // Future.delayed(Duration(seconds: 6), () async {
+      //   selectNotificationStream
+      //       .add(parseHtmlString(jsonEncode(initialMessages.data)));
+      // });
+      notificationPaylod = jsonEncode(initialMessages.data);
     }
     infoLog(
         'this is FirebaseMessaging on initialMessages ${initialMessages?.data}',
@@ -259,6 +266,7 @@ class MyNotification {
 
       Map<String, dynamic>? data = payload != null ? jsonDecode(payload) : null;
       String localUser = (await sl.get<AuthRepo>().getUserID()).toLowerCase();
+      bool isLoggedIn = localUser != '';
       if (data != null) {
         String? _topic = data['topic'];
         String? _type = data['type'];
@@ -277,7 +285,7 @@ class MyNotification {
               'videoId': data['videoId'],
               'isLive': data['isLive'].toString() == true.toString()
             });
-          } else if (_matchType(_type, notificationType.signal)) {
+          } else if (_matchTopic(_topic, topics.forex_signal)) {
             routeName = CompanyTradeIdeasPage.routeName;
           } else {
             routeName = NotificationPage.routeName;
@@ -339,10 +347,11 @@ Future<void> _handleNotificationData(
   }
 
   ///
-
   handleAppNotificationBadge(fromBg);
   infoLog('title: $_title  ', MyNotification.tag);
   String localUser = (await sl.get<AuthRepo>().getUserID()).toLowerCase();
+
+  bool isUserLoggedIn = localUser != '';
   Map<String, dynamic> _data = payload != null ? jsonDecode(payload) ?? {} : {};
   String unknownUser = 'unknown';
   String notificationUser = (_data['user_id'] ?? '').toString().toLowerCase();
@@ -404,15 +413,20 @@ Future<void> _handleNotificationData(
 
       /// 8. store notification if not match
       if (!_matchType(type, notificationType.ytLive) &&
-          !_matchType(type, notificationType.signal)) {
+          !_matchTopic(topic, topics.forex_signal)) {
         _saveNotification(_title, user, user, data: message.data);
       }
       if (!fromBg) {
-        showCustomizedNotification(_title, _body, payload, _image, fln);
+        if (_matchTopic(topic, topics.forex_signal)) {
+          if (isUserLoggedIn) {
+            showCustomizedNotification(_title, _body, payload, _image, fln);
+          }
+        } else {
+          showCustomizedNotification(_title, _body, payload, _image, fln);
+        }
       }
     }
     // }
-
     /// 2. handle topic notification
     // else {
     //   infoLog('handling topic notification to local db', MyNotification.tag);
@@ -458,6 +472,11 @@ bool _matchType(data, notificationType _type) {
       '_matchType');
   return data != null &&
       data.toString().toLowerCase() == _type.name.toLowerCase();
+}
+
+bool _matchTopic(data, topics _topic) {
+  return data != null &&
+      data.toString().toLowerCase() == _topic.name.toLowerCase();
 }
 
 Future<void> showCustomizedNotification(String title, String body,
@@ -649,23 +668,16 @@ Future<void> myBackgroundMessageHandler(RemoteMessage message) async {
       fromBg: true);
 }
 
-enum notificationType {
-  inbox,
-  notification,
-  subscription,
-  ytLive,
-  signal,
-  none
-}
+///enums
+enum notificationType { inbox, notification, subscription, ytLive, none }
 
 enum topics {
   none,
   subscribe_to_all,
+  forex_signal,
   subscribe_to_testing,
   platinum,
   monthly,
   deActive,
   nonActive
 }
-
-// await fcmSubscriptionRepo.subscribeToTopic(SPConstants.topic_all);

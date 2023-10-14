@@ -211,7 +211,7 @@ class _CommissionWalletPageState extends State<CommissionWalletPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            child: titleLargeText("Commission", context),
+            child: titleLargeText("Commission", context, useGradient: true),
           ),
           !provider.loadingWallet
               ? bodyLargeText(

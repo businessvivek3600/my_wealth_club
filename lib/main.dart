@@ -1,13 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:mycarclub/utils/default_logger.dart';
 import '/database/functions.dart';
 import '/screens/splash/splash_screen.dart';
 import '/sl_container.dart';
@@ -39,14 +38,17 @@ Future<void> main() async {
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   MyNotification().initialize(flutterLocalNotificationsPlugin);
   FirebaseMessaging.onBackgroundMessage(myBackgroundMessageHandler);
-  final NotificationAppLaunchDetails? notificationAppLaunchDetails = !kIsWeb &&
-          Platform.isLinux
-      ? null
-      : await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+  final NotificationAppLaunchDetails? notificationAppLaunchDetails =
+      await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+  errorLog(
+      "notificationAppLaunchDetails : ${notificationAppLaunchDetails?.didNotificationLaunchApp} ${notificationAppLaunchDetails?.notificationResponse} ${notificationAppLaunchDetails?.notificationResponse?.payload}");
   String initialRoute = SplashScreen.routeName;
   if (notificationAppLaunchDetails?.didNotificationLaunchApp ?? false) {
+    errorLog("didNotificationLaunchApp : push notification payload : " +
+        (notificationAppLaunchDetails?.notificationResponse?.payload ?? ''));
     selectedNotificationPayload =
-        notificationAppLaunchDetails!.notificationResponse?.payload;
+        notificationAppLaunchDetails?.notificationResponse?.payload;
+    selectNotificationStream.add(selectedNotificationPayload);
   }
   runApp(MyCarClub(
       initialRoute: initialRoute,

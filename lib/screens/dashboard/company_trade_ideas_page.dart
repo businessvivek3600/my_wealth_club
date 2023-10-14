@@ -1,9 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import '/database/model/response/trade_idea_model.dart';
 import 'package:provider/provider.dart';
@@ -28,11 +29,31 @@ class CompanyTradeIdeasPage extends StatefulWidget {
 
 class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
   var provider = sl.get<DashBoardProvider>();
+  late Timer timer;
 
   @override
   void initState() {
     super.initState();
-    provider.getTradeIdea();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      provider.getTradeIdea(true);
+      //timer
+      timer = Timer.periodic(Duration(seconds: 30), (Timer t) {
+        provider.tradeIdeaPage = 0;
+        provider.getTradeIdea(false);
+      });
+
+      // check if there is any arguments
+      final args = ModalRoute.of(context)!.settings.arguments;
+      successLog('arguments--> $args ${args.runtimeType}');
+      if (args != null && args is String && args.isNotEmpty) {
+        Map<String, dynamic> data = jsonDecode(args);
+        var signal_id = data['signal_id'];
+        if (signal_id != null) {
+          Get.to(() =>
+              SignalDetail(trade: TradeIdeaModel(id: signal_id), init: true));
+        }
+      }
+    });
   }
 
   @override
@@ -40,6 +61,7 @@ class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
     super.dispose();
     provider.tradeIdeaPage = 0;
     provider.tradeIdeas.clear();
+    timer.cancel();
   }
 
   @override
@@ -61,11 +83,31 @@ class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
                   opacity: 1),
             ),
             child: LoadMoreContainer(
+                // height: 200,
                 finishWhen:
                     provider.tradeIdeas.length == provider.totalTradeIdeas,
                 onLoadMore: _loadMore,
                 onRefresh: _refresh,
                 builder: (scrollController, status) {
+                  if (status == LoadMoreStatus.error) {
+                    return Container(
+                      height: 50,
+                      child: Center(
+                        child: OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                                color: appLogoColor,
+                                width: 1,
+                                style: BorderStyle.solid),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5)),
+                          ),
+                          onPressed: () => _refresh(),
+                          child: bodyLargeText('Retry', context),
+                        ),
+                      ),
+                    );
+                  }
                   return ListView(
                     controller: scrollController,
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -229,6 +271,7 @@ class _TradeTile extends StatelessWidget {
 
   Stack frontCard(
       TradeIdeaModel trade, Color bColor, BuildContext context, Color tColor) {
+    bool isBuy = (trade.direction ?? '').toLowerCase() == 'buy';
     return Stack(
       children: [
         Container(
@@ -316,21 +359,20 @@ class _TradeTile extends StatelessWidget {
           bottom: 0,
           left: 0,
           child: LayoutBuilder(builder: (context, b) {
-            infoLog('b.maxHeight: ${b.maxHeight}');
+            infoLog('b.maxHeight: ${b.maxHeight} $isBuy');
             Color color1 = Color.fromARGB(255, 19, 176, 4);
             Color color2 = Color.fromARGB(255, 249, 28, 4);
             return Container(
               width: 5,
-              decoration: BoxDecoration(
-                  color: trade.status == '1' ? color1 : color2,
-                  boxShadow: [
-                    BoxShadow(
-                      color: trade.status == '1' ? color1 : color2,
-                      spreadRadius: 1,
-                      blurRadius: 50,
-                      offset: Offset(0, 0.5), // changes position of shadow
-                    ),
-                  ]),
+              decoration:
+                  BoxDecoration(color: isBuy ? color1 : color2, boxShadow: [
+                BoxShadow(
+                  color: isBuy ? color1 : color2,
+                  spreadRadius: 1,
+                  blurRadius: 50,
+                  offset: Offset(0, 0.5), // changes position of shadow
+                ),
+              ]),
             );
           }),
         )
@@ -392,17 +434,65 @@ class CustomClipPathTopContainerOne extends CustomClipper<Path> {
 }
 
 class SignalDetail extends StatefulWidget {
-  SignalDetail({super.key, required this.trade});
+  SignalDetail({super.key, required this.trade, this.init = false});
   final TradeIdeaModel trade;
+  final bool init;
   @override
   _SignalDetailState createState() => _SignalDetailState();
 }
 
 class _SignalDetailState extends State<SignalDetail> {
+  late TradeIdeaModel trade;
+  var provider = sl.get<DashBoardProvider>();
+  late Timer timer;
+
+  bool loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    trade = widget.trade;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      init();
+      timer = Timer.periodic(Duration(seconds: 10), (Timer t) async {
+        if (isOnline) {
+          var _trade = await provider.tradeIdeasDetails(widget.trade.id ?? '');
+          if (_trade != null) {
+            setState(() {
+              trade = _trade;
+            });
+          }
+        }
+      });
+    });
+  }
+
+  void init() async {
+    if (widget.init) {
+      setState(() {
+        loading = true;
+      });
+      var _trade = await provider.tradeIdeasDetails(widget.trade.id ?? '');
+      if (_trade != null) {
+        trade = _trade;
+      }
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    timer.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
-    bool active = widget.trade.status == '1';
-    bool isBuy = (widget.trade.direction ?? '').toLowerCase() == 'buy';
+    bool active = trade.status == '1';
+    bool isBuy = (trade.direction ?? '').toLowerCase() == 'buy';
+    bool deleted = trade.isDeleted != null && trade.isDeleted!;
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -429,226 +519,224 @@ class _SignalDetailState extends State<SignalDetail> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10.0)),
             color: bColor(),
-            child: Container(
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 500),
+              height: deleted || loading ? 300 : null,
               padding: EdgeInsets.all(16.0),
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      assetImages(Assets.appWebLogo, height: 50),
-                      height10(),
-                      Row(children: [
-                        Expanded(
-                            child: Container(color: Colors.white70, height: 1))
-                      ]),
-                      height10(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          titleLargeText(widget.trade.market ?? '', context,
-                              useGradient: true, fontSize: 23),
-                        ],
-                      ),
-                      height10(),
-                      if (widget.trade.date != null &&
-                          widget.trade.time != null)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            assetImages(Assets.candleStick, width: 15),
-                            width5(),
-                            capText(
-                              formatDate(
-                                      DateTime.parse(widget.trade.date! +
-                                          ' ' +
-                                          widget.trade.time!),
-                                      'dd MMM yyyy hh:mm:ss a') +
-                                  '  ' +
-                                  '(GMT+1)',
-                              context,
-                              color: Color.fromARGB(255, 169, 175, 179),
-                            ),
-                          ],
-                        ),
-                      height20(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          bodyLargeText('ENTRY:', context, useGradient: false),
-                          Row(
-                            children: [
-                              bodyLargeText(
-                                  double.parse(widget.trade.entry ?? '0')
-                                      .toStringAsFixed(2),
-                                  context,
-                                  useGradient: false,
-                                  color: appLogoColor),
-                              width5(),
-                              GestureDetector(
-                                onTap: () => copyToClipboard(
-                                    'Entry: ${double.parse(widget.trade.entry ?? '0').toStringAsFixed(2)}'),
-                                child: Icon(Icons.copy_all_rounded,
-                                    color: Color.fromARGB(249, 241, 224, 224),
-                                    size: 15),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      height10(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          bodyLargeText('STOP LOSS:', context,
-                              useGradient: false),
-                          Row(
-                            children: [
-                              bodyLargeText(
-                                  double.parse(widget.trade.stopLoss ?? '0')
-                                      .toStringAsFixed(2),
-                                  context,
-                                  useGradient: false,
-                                  color: appLogoColor),
-                              width5(),
-                              GestureDetector(
-                                onTap: () => copyToClipboard(
-                                    'Stop Loss: ${double.parse(widget.trade.stopLoss ?? '0').toStringAsFixed(2)}'),
-                                child: Icon(Icons.copy_all_rounded,
-                                    color: Color.fromARGB(249, 241, 224, 224),
-                                    size: 15),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      height10(),
-                      if (widget.trade.tP1 != null &&
-                          widget.trade.tP1!.isNotEmpty)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            bodyLargeText('TAKE PROFIT 1:', context,
-                                useGradient: false),
-                            Row(
-                              children: [
-                                bodyLargeText(
-                                    (double.tryParse(widget.trade.tP1 ?? '0') ??
-                                            0)
-                                        .toStringAsFixed(2),
-                                    context,
-                                    useGradient: false,
-                                    color: appLogoColor),
-                                width5(),
-                                GestureDetector(
-                                  onTap: () => copyToClipboard(
-                                      'Take Profit : ${double.parse(widget.trade.tP1 ?? '0').toStringAsFixed(2)}'),
-                                  child: Icon(Icons.copy_all_rounded,
-                                      color: Color.fromARGB(249, 241, 224, 224),
-                                      size: 15),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      height10(),
-                      if (widget.trade.tP2 != null &&
-                          widget.trade.tP2!.isNotEmpty)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            bodyLargeText('TAKE PROFIT 2:', context,
-                                useGradient: false),
-                            bodyLargeText(
-                                (double.tryParse(widget.trade.tP2 ?? '0') ?? 0)
-                                    .toStringAsFixed(2),
-                                context,
-                                useGradient: false,
-                                color: appLogoColor),
-                          ],
-                        ),
-                      height10(),
-                      if (widget.trade.tP3 != null &&
-                          widget.trade.tP3!.isNotEmpty)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            bodyLargeText('TAKE PROFIT 3:', context,
-                                useGradient: false),
-                            bodyLargeText(
-                                (double.tryParse(widget.trade.tP3 ?? '0') ?? 0)
-                                    .toStringAsFixed(2),
-                                context,
-                                useGradient: false,
-                                color: appLogoColor),
-                          ],
-                        ),
-                      height10(),
-                      // if (widget.trade.tP4 != null &&
-                      //     widget.trade.tP4!.isNotEmpty)
-                      //   Row(
-                      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //     children: [
-                      //       bodyLargeText('TAKE PROFIT 4:', context,
-                      //           useGradient: false),
-                      //       bodyLargeText(
-                      //           double.parse(widget.trade.tP4 ?? '0')
-                      //               .toStringAsFixed(2),
-                      //           context,
-                      //           useGradient: false,
-                      //           color: appLogoColor),
-                      //     ],
-                      //   ),
-                      // height10(),
-                      // if (widget.trade.tP5 != null &&
-                      //     widget.trade.tP5!.isNotEmpty)
-                      //   Row(
-                      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      //     children: [
-                      //       bodyLargeText('TAKE PROFIT 5:', context,
-                      //           useGradient: false),
-                      //       bodyLargeText(
-                      //           double.parse(widget.trade.tP5 ?? '0')
-                      //               .toStringAsFixed(2),
-                      //           context,
-                      //           useGradient: false,
-                      //           color: appLogoColor),
-                      //     ],
-                      //   ),
-
-                      //
-                      height10(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          bodyLargeText('STATUS:', context, useGradient: false),
-                          bodyLargeText(
-                              active ? 'Active' : 'De-Active', context,
-                              useGradient: false,
-                              color: active ? Colors.green : Colors.red),
-                        ],
-                      ),
-                      height30(),
-                      bodyMedText('Updates', context,
-                          decoration: TextDecoration.underline),
-                      height10(),
-                      capText(widget.trade.updates ?? '', context,
-                          color: Color.fromARGB(255, 169, 175, 179)),
-                    ],
-                  ),
-
-                  // up down arrow signal
-                  Positioned(
-                    child: assetSvg(isBuy ? Assets.arrowOut : Assets.arrowIn,
-                        color: isBuy ? Colors.green : Colors.red, width: 30),
-                    right: 0,
-                    top: 0,
-                  ),
-                ],
-              ),
+              child: loading
+                  ? Center(
+                      child: CircularProgressIndicator(color: Colors.white))
+                  : deleted && !loading
+                      ? Center(
+                          child: bodyLargeText(
+                              'This trade has been deleted or removed.',
+                              context))
+                      : buildSignalDetails(context, active, isBuy),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Stack buildSignalDetails(BuildContext context, bool active, bool isBuy) {
+    return Stack(
+      children: [
+        Column(
+          children: [
+            assetImages(Assets.appWebLogo, height: 50),
+            height10(),
+            Row(children: [
+              Expanded(child: Container(color: Colors.white70, height: 1))
+            ]),
+            height10(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                titleLargeText(trade.market ?? '', context,
+                    useGradient: true, fontSize: 23),
+              ],
+            ),
+            height10(),
+            if (trade.date != null && trade.time != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  assetImages(Assets.candleStick, width: 15),
+                  width5(),
+                  capText(
+                    formatDate(DateTime.parse(trade.date! + ' ' + trade.time!),
+                            'dd MMM yyyy hh:mm:ss a') +
+                        '  ' +
+                        '(GMT+1)',
+                    context,
+                    color: Color.fromARGB(255, 169, 175, 179),
+                  ),
+                ],
+              ),
+            height20(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                bodyLargeText('ENTRY:', context, useGradient: false),
+                Row(
+                  children: [
+                    bodyLargeText(
+                        (double.tryParse(trade.entry ?? '0') ?? 0)
+                            .toStringAsFixed(2),
+                        context,
+                        useGradient: false,
+                        color: appLogoColor),
+                    width5(),
+                    GestureDetector(
+                      onTap: () => copyToClipboard(
+                          'Entry: ${(double.tryParse(trade.entry ?? '0') ?? 0).toStringAsFixed(2)}'),
+                      child: Icon(Icons.copy_all_rounded,
+                          color: Color.fromARGB(249, 241, 224, 224), size: 15),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            height10(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                bodyLargeText('STOP LOSS:', context, useGradient: false),
+                Row(
+                  children: [
+                    bodyLargeText(
+                        (double.tryParse(trade.stopLoss ?? '0') ?? 0)
+                            .toStringAsFixed(2),
+                        context,
+                        useGradient: false,
+                        color: appLogoColor),
+                    width5(),
+                    GestureDetector(
+                      onTap: () => copyToClipboard(
+                          'Stop Loss: ${(double.tryParse(trade.stopLoss ?? '0') ?? 0).toStringAsFixed(2)}'),
+                      child: Icon(Icons.copy_all_rounded,
+                          color: Color.fromARGB(249, 241, 224, 224), size: 15),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            height10(),
+            if (trade.tP1 != null && trade.tP1!.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  bodyLargeText('TAKE PROFIT 1:', context, useGradient: false),
+                  Row(
+                    children: [
+                      bodyLargeText(
+                          (double.tryParse(trade.tP1 ?? '0') ?? 0)
+                              .toStringAsFixed(2),
+                          context,
+                          useGradient: false,
+                          color: appLogoColor),
+                      width5(),
+                      GestureDetector(
+                        onTap: () => copyToClipboard(
+                            'Take Profit : ${(double.tryParse(trade.tP1 ?? '0') ?? 0).toStringAsFixed(2)}'),
+                        child: Icon(Icons.copy_all_rounded,
+                            color: Color.fromARGB(249, 241, 224, 224),
+                            size: 15),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            height10(),
+            if (trade.tP2 != null && trade.tP2!.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  bodyLargeText('TAKE PROFIT 2:', context, useGradient: false),
+                  bodyLargeText(
+                      (double.tryParse(trade.tP2 ?? '0') ?? 0)
+                          .toStringAsFixed(2),
+                      context,
+                      useGradient: false,
+                      color: appLogoColor),
+                ],
+              ),
+            height10(),
+            if (trade.tP3 != null && trade.tP3!.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  bodyLargeText('TAKE PROFIT 3:', context, useGradient: false),
+                  bodyLargeText(
+                      (double.tryParse(trade.tP3 ?? '0') ?? 0)
+                          .toStringAsFixed(2),
+                      context,
+                      useGradient: false,
+                      color: appLogoColor),
+                ],
+              ),
+            height10(),
+            // if (trade.tP4 != null &&
+            //     trade.tP4!.isNotEmpty)
+            //   Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     children: [
+            //       bodyLargeText('TAKE PROFIT 4:', context,
+            //           useGradient: false),
+            //       bodyLargeText(
+            //           double.parse(trade.tP4 ?? '0')
+            //               .toStringAsFixed(2),
+            //           context,
+            //           useGradient: false,
+            //           color: appLogoColor),
+            //     ],
+            //   ),
+            // height10(),
+            // if (trade.tP5 != null &&
+            //     trade.tP5!.isNotEmpty)
+            //   Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     children: [
+            //       bodyLargeText('TAKE PROFIT 5:', context,
+            //           useGradient: false),
+            //       bodyLargeText(
+            //           double.parse(trade.tP5 ?? '0')
+            //               .toStringAsFixed(2),
+            //           context,
+            //           useGradient: false,
+            //           color: appLogoColor),
+            //     ],
+            //   ),
+
+            //
+            height10(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                bodyLargeText('STATUS:', context, useGradient: false),
+                bodyLargeText(active ? 'Active' : 'De-Active', context,
+                    useGradient: false,
+                    color: active ? Colors.green : Colors.red),
+              ],
+            ),
+            height30(),
+            bodyMedText('Updates', context,
+                decoration: TextDecoration.underline),
+            height10(),
+            capText(trade.updates ?? '', context,
+                color: Color.fromARGB(255, 169, 175, 179)),
+          ],
+        ),
+
+        // up down arrow signal
+        Positioned(
+          child: assetSvg(isBuy ? Assets.arrowOut : Assets.arrowIn,
+              color: isBuy ? Colors.green : Colors.red, width: 30),
+          right: 0,
+          top: 0,
+        ),
+      ],
     );
   }
 }

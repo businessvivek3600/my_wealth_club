@@ -490,7 +490,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       Size size, DashBoardProvider dashBoardProvider) {
     const String teamMemeber = 'Team Member';
     const String teamView = 'Team View';
-    const String myTreeView = 'My Tree View';
+    const String generationTreeView = 'Generation Tree View';
     const String generationAnalyzer = 'Generation Analyzer';
     const String directMember = 'Direct Member';
     const String inactiveAnalyzer = 'Inactive Member';
@@ -500,7 +500,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
       headerAsset: Assets.downline,
       initiallyExpanded: dashBoardProvider.selectedDrawerTile == teamMemeber ||
           dashBoardProvider.selectedDrawerTile == teamView ||
-          dashBoardProvider.selectedDrawerTile == myTreeView ||
+          dashBoardProvider.selectedDrawerTile == generationTreeView ||
           dashBoardProvider.selectedDrawerTile == directMember ||
           dashBoardProvider.selectedDrawerTile == generationAnalyzer ||
           dashBoardProvider.selectedDrawerTile == inactiveAnalyzer,
@@ -518,7 +518,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 teamMemeber,
                 directMember,
                 teamView,
-                myTreeView,
+                generationTreeView,
                 generationAnalyzer,
               ].map(
                 (e) => Padding(
@@ -533,7 +533,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         case teamView:
                           page = FancyTreeView();
                           break;
-                        case myTreeView:
+                        case generationTreeView:
                           page = MyTreeViewPage();
                           break;
 
@@ -557,7 +557,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         ? Assets.teamMember
                         : e == teamView
                             ? Assets.teamView
-                            : e == myTreeView
+                            : e == generationTreeView
                                 ? Assets.downline
                                 : e == directMember
                                     ? Assets.layer
@@ -1278,24 +1278,28 @@ class _DrawerTileItemState extends State<DrawerTileItem>
                       fontWeight: FontWeight.bold,
                       useGradient: true,
                       opacity: widget.selected ? 1 : widget.opacity,
-                      maxLines: 1,
+                      // maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
+                  if (widget.trailing != null) width10(),
                   if (widget.trailing != null) widget.trailing!
                 ],
               ),
             ),
-            AnimatedContainer(
-              padding: const EdgeInsets.all(10),
-              width: widget.selected ? bound.maxWidth : 0,
-              height: 35,
-              duration: const Duration(milliseconds: 1500),
-              curve: Curves.fastLinearToSlowEaseIn,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05 * 5),
-                borderRadius: BorderRadius.circular(5),
+            Positioned(
+              top: 0,
+              bottom: 0,
+              child: AnimatedContainer(
+                padding: const EdgeInsets.all(10),
+                width: widget.selected ? bound.maxWidth : 0,
+                // height: 35,
+                duration: const Duration(milliseconds: 1500),
+                curve: Curves.fastLinearToSlowEaseIn,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.05 * 5),
+                  borderRadius: BorderRadius.circular(5),
+                ),
               ),
             ),
           ],

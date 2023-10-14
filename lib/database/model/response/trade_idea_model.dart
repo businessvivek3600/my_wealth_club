@@ -15,24 +15,27 @@ class TradeIdeaModel {
   String? status;
   String? createdAt;
   String? updatedAt;
+  bool? isDeleted;
 
-  TradeIdeaModel(
-      {this.id,
-      this.date,
-      this.time,
-      this.direction,
-      this.market,
-      this.entry,
-      this.stopLoss,
-      this.tP1,
-      this.tP2,
-      this.tP3,
-      this.tP4,
-      this.tP5,
-      this.updates,
-      this.status,
-      this.createdAt,
-      this.updatedAt});
+  TradeIdeaModel({
+    this.id,
+    this.date,
+    this.time,
+    this.direction,
+    this.market,
+    this.entry,
+    this.stopLoss,
+    this.tP1,
+    this.tP2,
+    this.tP3,
+    this.tP4,
+    this.tP5,
+    this.updates,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.isDeleted = false,
+  });
 
   TradeIdeaModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];

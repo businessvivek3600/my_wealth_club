@@ -682,8 +682,8 @@ class DashBoardProvider extends ChangeNotifier {
   bool loadingTradeIdeas = true;
   int totalTradeIdeas = 0;
   int tradeIdeaPage = 0;
-  Future<List<TradeIdeaModel>> getTradeIdea() async {
-    loadingTradeIdeas = true;
+  Future<List<TradeIdeaModel>> getTradeIdea([bool loading = false]) async {
+    loadingTradeIdeas = loading;
     notifyListeners();
     List<TradeIdeaModel> _tradeIdeas = [];
     Map? map;
@@ -755,6 +755,36 @@ class DashBoardProvider extends ChangeNotifier {
     loadingTradeIdeas = false;
     notifyListeners();
     return _tradeIdeas;
+  }
+
+  Future<TradeIdeaModel?> tradeIdeasDetails(String id) async {
+    TradeIdeaModel? tradeIdeaModel;
+
+    if (isOnline) {
+      ApiResponse apiResponse =
+          await dashBoardRepo.tradeIdeasDetails({'signal_id': id});
+      infoLog('tradeIdeasDetails ${apiResponse.response!.data}');
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        bool status = false;
+        Map? map = apiResponse.response!.data;
+        try {
+          status = map?["status"];
+        } catch (e) {}
+        if (status) {
+          try {
+            if (map!['data'] != null) {
+              tradeIdeaModel = TradeIdeaModel.fromJson(map['data']);
+            } else {
+              tradeIdeaModel = TradeIdeaModel(isDeleted: true);
+            }
+          } catch (e) {
+            errorLog('tradeIdeasDetails error $e');
+          }
+        }
+      }
+    }
+    return tradeIdeaModel;
   }
 
   clear() {

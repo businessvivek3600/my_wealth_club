@@ -35,8 +35,6 @@ import '/sl_container.dart';
 import '/utils/default_logger.dart';
 import '/utils/theme.dart';
 import 'package:provider/provider.dart';
-
-import 'database/app_update/upgrader.dart';
 import 'providers/Cash_wallet_provider.dart';
 import 'screens/drawerPages/inbox/inbox_screen.dart';
 
@@ -139,7 +137,7 @@ class _MyCarClubState extends State<MyCarClub> {
             // home: SplashScreen.routeName,
             // home: SignUpScreen(),
             onGenerateRoute: (settings) {
-              errorLog('settings $settings', 'settings');
+              warningLog('onGenerateRoute settings $settings', 'settings');
             },
             routes: <String, WidgetBuilder>{
               SplashScreen.routeName: (_) => SplashScreen(),

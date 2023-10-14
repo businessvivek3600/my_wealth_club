@@ -36,6 +36,7 @@ class AppConstants {
   //dashboard
   static const String customerDashboard = 'customer_dashboard';
   static const String tradeIdeas = 'customer/company-trade-idea';
+  static const String tradeIdeasDetails = 'customer/company-trade-idea-details';
   static const String changePlacement = 'change-placement';
   static const String cardDetails = 'customer/card-detail';
   static const String cardDetailsSubmit = 'customer/card-detail-submit';

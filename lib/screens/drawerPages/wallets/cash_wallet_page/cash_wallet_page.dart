@@ -349,9 +349,7 @@ class _CashWalletPageState extends State<CashWalletPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-              child: titleLargeText(
-                  "Cash Wallet  ${provider.totalCashWallet}", context,
-                  useGradient: true)),
+              child: titleLargeText("Cash Wallet", context, useGradient: true)),
           !provider.loadingWallet
               ? bodyLargeText(
                   "${sl.get<AuthProvider>().userData.currency_icon ?? ''}${provider.walletBalance.toStringAsFixed(2)}",
