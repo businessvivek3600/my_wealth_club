@@ -14,7 +14,7 @@ class AppConstants {
   /// app settings
   static const bool testMode = false;
   static const String packageID = 'com.mywealthclub';
-  static const String appAppleStoreId = '6449289696';
+  static const String appAppleStoreId = '6469503445';
   static const String testCanRun = 'testCanRun';
   static const String canRun = 'canRun';
   static const String testIosVersionKey = 'test_ios';
@@ -150,6 +150,14 @@ class AppConstants {
         ? 'https://play.google.com/store/apps/details?id=$packageID'
         : 'https://apps.apple.com/us/app/my-wealth-club/$appAppleStoreId';
     return storeUrl;
+  }
+
+  getDownloadUrlForIos() {
+    return 'https://apps.apple.com/in/app/my-wealth-club/$appAppleStoreId';
+  }
+
+  getDownloadUrlForAndroid() {
+    return 'https://play.google.com/store/apps/details?id=$packageID';
   }
 }
 

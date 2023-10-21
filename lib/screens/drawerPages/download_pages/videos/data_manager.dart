@@ -2,13 +2,12 @@ import 'dart:async';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flick_video_player/flick_video_player.dart';
-import '/screens/drawerPages/subscription/subscription_page.dart';
+import 'package:mycarclub/database/model/response/base/api_response.dart';
+import 'package:pod_player/pod_player.dart';
 import '/database/functions.dart';
 import '/providers/GalleryProvider.dart';
 import '/sl_container.dart';
 import '/utils/default_logger.dart';
-// import 'package:get/get.dart';
-import 'package:video_player/video_player.dart';
 import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -41,10 +40,10 @@ class DataManager {
 
   skipToNextVideo(BuildContext context, [Duration? duration]) async {
     if (hasNextVideo()) {
-      flickManager.handleChangeVideo(
-          VideoPlayerController.network(
-              await getUrlString(urls[currentPlaying + 1], context)),
-          videoChangeDuration: duration);
+      // flickManager.handleChangeVideo(
+      //     VideoPlayerController.network(
+      //         await getUrlString(urls[currentPlaying + 1], context)),
+      //     videoChangeDuration: duration);
 
       currentPlaying++;
       // galleryProvider.setCategoryModel(category);
@@ -56,15 +55,15 @@ class DataManager {
   skipToPreviousVideo(BuildContext context) async {
     if (hasPreviousVideo()) {
       currentPlaying--;
-      flickManager.handleChangeVideo(VideoPlayerController.network(
-          await getUrlString(urls[currentPlaying], context)));
+      // flickManager.handleChangeVideo(VideoPlayerController.network(
+      //     await getUrlString(urls[currentPlaying], context)));
       galleryProvider.setCurrentVideo(videos[currentPlaying]);
     }
   }
 
   playRandom(CategoryVideo video, BuildContext context) async {
-    flickManager.handleChangeVideo(VideoPlayerController.network(
-        await getUrlString(video.videoUrl, context)));
+    // flickManager.handleChangeVideo(VideoPlayerController.network(
+    //     await getUrlString(video.videoUrl, context)));
     currentPlaying = videos.indexOf(video);
     galleryProvider.setCurrentVideo(video);
   }
@@ -74,18 +73,17 @@ class DataManager {
       currentPlaying--;
     }
 
-    flickManager.flickVideoManager
-        ?.cancelVideoAutoPlayTimer(playNext: playNext);
+    // flickManager.flickVideoManager
+    //     ?.cancelVideoAutoPlayTimer(playNext: playNext);
   }
 }
 
+// get video url from vimeo
 Future<String> getUrlString(url, BuildContext context) async {
-  infoLog('video id is getUrlString $url');
   var vimeoMp4Video = '';
   if (isOnline) {
     await _getVimeoVideoConfigFromUrl(context, url).then((value) async {
       final progressiveList = value?.request?.files?.progressive;
-
       if (progressiveList != null && progressiveList.isNotEmpty) {
         progressiveList.map((element) {
           if (element != null &&
@@ -96,7 +94,7 @@ Future<String> getUrlString(url, BuildContext context) async {
           }
         }).toList();
         if (vimeoMp4Video.isEmpty || vimeoMp4Video == '') {
-          showAlertDialog(context);
+          showAlertDialog(context, title: 'Error', desc: 'Video not found');
         }
       }
     });
@@ -120,28 +118,29 @@ Future<String> getUrlString(url, BuildContext context) async {
   return vimeoMp4Video;
 }
 
-showAlertDialog(BuildContext context) {
+showAlertDialog(BuildContext context, {String desc = '', String title = ''}) {
   AwesomeDialog(
-      dialogType: DialogType.error,
-      context: context,
-      headerAnimationLoop: false,
-      title: 'Error',
-      desc: 'You don\'t have any subscription.\nPlease add a subscription.',
-      // desc: 'This video can\'t be played.\nSome thing went wrong!',
-      bodyHeaderDistance: 0,
-      padding: EdgeInsets.zero,
-      customHeader:
-          Container(child: Icon(Icons.error, size: 40, color: Colors.red)),
-      btnOkText: 'Subscribe Now',
-      btnCancelText: 'Later',
-      btnCancelOnPress: () {},
-      btnOkOnPress: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    SubscriptionPage(initPurchaseDialog: true)));
-      }).show();
+          dialogType: DialogType.error,
+          context: context,
+          headerAnimationLoop: false,
+          title: title,
+          desc: desc,
+          // desc: 'This video can\'t be played.\nSome thing went wrong!',
+          bodyHeaderDistance: 0,
+          padding: EdgeInsets.zero,
+          customHeader:
+              Container(child: Icon(Icons.error, size: 40, color: Colors.red)),
+          // btnOkText: 'Subscribe Now',
+          // btnCancelText: 'Cancel',
+          btnCancelOnPress: () {},
+          btnOkOnPress: () {
+            // Navigator.push(
+            //     context,
+            //     MaterialPageRoute(
+            //         builder: (context) =>
+            //             SubscriptionPage(initPurchaseDialog: true)));
+          })
+      .show();
   // AlertDialog alert = AlertDialog(
   //   title: const Text("Alert"),
   //   content: const Text("Some thing wrong with this url"),
@@ -164,6 +163,7 @@ showAlertDialog(BuildContext context) {
   // );
 }
 
+/// give vimeo video configuration from api
 Future<VimeoVideoConfig?> _getVimeoVideoConfigFromUrl(
   BuildContext context,
   String url, {
@@ -192,16 +192,40 @@ Future<VimeoVideoConfig?> _getVimeoVideoConfigFromUrl(
 /// give vimeo video configuration from api
 Future<VimeoVideoConfig?> _getVimeoVideoConfig(BuildContext context,
     {required String vimeoVideoId}) async {
+  var headers = {
+    'Authorization': 'Bearer ${'f106a6b507f0f3652a374a55ee7df97b'}',
+    'Accept': 'application/vnd.vimeo.*+json;version=3.4'
+  };
   try {
-    // 70591644
-    Response responseData = await Dio()
-        .get('https://player.vimeo.com/video/${vimeoVideoId}/config');
-    infoLog('responseData.data ${responseData.data}');
-    var vimeoVideo = VimeoVideoConfig.fromJson(responseData.data);
+    // var url = 'https://player.vimeo.com/video/${vimeoVideoId}';
+    var url = 'https://api.vimeo.com/videos/$vimeoVideoId?fields=play';
+    ApiResponse apiResponse =
+        await sl.get<GalleryProvider>().galleryRepo.getVimeoVideoCongig(
+              url,
+              options: Options(headers: headers),
+            );
+    log('_getVimeoVideoConfig responseData.data res: ${apiResponse.response?.data} error: ${apiResponse.error.toString()}  ${apiResponse.response?.statusCode}');
+    if (apiResponse.error != null) {
+      var title = 'Error';
+      var desc = 'Some thing wrong with this video ';
+      try {
+        desc = apiResponse.error['error'];
+      } catch (e) {
+        errorLog('Error : ${e.toString()} ${apiResponse.error.runtimeType}',
+            '_getVimeoVideoConfig');
+      }
+      showAlertDialog(context, title: title, desc: desc);
+      return null;
+    }
+    VimeoVideoConfig? vimeoVideo;
+    if (apiResponse.response?.data != null) {
+      vimeoVideo = VimeoVideoConfig.fromJson(apiResponse.response?.data);
+    }
+
     return vimeoVideo;
   } catch (e) {
-    showAlertDialog(context);
-    log('Error : ', name: e.toString());
+    // showAlertDialog(context);
+    errorLog('Error :  name: ${e.toString()} ', '_getVimeoVideoConfig');
     return null;
   }
 }
@@ -517,6 +541,63 @@ class VimeoProgressive {
   dynamic id;
   dynamic origin;
   dynamic height;
+}
+
+class ViemoVideoData {
+  String? type;
+  String? codec;
+  int? width;
+  int? height;
+  String? linkExpirationTime;
+  String? link;
+  String? createdTime;
+  double? fps;
+  int? size;
+  String? md5;
+  String? rendition;
+
+  ViemoVideoData(
+      {this.type,
+      this.codec,
+      this.width,
+      this.height,
+      this.linkExpirationTime,
+      this.link,
+      this.createdTime,
+      this.fps,
+      this.size,
+      this.md5,
+      this.rendition});
+
+  ViemoVideoData.fromJson(Map<String, dynamic> json) {
+    type = json['type'];
+    codec = json['codec'];
+    width = json['width'];
+    height = json['height'];
+    linkExpirationTime = json['link_expiration_time'];
+    link = json['link'];
+    createdTime = json['created_time'];
+    fps = json['fps'];
+    size = json['size'];
+    md5 = json['md5'];
+    rendition = json['rendition'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['type'] = this.type;
+    data['codec'] = this.codec;
+    data['width'] = this.width;
+    data['height'] = this.height;
+    data['link_expiration_time'] = this.linkExpirationTime;
+    data['link'] = this.link;
+    data['created_time'] = this.createdTime;
+    data['fps'] = this.fps;
+    data['size'] = this.size;
+    data['md5'] = this.md5;
+    data['rendition'] = this.rendition;
+    return data;
+  }
 }
 
 //
@@ -1203,3 +1284,99 @@ class _VimeoEventExampleState extends State<VimeoEventExample> {
   }
 }
 */
+
+class PlayVideoFromVimeoPrivateId extends StatefulWidget {
+  const PlayVideoFromVimeoPrivateId(
+      {Key? key,
+      required this.videoId,
+      required this.onPlayerCreated,
+      this.autoPlay})
+      : super(key: key);
+  final String videoId;
+  final Function(PodPlayerController? controller) onPlayerCreated;
+  final bool? autoPlay;
+
+  @override
+  State<PlayVideoFromVimeoPrivateId> createState() =>
+      _PlayVideoFromVimeoPrivateIdState();
+}
+
+class _PlayVideoFromVimeoPrivateIdState
+    extends State<PlayVideoFromVimeoPrivateId> {
+  late final PodPlayerController controller;
+  var headers = {
+    'Authorization': 'Bearer ${'f106a6b507f0f3652a374a55ee7df97b'}',
+    'Accept': 'application/vnd.vimeo.*+json;version=3.4'
+  };
+  @override
+  void initState() {
+    controller = PodPlayerController(
+      playVideoFrom: PlayVideoFrom.vimeoPrivateVideos(
+        widget.videoId,
+        videoPlayerOptions: VideoPlayerOptions(),
+        httpHeaders: headers,
+      ),
+      podPlayerConfig: PodPlayerConfig(
+        autoPlay: widget.autoPlay ?? true,
+      ),
+    )..initialise().then((value) => widget.onPlayerCreated(controller));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PodVideoPlayer(
+      controller: controller,
+      podPlayerLabels: PodPlayerLabels(),
+    );
+  }
+
+  Row _loadVideoFromUrl() {
+    return Row(
+      children: [
+        FocusScope(
+          canRequestFocus: false,
+          child: ElevatedButton(
+            onPressed: () async {
+              try {
+                snackBar('Loading....');
+                FocusScope.of(context).unfocus();
+
+                final Map<String, String> headers = <String, String>{};
+                headers['Authorization'] = 'Bearer ${''}';
+
+                await controller.changeVideo(
+                  playVideoFrom: PlayVideoFrom.vimeoPrivateVideos(
+                    'videoTextFieldCtr.text',
+                    httpHeaders: headers,
+                  ),
+                );
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              } catch (e) {
+                snackBar('Unable to load,\n $e');
+              }
+            },
+            child: const Text('Load Video'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void snackBar(String text) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(text),
+        ),
+      );
+  }
+}

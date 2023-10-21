@@ -46,19 +46,19 @@ class VoucherModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = this.id;
-    data['epin'] = this.epin;
-    data['package_type'] = this.packageType;
-    data['package_id'] = this.packageId;
-    data['package_name'] = this.packageName;
-    data['package_amt'] = this.packageAmt;
-    data['alloted_by'] = this.allotedBy;
-    data['used_by'] = this.usedBy;
-    data['block'] = this.block;
-    data['note'] = this.note;
-    data['created_by'] = this.createdBy;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
+    data['id'] = id;
+    data['epin'] = epin;
+    data['package_type'] = packageType;
+    data['package_id'] = packageId;
+    data['package_name'] = packageName;
+    data['package_amt'] = packageAmt;
+    data['alloted_by'] = allotedBy;
+    data['used_by'] = usedBy;
+    data['block'] = block;
+    data['note'] = note;
+    data['created_by'] = createdBy;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
     return data;
   }
 }

@@ -2,9 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter_rounded_date_picker/flutter_rounded_date_picker.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -95,15 +92,15 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                                   builder: (scrollController, status) {
                                     return ListView(
                                       controller: scrollController,
-                                      physics: BouncingScrollPhysics(),
-                                      padding: EdgeInsets.all(8),
+                                      physics: const BouncingScrollPhysics(),
+                                      padding: const EdgeInsets.all(8),
                                       children: [
                                         ...teamViewProvider.directMembers
                                             .map((e) => _MemberTile(user: e)),
                                       ],
                                     );
                                   })
-                              : Center(
+                              : const Center(
                                   child: CircularProgressIndicator(
                                       color: Colors.white)),
                         ),
@@ -111,7 +108,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                             provider.directMemberPage != 0)
                           Container(
                               padding: const EdgeInsets.all(20),
-                              height: provider.directMembers.length == 0
+                              height: provider.directMembers.isEmpty
                                   ? Get.height -
                                       kToolbarHeight -
                                       kBottomNavigationBarHeight
@@ -121,7 +118,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                                       color: Colors.white))),
                       ],
                     )
-                  : buildEmptyList(context);
+                  : buildEmptyList(context, provider);
             },
           ),
         ),
@@ -129,7 +126,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
     });
   }
 
-  Padding buildEmptyList(BuildContext context) {
+  Padding buildEmptyList(BuildContext context, TeamViewProvider provider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
@@ -143,7 +140,9 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
             ],
           ),
           titleLargeText(
-              'Create your own team & join more people to enlarge your team.',
+              provider.directMemberSearchController.text.isEmpty
+                  ? 'Create your own team & join more people to enlarge your team.'
+                  : 'No result found for ${provider.directMemberSearchController.text}',
               context,
               color: Colors.white,
               textAlign: TextAlign.center),
@@ -157,65 +156,65 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
   AppBar buildAppBar(BuildContext context, TeamViewProvider provider) {
     return AppBar(
         title: AnimatedSwitcher(
-            duration: Duration(milliseconds: 500),
-            child: provider.isSearchingDirectMember
-                ? SizedBox(
-                    height: 40,
-                    child: TextField(
-                      controller: provider.directMemberSearchController,
-                      autofocus: true,
-                      cursorColor: Colors.white,
-                      textInputAction: TextInputAction.search,
-                      style: TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                        isDense: true,
-                        hintText: 'Search...',
-                        hintStyle: TextStyle(color: fadeTextColor),
-                        border: InputBorder.none,
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            provider.directMemberSearchController.clear();
-                          },
-                          icon: Icon(CupertinoIcons.clear_circled_solid,
-                              color: Colors.white),
-                        ),
+          duration: const Duration(milliseconds: 500),
+          child: provider.isSearchingDirectMember
+              ? SizedBox(
+                  height: 40,
+                  child: TextField(
+                    controller: provider.directMemberSearchController,
+                    autofocus: true,
+                    cursorColor: Colors.white,
+                    textInputAction: TextInputAction.search,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 5, horizontal: 10),
+                      isDense: true,
+                      hintText: 'Search...',
+                      hintStyle: const TextStyle(color: fadeTextColor),
+                      border: InputBorder.none,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          provider.directMemberSearchController.clear();
+                        },
+                        icon: const Icon(CupertinoIcons.clear_circled_solid,
+                            color: Colors.white),
                       ),
-                      onSubmitted: (value) {
-                        if (value.isNotEmpty) {
-                          provider.directMemberPage = 0;
-                          provider.directMemberSelectedStatus = null;
-                          provider.loadingDirectMembers = true;
-                          provider.getDirectMembers(true);
-                        }
-                      },
                     ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      titleLargeText('Direct Members', context,
-                          useGradient: true),
-                      // height5(),
-                      // capText(
-                      //     'Total: ${provider.totalDirectMembers.toString()}',
-                      //     context,
-                      //     color: Colors.white,
-                      //     fontWeight: FontWeight.w500,
-                      //     fontSize: 10),
-                    ],
-                  )),
+                    onSubmitted: (value) {
+                      if (value.isNotEmpty) {
+                        provider.directMemberPage = 0;
+                        provider.directMemberSelectedStatus = null;
+                        provider.loadingDirectMembers = true;
+                        provider.getDirectMembers(true);
+                      }
+                    },
+                  ),
+                )
+              : Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    titleLargeText('Direct Members', context,
+                        useGradient: true),
+                    capText(
+                        '${provider.directMembers.length} Of ${provider.totalDirectMembers.toString()} Members',
+                        context,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w500),
+                  ],
+                ),
+        ),
         actions: [
           AnimatedSwitcher(
-            duration: Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 500),
             child: !provider.isSearchingDirectMember
                 ? IconButton(
                     onPressed: () {
                       provider.setSearchingDirectMembers(
                           !provider.isSearchingDirectMember);
                     },
-                    icon: Icon(Icons.search))
+                    icon: const Icon(Icons.search))
                 : Transform.rotate(
                     angle: pi / 2,
                     child: IconButton(
@@ -226,7 +225,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                           provider.directMemberPage = 0;
                           provider.getDirectMembers(true);
                         },
-                        icon: Icon(Icons.u_turn_left)),
+                        icon: const Icon(Icons.u_turn_left)),
                   ),
           ),
 
@@ -236,12 +235,12 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
               FocusScope.of(context).unfocus();
               showModalBottomSheet(
                 context: context,
-                builder: (_) => _FilterGenerationMemberDialog(),
+                builder: (_) => const _FilterGenerationMemberDialog(),
               );
             },
             icon: Stack(
               children: [
-                Icon(Icons.filter_alt_outlined),
+                const Icon(Icons.filter_alt_outlined),
                 Positioned(
                   top: 0,
                   right: 0,
@@ -265,8 +264,8 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
     return Container(
       decoration: BoxDecoration(
           color: Colors.white, borderRadius: BorderRadius.circular(5)),
-      padding: EdgeInsets.all(10),
-      margin: EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 10),
       child: Column(
         children: [
           Row(
@@ -276,8 +275,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    bodyLargeText(
-                        ('${e.customerName ?? ""}').capitalize!, context,
+                    bodyLargeText((e.customerName ?? "").capitalize!, context,
                         color: Colors.black),
                     capText('( ${e.username ?? ""} )', context,
                         color: Colors.black, fontWeight: FontWeight.bold),
@@ -293,7 +291,7 @@ class _DirectMembersPageState extends State<DirectMembersPage> {
                                 ? Colors.red
                                 : Colors.amber)
                         .withOpacity(1)),
-                padding: EdgeInsets.symmetric(vertical: 3, horizontal: 5),
+                padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 5),
                 child: capText(
                     e.status == '1'
                         ? 'Active'
@@ -377,7 +375,7 @@ class _FilterGenerationMemberDialogState
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Container(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(color: bColor()),
         child: Column(
           children: [
@@ -389,13 +387,13 @@ class _FilterGenerationMemberDialogState
                     onTap: () {
                       Get.back();
                     },
-                    child: Icon(Icons.close, color: Colors.white))
+                    child: const Icon(Icons.close, color: Colors.white))
               ],
             ),
             Expanded(
               child: ListView(
                 children: [
-                  Divider(color: Colors.white),
+                  const Divider(color: Colors.white),
                   // select joining date from calender
                   height10(),
 
@@ -541,8 +539,8 @@ class _FilterGenerationMemberDialogState
                 Expanded(
                   child: OutlinedButton(
                     style: ElevatedButton.styleFrom(
-                      minimumSize: Size(double.maxFinite, 40),
-                      side: BorderSide(color: Colors.red),
+                      minimumSize: const Size(double.maxFinite, 40),
+                      side: const BorderSide(color: Colors.red),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5)),
                     ),
@@ -570,7 +568,7 @@ class _FilterGenerationMemberDialogState
                 Expanded(
                   child: FilledButton(
                     style: ElevatedButton.styleFrom(
-                      minimumSize: Size(double.maxFinite, 40),
+                      minimumSize: const Size(double.maxFinite, 40),
                       backgroundColor: appLogoColor,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5)),
@@ -603,15 +601,15 @@ class _FilterGenerationMemberDialogState
 }
 
 class _MemberTile extends StatelessWidget {
-  _MemberTile({super.key, required this.user});
+  const _MemberTile({super.key, required this.user});
 
   final UserData user;
   @override
   Widget build(BuildContext context) {
     bool active = user.salesActive == '1';
     return Container(
-      padding: EdgeInsets.all(10),
-      margin: EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
           color: bColor(), borderRadius: BorderRadius.circular(8)),
       child: Column(
@@ -624,7 +622,7 @@ class _MemberTile extends StatelessWidget {
                 radius: 20,
                 backgroundColor: Colors.white.withOpacity(0.0),
                 child: buildCachedNetworkImage(
-                    'https://mywealthclub.com/assets/customer-panel/img/reward/rank-image-1.png'),
+                    'https://mywealthclub.com/assets/customer-panel/img/reward/rank-image-${user.nRankId}.png'),
               ),
               width10(),
               Expanded(
@@ -689,7 +687,7 @@ class _MemberTile extends StatelessWidget {
                   capText('Referred By:', context,
                       color: fadeTextColor, fontWeight: FontWeight.w500),
                   capText(
-                    '${user.directSponserUsername ?? ''}',
+                    user.directSponserUsername ?? '',
                     context,
                     color: fadeTextColor,
                   ),
@@ -709,7 +707,8 @@ class _MemberTile extends StatelessWidget {
                       color: fadeTextColor, fontWeight: FontWeight.w500),
                   if (user.createdAt != null)
                     capText(
-                      '${formatDate(DateTime.parse(user.createdAt!), 'dd MMM yyyy h:m a')}',
+                      formatDate(
+                          DateTime.parse(user.createdAt!), 'dd MMM yyyy h:m a'),
                       context,
                       color: fadeTextColor,
                     ),

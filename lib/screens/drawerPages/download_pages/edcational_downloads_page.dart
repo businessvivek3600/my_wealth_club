@@ -114,7 +114,7 @@ class _DowanloadsMainPageState extends State<DowanloadsMainPage> {
             ),
             onSelected: (String value) {
               provider.setFilesLanguage(value);
-              provider.getDownloadFiles(false);
+              provider.getDownloadFiles(true);
             },
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),

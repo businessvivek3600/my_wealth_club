@@ -54,8 +54,8 @@ android {
         applicationId "com.mywealthclub"
         minSdkVersion 21
         targetSdkVersion flutter.targetSdkVersion
-        versionCode 13
-        versionName "1.0.1+3"
+        versionCode 19
+        versionName "1.0.1+9"
     }
 
     signingConfigs {
@@ -84,5 +84,6 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation platform('com.google.firebase:firebase-bom:31.5.0')
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
 //  implementation 'com.google.firebase:firebase-analytics-ktx'
 }

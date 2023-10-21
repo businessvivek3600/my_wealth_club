@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '/database/model/response/videos_model.dart';
-import '/utils/default_logger.dart';
 import '/utils/skeleton.dart';
 import '/constants/assets_constants.dart';
 import '/providers/GalleryProvider.dart';
@@ -278,10 +277,13 @@ class AccademicVideoCard extends StatelessWidget {
               : () {
                   provider.setCategoryModel(category);
                   provider.setCurrentVideo(video);
+                  // Get.to(PlayVideoFromVimeoPrivateId());
                   Get.to(CustomOrientationPlayer(
                       videos: category.videoList!,
                       videoIndex: i,
                       showCategoriesButton: showCategories));
+
+                  // ---
                   // Get.to(VimeoPlayerWidget(
                   //     url: video.videoUrl ?? ''));
                   // Get.to(DummyPlayer(

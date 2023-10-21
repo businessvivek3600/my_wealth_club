@@ -64,15 +64,16 @@ class _SupportPageState extends State<SupportPage> {
                 IconButton(
                     onPressed: () => checkServiceEnableORDisable(
                         'mobile_chat_disabled',
-                        () => Get.to(CreateSupportTicketPage())),
-                    icon: Icon(Icons.add)),
+                        () => Get.to(const CreateSupportTicketPage())),
+                    icon: const Icon(Icons.add)),
             ],
           ),
           body: !supportProvider.loadingTickets
               ? supportProvider.tickets.isNotEmpty
                   ? buildListView(supportProvider, context)
                   : buildNoActivity(context)
-              : buildLoading(),
+              : const Center(
+                  child: CircularProgressIndicator(color: Colors.white)),
           // bottomNavigationBar: Container(height: 50),
           // floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           // floatingActionButton: FloatingActionButton(
@@ -92,7 +93,7 @@ class _SupportPageState extends State<SupportPage> {
         color: Colors.transparent,
         margin: EdgeInsets.symmetric(
             horizontal: Get.width * 0.2, vertical: Get.height * 0.3),
-        child: Center(
+        child: const Center(
           child: RiveAnimation.asset(
             'assets/rive/square_jumping_loading.riv',
             fit: BoxFit.contain,
@@ -110,7 +111,7 @@ class _SupportPageState extends State<SupportPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
+            const SizedBox(
                 height: 200,
                 width: 100,
                 child:
@@ -123,7 +124,7 @@ class _SupportPageState extends State<SupportPage> {
         bodyMedText('Create a ticket to raise any issues', context),
         height20(),
         GestureDetector(
-          onTap: () => Get.to(CreateSupportTicketPage()),
+          onTap: () => Get.to(const CreateSupportTicketPage()),
           child: Container(
               width: Get.width * 0.25,
               height: Get.width * 0.25,
@@ -141,8 +142,8 @@ class _SupportPageState extends State<SupportPage> {
         builder: (scrollController, status) {
           return ListView(
             controller: scrollController,
-            physics: BouncingScrollPhysics(),
-            padding: EdgeInsets.all(16),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(16),
             children: [
               ...supportProvider.tickets.map((ticket) {
                 return buildTicketTile(ticket, context);
@@ -165,7 +166,7 @@ class _SupportPageState extends State<SupportPage> {
       },
       child: Container(
         height: 80,
-        margin: EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 10),
         width: double.maxFinite,
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.05),

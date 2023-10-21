@@ -1,7 +1,12 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/providers/auth_provider.dart';
+import 'package:mycarclub/screens/dashboard/main_page.dart';
+import 'package:mycarclub/utils/default_logger.dart';
+import 'package:pod_player/pod_player.dart';
 import '/screens/drawerPages/download_pages/videos/drawer_videos_main_page.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/response/videos_model.dart';
@@ -36,35 +41,48 @@ class CustomOrientationPlayer extends StatefulWidget {
 class _CustomOrientationPlayerState extends State<CustomOrientationPlayer> {
   late FlickManager flickManager;
   late DataManager dataManager;
+  PodPlayerController? podPlayerController;
+  bool isActive = sl.get<AuthProvider>().userData.salesActive == '1';
+
   bool loading = true;
   load() async {
-    await Future(() async {
-      var url = await getUrlString(
-          widget.videos[widget.videoIndex].videoUrl ?? '', context);
-      flickManager = FlickManager(
-          videoPlayerController: VideoPlayerController.network(url),
-          onVideoEnd: () {
-            dataManager.skipToNextVideo(context, Duration(seconds: 5));
-          });
-    })
-        .then((value) => dataManager = DataManager(
-            flickManager: flickManager,
-            urls: widget.videos.map((e) => e.videoUrl ?? '').toList()))
-        .then((value) => dataManager.videos = widget.videos)
-        .then((value) => setState(() {
-              loading = false;
-            }));
+    if (isActive) {
+      await Future(() async {
+        //   var url = await getUrlString(
+        //       widget.videos[widget.videoIndex].videoUrl ?? '', context);
+        //   flickManager = FlickManager(
+        //       videoPlayerController: VideoPlayerController.network(url),
+        //       onVideoEnd: () {
+        //         dataManager.skipToNextVideo(context, Duration(seconds: 5));
+        //       });
+        // })
+        //     .then((value) => dataManager = DataManager(
+        //         flickManager: flickManager,
+        //         urls: widget.videos.map((e) => e.videoUrl ?? '').toList()))
+        //     .then((value) => dataManager.videos = widget.videos)
+        //     .then((value) => setState(() {
+        //           loading = false;
+      });
+    } else {
+      inActiveUserAccessDeniedDialog(
+        context,
+        onCancel: () => Get.back(),
+        onOk: () => Get.back(),
+      );
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    load();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      load();
+    });
   }
 
   @override
   void dispose() {
-    flickManager.dispose();
+    // flickManager.dispose();
     dataManager.videos = [];
     sl.get<GalleryProvider>().currentVideo = null;
     sl.get<GalleryProvider>().currentCategoryModel = null;
@@ -85,12 +103,20 @@ class _CustomOrientationPlayerState extends State<CustomOrientationPlayer> {
             body: SafeArea(
               child: Column(
                 children: [
-                  !loading
-                      ? buildPlayerWidget()
-                      : Container(
-                          height: 200,
-                          width: double.maxFinite,
-                          child: Center(child: CircularProgressIndicator())),
+                  // !loading
+                  // ? buildPlayerWidget()
+                  // ?
+                  PlayVideoFromVimeoPrivateId(
+                    videoId: provider.currentVideo!.videoUrl!.split('/').last,
+                    autoPlay: isActive,
+                    onPlayerCreated: (controller) {
+                      podPlayerController = controller;
+                    },
+                  ),
+                  // : Container(
+                  //     height: 200,
+                  //     width: double.maxFinite,
+                  //     child: Center(child: CircularProgressIndicator())),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -141,6 +167,18 @@ class _CustomOrientationPlayerState extends State<CustomOrientationPlayer> {
               onTap: () {
                 provider.setCurrentVideo(video);
                 dataManager.playRandom(video, context);
+                if (podPlayerController != null &&
+                    podPlayerController!.isInitialised) {
+                  final Map<String, String> headers = <String, String>{};
+                  headers['Authorization'] =
+                      'Bearer ${'eb7f7381bc30169014f5665326403cae'}';
+                  warningLog('changing video.videoUrl ${video.videoUrl}');
+                  podPlayerController!.changeVideo(
+                      playVideoFrom: PlayVideoFrom.vimeo(
+                          (video.videoUrl ?? '.').split('/').last));
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                }
               },
               child: Container(
                 margin: EdgeInsets.only(

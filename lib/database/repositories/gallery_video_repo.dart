@@ -10,7 +10,7 @@ class GalleryRepo {
   final SharedPreferences sharedPreferences;
   GalleryRepo({required this.dioClient, required this.sharedPreferences});
 
-  /// :Subscription History
+// get gallery data
   Future<ApiResponse> getGalleryData() async {
     try {
       Response response =
@@ -47,12 +47,24 @@ class GalleryRepo {
 //
   Future<ApiResponse> galleryVideos(Map<String, String> map) async {
     try {
-      Response response = await dioClient.post(AppConstants.getVideos,
-          data: map, token: true);
+      Response response =
+          await dioClient.post(AppConstants.getVideos, data: map, token: true);
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }
 //
+
+  Future<ApiResponse> getVimeoVideoCongig(String url,
+      {bool getMethod = true, Options? options}) async {
+    try {
+      Response response = (getMethod
+          ? await Dio().get(url, options: options)
+          : await dioClient.post(url));
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
 }

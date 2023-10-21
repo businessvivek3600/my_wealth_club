@@ -435,9 +435,9 @@ class UserData {
       packageUpdated = json['package_updated'];
       packageRoi = json['package_roi'];
       memberSale = json['member_sale'];
-      nRankId = json['n_rank_id'];
-      nRankName = json['n_rank_name'];
-      nRankUpdated = json['n_rank_updated'];
+      nRankId = json['rank_id'];
+      nRankName = json['rank_name'];
+      nRankUpdated = json['rank_updated'];
       rewardId = json['reward_id'];
       rankName = json['rank_name'];
       rankNote = json['rank_note'];

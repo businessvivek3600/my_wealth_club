@@ -15,8 +15,6 @@ import '/database/model/response/base/api_response.dart';
 import '/database/model/response/base/user_model.dart';
 import '/database/model/response/team_downline_user_model.dart';
 import '/database/repositories/team_view_repo.dart';
-import '/providers/auth_provider.dart';
-import '/sl_container.dart';
 import '/widgets/MultiStageButton.dart';
 
 import '../constants/app_constants.dart';
@@ -36,20 +34,30 @@ class TeamViewProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+// team member
+  late TextEditingController teamMemberSearchController;
+  bool isSearchingTeamMember = false;
+  setSearchingTeamMembers(bool val) {
+    isSearchingTeamMember = val;
+    notifyListeners();
+  }
+
   bool loadingTeamMembers = false;
   List<UserData> customerTeamMembers = [];
   int totalTeamMembers = 0;
   int teamMemberPage = 0;
 
-  Future<void> getCustomerTeam([bool loading = false]) async {
+  Future<void> getTeamMembers([bool loading = false]) async {
     loadingTeamMembers = loading;
     notifyListeners();
     bool cacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.myTeam);
     Map? map;
     if (isOnline) {
-      ApiResponse apiResponse =
-          await teamViewRepo.getTeamMember({'page': teamMemberPage.toString()});
+      ApiResponse apiResponse = await teamViewRepo.getTeamMember({
+        'page': teamMemberPage.toString(),
+        'search': teamMemberSearchController.text,
+      });
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         map = apiResponse.response!.data;

@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:action_slider/action_slider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/default_logger.dart';
+import '../../utils/my_logger.dart';
 import '/database/functions.dart';
-import '/widgets/show_custom_dialog.dart';
-import '../../utils/app_default_loading.dart';
-import '/screens/drawerPages/download_pages/videos/data_manager.dart';
-import '/utils/default_logger.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/body/login_model.dart';
 import '/myapp.dart';
@@ -36,10 +35,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController _userNameController = TextEditingController(text: '');
+  final TextEditingController _userNameController =
+      TextEditingController(text: '');
   // TextEditingController(text: 'vivekmalik2466m');
   // TextEditingController(text: 'BIZZ3800074');
-  TextEditingController _passwordController = TextEditingController(text: '');
+  final TextEditingController _passwordController =
+      TextEditingController(text: '');
   // TextEditingController(text: 'India@151');
   bool isFinished = false;
   bool showPassword = false;
@@ -55,12 +56,14 @@ class _LoginScreenState extends State<LoginScreen> {
       globalKey;
     });
     _focusNode.addListener(() {
-      print('Has focus: ${_focusNode.hasFocus}');
+      warningLog('Has focus: ${_focusNode.hasFocus}', 'LoginScreen');
       if (_focusNode.hasFocus) {
         _overlayEntry = _createOverlay();
         overlayState.insert(_overlayEntry!);
       } else {
-        _overlayEntry!.remove();
+        if (_overlayEntry != null) {
+          _overlayEntry!.remove();
+        }
       }
     });
   }
@@ -74,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
       .saveCredentials(_userNameController.text, _passwordController.text);
   @override
   Widget build(BuildContext context) {
+    // logger.e('LoginScreen', tag: 'LoginScreen', error: 'error');
     // checkForUpdate(context);
     double height = MediaQuery.of(context).size.height;
     return GestureDetector(
@@ -81,6 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Center(
         child: AutofillGroup(
           child: Scaffold(
+            backgroundColor: Colors.black,
             body: Container(
               height: height,
               width: double.maxFinite,
@@ -94,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Expanded(
                           child: Center(
-                            child: Container(
+                            child: SizedBox(
                               width: 350,
                               // constraints: BoxConstraints(maxWidth: 500),
                               child: Form(
@@ -169,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.info_outline, color: Colors.amber, size: 15),
+              const Icon(Icons.info_outline, color: Colors.amber, size: 15),
               width5(7),
               capText('Login process is temporary disabled.', context,
                   color: Colors.grey[400])
@@ -198,14 +203,14 @@ class _LoginScreenState extends State<LoginScreen> {
               child: CompositedTransformFollower(
                 link: _layerLink,
                 showWhenUnlinked: false,
-                offset: Offset(0.0, 50.0),
+                offset: const Offset(0.0, 50.0),
                 child: BuildAutoFillCredentialsContainer(
                     savedCredentials: savedCredentials,
                     onTap: (Map<String, dynamic>? val) {
                       if (val != null) {
                         _userNameController.text = val.keys.first;
                         _passwordController.text = val.values.first;
-                        _overlayEntry!.remove();
+                        if (_overlayEntry != null) _overlayEntry!.remove();
                       }
                     }),
               ),
@@ -218,14 +223,12 @@ class _LoginScreenState extends State<LoginScreen> {
       sliderBehavior: SliderBehavior.stretch,
       rolling: true,
       height: iconSize + 10,
-      child: bodyLargeText('SWIPE TO LOGIN', context,
-          color: Colors.black, useGradient: false),
       backgroundColor: Colors.white,
       toggleColor: appLogoColor.withOpacity(0.8),
       iconAlignment: Alignment.center,
       loadingIcon: SizedBox(
           width: iconSize,
-          child: Center(
+          child: const Center(
               child: SizedBox(
                   width: 24.0,
                   height: 24.0,
@@ -233,14 +236,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       strokeWidth: 2.0, color: Colors.white)))),
       successIcon: SizedBox(
           width: iconSize,
-          child: Center(child: Icon(Icons.check_rounded, color: Colors.white))),
+          child: const Center(
+              child: Icon(Icons.check_rounded, color: Colors.white))),
       failureIcon: SizedBox(
           width: iconSize,
-          child: Center(
+          child: const Center(
               child: Icon(Icons.warning_amber_rounded, color: Colors.red))),
       icon: SizedBox(
           width: iconSize,
-          child: Center(
+          child: const Center(
               child:
                   Icon(Icons.arrow_forward_ios_rounded, color: Colors.white))),
       action: (controller) async {
@@ -260,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller.success();
                 sl.get<DashBoardProvider>().getCustomerDashboard();
                 Future.delayed(
-                    Duration(milliseconds: 2000),
+                    const Duration(milliseconds: 2000),
                     () => Get.offAll(MainPage(
                           loginModel: LoginModel(
                               username: _userNameController.text,
@@ -280,6 +284,8 @@ class _LoginScreenState extends State<LoginScreen> {
           controller.reset(); //resets the slider
         }
       },
+      child: bodyLargeText('SWIPE TO LOGIN', context,
+          color: Colors.black, useGradient: false),
     );
   }
 
@@ -292,8 +298,8 @@ class _LoginScreenState extends State<LoginScreen> {
             TextSpan(
                 text: 'Sign Up',
                 recognizer: TapGestureRecognizer()
-                  ..onTap = () => Get.to(SignUpScreen()),
-                style: TextStyle(
+                  ..onTap = () => Get.to(const SignUpScreen()),
+                style: const TextStyle(
                     color: appLogoColor, fontWeight: FontWeight.bold)),
           ]),
         ),
@@ -304,99 +310,97 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget buildForm(double height) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
-        return Container(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              titleLargeText('Login', context, fontSize: 32),
-              height5(height * 0.01),
-              capText('Please sign in to continue.', context,
-                  fontSize: 15,
-                  color: Colors.white54,
-                  fontWeight: FontWeight.bold),
-              height20(height * 0.05),
-              Row(
-                children: <Widget>[
-                  Expanded(
-                    child: CompositedTransformTarget(
-                      link: _layerLink,
-                      child: TextFormField(
-                        autofillHints: [
-                          AutofillHints.username,
-                          AutofillHints.name,
-                          AutofillHints.email,
-                        ],
-                        focusNode: _focusNode,
-                        controller: _userNameController,
-                        enabled: true,
-                        cursorColor: Colors.white,
-                        style: TextStyle(color: Colors.white),
-                        decoration: InputDecoration(hintText: 'Username'),
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Please enter username';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              height10(height * 0.02),
-              Row(
-                children: <Widget>[
-                  Expanded(
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            titleLargeText('Login', context, fontSize: 32),
+            height5(height * 0.01),
+            capText('Please sign in to continue.', context,
+                fontSize: 15,
+                color: Colors.white54,
+                fontWeight: FontWeight.bold),
+            height20(height * 0.05),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: CompositedTransformTarget(
+                    link: _layerLink,
                     child: TextFormField(
-                      controller: _passwordController,
-                      autofillHints: [AutofillHints.password],
+                      autofillHints: const [
+                        AutofillHints.username,
+                        AutofillHints.name,
+                        AutofillHints.email,
+                      ],
+                      focusNode: _focusNode,
+                      controller: _userNameController,
                       enabled: true,
                       cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white),
-                      obscureText: !showPassword,
-                      decoration: InputDecoration(
-                          hintText: 'Password',
-                          suffixIcon: GestureDetector(
-                              onTap: () {
-                                primaryFocus?.unfocus();
-                                setState(() => showPassword = !showPassword);
-                              },
-                              child: Icon(
-                                showPassword
-                                    ? Icons.visibility
-                                    : Icons.visibility_off_rounded,
-                                color: Colors.white,
-                              ))),
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(hintText: 'Username'),
                       validator: (val) {
                         if (val == null || val.isEmpty) {
-                          return 'Please enter your password';
+                          return 'Please enter username';
                         }
                         return null;
                       },
                     ),
                   ),
-                ],
-              ),
-              height20(height * 0.01),
-              // buildCaptcha(),
-              // height20(height * 0.01),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => MyCarClub.navigatorKey.currentState
-                        ?.pushNamed(ForgotPasswordScreen.routeName),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: capText('Forgot Password?', context,
-                          color: appLogoColor),
-                    ),
-                  )
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+            height10(height * 0.02),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: TextFormField(
+                    controller: _passwordController,
+                    autofillHints: const [AutofillHints.password],
+                    enabled: true,
+                    cursorColor: Colors.white,
+                    style: const TextStyle(color: Colors.white),
+                    obscureText: !showPassword,
+                    decoration: InputDecoration(
+                        hintText: 'Password',
+                        suffixIcon: GestureDetector(
+                            onTap: () {
+                              primaryFocus?.unfocus();
+                              setState(() => showPassword = !showPassword);
+                            },
+                            child: Icon(
+                              showPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off_rounded,
+                              color: Colors.white,
+                            ))),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+              ],
+            ),
+            height20(height * 0.01),
+            // buildCaptcha(),
+            // height20(height * 0.01),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => MyCarClub.navigatorKey.currentState
+                      ?.pushNamed(ForgotPasswordScreen.routeName),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: capText('Forgot Password?', context,
+                        color: appLogoColor),
+                  ),
+                )
+              ],
+            ),
+          ],
         );
       },
     );
@@ -432,17 +436,16 @@ class _LoginScreenState extends State<LoginScreen> {
                 password: _passwordController.text,
                 device_id: ''))
             .then((value) {
-          print('Login Value ${value != true}');
           if (value) {
             sl.get<DashBoardProvider>().getCustomerDashboard();
+            // Future.delayed(
+            //     const Duration(seconds: 3),
+            //     () => Toasts.showSuccessNormalToast(
+            //         'You have logged in Successfully',
+            //         title:
+            //             'Welcome ${sl.get<AuthProvider>().userData.customerName ?? ''}'));
             Future.delayed(
-                Duration(seconds: 3),
-                () => Toasts.showSuccessNormalToast(
-                    'You have logged in Successfully',
-                    title:
-                        'Welcome ${sl.get<AuthProvider>().userData.customerName ?? ''}'));
-            Future.delayed(
-                Duration(milliseconds: 000),
+                const Duration(milliseconds: 000),
                 () => Get.offAll(MainPage(
                       loginModel: LoginModel(
                           username: _userNameController.text,
@@ -482,34 +485,41 @@ class _BuildAutoFillCredentialsContainerState
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: widget.savedCredentials.entries.length > 2
           ? 200
           : widget.savedCredentials.entries.length * 70.0,
       child: Material(
-        elevation: 5.0,
+        elevation: 2.0,
+        type: MaterialType.card,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
         // color: Color.fromARGB(255, 43, 77, 87),
-        color: Colors.white,
+        color: bColor(1),
+        shadowColor: Colors.white,
+
         child: ListView(
-          padding: EdgeInsetsDirectional.symmetric(horizontal: 20, vertical: 5),
+          padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: 20, vertical: 5),
           children: [
             ...savedCredentials.entries.map(
               (e) => ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: CircleAvatar(
+                  leading: const CircleAvatar(
                       backgroundColor: appLogoColor,
                       child: Icon(Icons.person, color: Colors.white)),
-                  title: Text(e.key, style: TextStyle(color: Colors.black)),
-                  subtitle: Text(
+                  title: titleLargeText(e.key, context,
+                      style: const TextStyle(color: Colors.white)),
+                  subtitle: capText(
                       e.value.toString().split('').map((e) => '*').join(''),
-                      style: TextStyle(color: Colors.black54)),
+                      context,
+                      style: const TextStyle(color: Colors.white70)),
                   onTap: () => widget.onTap({e.key: e.value}),
                   trailing: TextButton(
-                    child: capText('Remove', context, color: Colors.red),
+                    child: bodyMedText('Remove', context,
+                        color: CupertinoColors.link),
                     onPressed: () async {
-//show alert dialog to confirm
+                      //show alert dialog to confirm
                       showDialog(
                           context: context,
                           barrierColor: Colors.white.withOpacity(0.1),
@@ -565,7 +575,7 @@ class MyCustomClipper extends CustomClipper<Path> {
   @override
   getClip(Size size) {
     Path path = Path()
-      ..addOval(Rect.fromPoints(Offset(0, 0), Offset(60, 60)))
+      ..addOval(Rect.fromPoints(const Offset(0, 0), const Offset(60, 60)))
       ..addOval(Rect.fromLTWH(0, size.height - 50, 100, 50))
       ..addOval(Rect.fromCircle(
           center: Offset(size.width / 2, size.height / 2), radius: 20))

@@ -38,10 +38,15 @@ import 'database/databases/firebase_database.dart';
 import 'database/dio/dio/logging_interceptor.dart';
 import 'database/repositories/support_repo.dart';
 import 'providers/web_view_provider.dart';
+import 'screens/youtube_video_play_widget copy.dart';
+import 'utils/device_info.dart';
 
 final sl = GetIt.I;
 Future<void> initRepos() async {
   // Core
+  if (!sl.isRegistered<DeviceInfoConfig>()) {
+    sl.registerLazySingleton(() => DeviceInfoConfig());
+  }
   if (!sl.isRegistered<NetworkInfo>()) {
     sl.registerLazySingleton(() => NetworkInfo(sl()));
   }
@@ -61,7 +66,7 @@ Future<void> initRepos() async {
   }
   if (!sl.isRegistered<FirebaseDatabase>()) {
     sl.registerLazySingleton(() =>
-        FirebaseDatabase(collectionName: AppConstants.firebaseCollectionName));
+        FirebaseDatabase(collection: AppConstants.firebaseCollectionName));
   }
 
   //Repositories
@@ -160,6 +165,9 @@ Future<void> initRepos() async {
   }
   if (!sl.isRegistered<PlayerProvider>()) {
     sl.registerLazySingleton(() => PlayerProvider());
+  }
+  if (!sl.isRegistered<PlayerProviderNew>()) {
+    sl.registerLazySingleton(() => PlayerProviderNew());
   }
   if (!sl.isRegistered<WebViewProvider>()) {
     sl.registerLazySingleton(() => WebViewProvider());

@@ -46,6 +46,9 @@ class _CashWalletPageState extends State<CashWalletPage> {
     provider.btn_fund_coinpayment = false;
     provider.btn_fund_card = false;
     provider.btn_fund_cash_wallet = false;
+    provider.stripe_paymnet_cancel_url = '';
+    provider.stripe_paymnet_success_url = '';
+    provider.tap_paymnet_return_url = '';
     provider.paymentTypes.clear();
     super.dispose();
   }

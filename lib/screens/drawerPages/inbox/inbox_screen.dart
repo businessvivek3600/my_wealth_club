@@ -464,7 +464,7 @@ const htmlData2 =
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
-  static final String routeName = 'InboxScreen';
+  static const String routeName = 'InboxScreen';
 
   @override
   State<InboxScreen> createState() => _InboxScreenState();

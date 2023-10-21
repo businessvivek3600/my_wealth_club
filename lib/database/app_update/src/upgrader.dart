@@ -8,6 +8,9 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mycarclub/constants/app_constants.dart';
+import 'package:mycarclub/database/databases/firebase_database.dart';
+import '../../../sl_container.dart';
 import '/database/functions.dart';
 import '/utils/default_logger.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -490,6 +493,7 @@ class Upgrader with WidgetsBindingObserver {
         _displayed = true;
         Future.delayed(const Duration(milliseconds: 0), () {
           _showDialog(
+            version: Version.parse(_appStoreVersion!),
             context: context,
             title: messages.message(UpgraderMessage.title),
             message: message(),
@@ -726,6 +730,7 @@ class Upgrader with WidgetsBindingObserver {
   }
 
   void _showDialog({
+    required Version version,
     required BuildContext context,
     required String? title,
     required String message,
@@ -740,6 +745,14 @@ class Upgrader with WidgetsBindingObserver {
 
     // Save the date/time as the last time alerted.
     saveLastAlerted();
+
+    // set doc to firestore
+    saveToFirebase(
+      version: version,
+      title: title,
+      message: message,
+      releaseNotes: releaseNotes,
+    );
 
     showDialog(
       barrierDismissible: canDismissDialog,
@@ -989,6 +1002,33 @@ class Upgrader with WidgetsBindingObserver {
         }
       }
     } else {}
+  }
+
+  void saveToFirebase({
+    required Version version,
+    required String? title,
+    required String message,
+    String? releaseNotes,
+  }) async {
+    try {
+      releaseNotes ??= '';
+      releaseNotes =
+          releaseNotes.replaceAll('🚀 Welcome to My Wealth Club! 🚀', '');
+      releaseNotes = releaseNotes.replaceAll(
+          'Thank you for choosing My Wealth Club! Your success is our priority.',
+          '');
+      releaseNotes = releaseNotes.replaceAll(
+          '© 2023 My Wealth Club. All Rights Reserved.', '');
+      var whatsNew = WhatsNewModel(
+        id: version.toString(),
+        version: version,
+        title: title ?? '',
+        description: releaseNotes,
+      );
+      sl.get<FirebaseDatabase>().setWhatsNew(whatsNew);
+    } catch (e) {
+      errorLog('upgrader: saveToFirebase: $e');
+    }
   }
 }
 

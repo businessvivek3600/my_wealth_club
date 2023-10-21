@@ -259,7 +259,7 @@ class GalleryProvider extends ChangeNotifier {
   Map<String, String> filesLanguages = {};
   Future<void> getDownloadFiles(bool videoPage) async {
     Map? map;
-    loadingDownloadFiles = !videoPage;
+    loadingDownloadFiles = videoPage;
     notifyListeners();
     bool cacheExist = await APICacheManager()
         .isAPICacheKeyExist(AppConstants.getImportantDownloads);

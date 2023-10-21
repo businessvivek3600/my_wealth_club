@@ -6,6 +6,9 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:pod_player/pod_player.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart'
+    hide ProgressBar;
 import '/database/functions.dart';
 import '/constants/assets_constants.dart';
 import '/utils/picture_utils.dart';
@@ -14,8 +17,9 @@ import '/utils/default_logger.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart'
-    hide ProgressBar;
+// import 'package:youtube_player_flutter/youtube_player_flutter.dart'
+// hide ProgressBar;
+// import '../screens/YT/youtube_player_flutter.dart' hide ProgressBar;
 
 import '../sl_container.dart';
 
@@ -30,11 +34,29 @@ class YoutubePlayerPage extends StatefulWidget {
 }
 
 class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
+  // @override
+  // Widget build(BuildContext context) {
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       backgroundColor: Colors.black,
+  //       title: Text('Event Name', style: TextStyle(color: Colors.white)),
+  //       actions: [],
+  //     ),
+  //     body: Container(
+  //       color: Colors.black,
+  //       child: Center(
+  //         child: Text('Youtube Player Page'),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   var provider = sl.get<PlayerProvider>();
   String? videoId;
   bool isLive = false;
   bool rotate = false;
   Map<String, dynamic>? eventData;
+  NetworkImage? thumbnail;
   @override
   void initState() {
     super.initState();
@@ -50,6 +72,8 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
           eventData = data['data'];
         });
         if (videoId != null) {
+          thumbnail = NetworkImage(YoutubePlayer.getThumbnail(
+              videoId: videoId!, quality: ThumbnailQuality.high));
           provider.init(videoId: videoId!, isLive: isLive);
         }
       }
@@ -63,6 +87,12 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (thumbnail != null) precacheImage(thumbnail!, context);
+  }
+
+  @override
   void deactivate() {
     // Pauses video while navigating to next page.
 
@@ -72,20 +102,28 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
 
   @override
   void dispose() {
+    _dispose();
+    super.dispose();
+  }
+
+  _dispose() {
     provider.controller.dispose();
     provider.idController.dispose();
     provider.seekToController.dispose();
-    provider.timer.cancel();
     provider.controlTimer?.cancel();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
-    super.dispose();
+    provider.timer.cancel();
+    provider.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    return videoId != '' && videoId != null
+        ? _LiveYTPlayer(videoId: videoId!, data: eventData)
+        : Center(child: CircularProgressIndicator(color: Colors.white));
     DateTime? date = DateTime.tryParse(eventData?['webinar_time'] ?? '');
     // return Container();
     return Scaffold(
@@ -103,6 +141,11 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                       DeviceOrientation.portraitUp,
                       DeviceOrientation.portraitDown
                     ]);
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                        overlays: [
+                          SystemUiOverlay.top,
+                          SystemUiOverlay.bottom
+                        ]);
                   },
                   onEnterFullScreen: () {
                     SystemChrome.setPreferredOrientations([
@@ -131,33 +174,36 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                     appBar: buildAppBar(isLive: isLive, provider: provider),
                     body: Column(
                       children: [
-                        Stack(
-                          children: [
-                            AspectRatio(
-                                aspectRatio: 16 /
-                                    9, //provider.controller.value.aspectRatio
-                                child: player),
+                        Container(
+                          color: Colors.red,
+                          child: Stack(
+                            children: [
+                              AspectRatio(
+                                  aspectRatio: 16 /
+                                      9, //provider.controller.value.aspectRatio
+                                  child: player),
 
-                            ///Skip screen
-                            if (!provider.controller.value.isFullScreen)
-                              buildCutomScreenTapSkipWidget(provider),
+                              //thumbnail image
+                              if (!provider.controller.value.isFullScreen)
+                                buildCutomThumbnailWidget(provider),
 
-                            //thumbnail image
-                            if (!provider.controller.value.isFullScreen)
-                              buildCutomThumbnailWidget(provider),
+                              ///Skip screen
+                              if (!provider.controller.value.isFullScreen)
+                                buildCutomScreenTapSkipWidget(provider),
 
-                            ///Live indicator
-                            if (!provider.controller.value.isFullScreen)
-                              buildCutomLiveIndicator(provider),
+                              ///Live indicator
+                              if (!provider.controller.value.isFullScreen)
+                                buildCutomLiveIndicator(provider),
 
-                            /// progress bar and full screen button
-                            if (!provider.controller.value.isFullScreen)
-                              buildCustomProgressBarWidget(provider),
+                              /// progress bar and full screen button
+                              if (!provider.controller.value.isFullScreen)
+                                buildCustomProgressBarWidget(provider),
 
-                            // ///play button
-                            // if (!provider.controller.value.isFullScreen)
-                            //   buildCustomPlayButton(provider)
-                          ],
+                              // ///play button
+                              // if (!provider.controller.value.isFullScreen)
+                              //   buildCustomPlayButton(provider)
+                            ],
+                          ),
                         ),
                         Expanded(
                           child: Padding(
@@ -256,13 +302,13 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                 ),
               ),
 
-              ///Skip screen
-              if (provider.controller.value.isFullScreen)
-                buildCutomScreenTapSkipWidget(provider),
-
               //thumbnail image
               if (provider.controller.value.isFullScreen)
                 buildCutomThumbnailWidget(provider),
+
+              ///Skip screen
+              if (provider.controller.value.isFullScreen)
+                buildCutomScreenTapSkipWidget(provider),
 
               ///Live indicator
               if (provider.controller.value.isFullScreen)
@@ -346,7 +392,20 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                 ),
               ),
               child: IconButton(
-                  onPressed: () => Get.back(),
+                  onPressed: () {
+                    if (Platform.isIOS) {
+                      Navigator.of(context).pop();
+                    }
+                    SystemChrome.setPreferredOrientations([
+                      DeviceOrientation.portraitUp,
+                      DeviceOrientation.portraitDown
+                    ]);
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                        overlays: [
+                          SystemUiOverlay.top,
+                          SystemUiOverlay.bottom
+                        ]);
+                  },
                   icon:
                       Icon(Icons.close_rounded, color: Colors.white, size: 20)),
             ),
@@ -487,20 +546,16 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
         right: 0,
         bottom: 0,
         left: 0,
-        child: Visibility(
-          visible: provider.controller.value.isPlaying &&
-              provider.controller.value.position.inSeconds < 4,
-          child: AnimatedOpacity(
-            opacity:
-                provider.controller.value.position.inSeconds < 4 ? 1.0 : 0.0,
-            duration: const Duration(milliseconds: 4000),
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                    image: NetworkImage(
-                        'https://img.youtube.com/vi/${provider.controller.initialVideoId}/0.jpg'),
-                    fit: BoxFit.cover),
-              ),
+        child: AnimatedOpacity(
+          opacity: !provider.showThumbnail ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 1000),
+          child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: (thumbnail ??
+                      AssetImage(Assets.appWebLogo,
+                          package: 'youtube_player_flutter')) as ImageProvider,
+                  fit: BoxFit.cover),
             ),
           ),
         ));
@@ -677,21 +732,14 @@ class PlayerProvider extends ChangeNotifier {
   bool muted = false;
   bool isPlayerReady = false;
   bool showControls = true;
+  bool showThumbnail = true;
+  bool _initialThumbnail = false;
 
   late Timer timer;
   Timer? controlTimer;
   void init({required String videoId, bool isLive = false}) {
-    timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      infoLog('timer is running ${timer.tick}');
-      if (timer.tick > 4) {
-        timer.cancel();
-      }
-      notifyListeners();
-    });
-
-    controller = YoutubePlayerController(
-      initialVideoId: videoId,
-      flags: YoutubePlayerFlags(
+    _initialThumbnail = false;
+    var flag = YoutubePlayerFlags(
         mute: false,
         autoPlay: true,
         disableDragSeek: false,
@@ -700,20 +748,64 @@ class PlayerProvider extends ChangeNotifier {
         forceHD: true,
         enableCaption: false,
         hideControls: true,
+        hideThumbnail: true
         // startAt: 10,
         // coTimer.periodic(duration, (timer) { }), (timer) { })
-      ),
-    )
-      ..addListener(listener)
-      ..setVolume(100);
-    idController = TextEditingController();
-    seekToController = TextEditingController();
-    videoMetaData = const YoutubeMetaData();
-    playerState = PlayerState.unknown;
-    // setShowControls(true, 3);
+        );
+    warningLog('init is running for $videoId isLive-> $isLive flage: $flag');
+    controller = YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: flag,
+    )..addListener(listener);
+  }
+
+  @override
+  dispose() {
+    controller.removeListener(listener);
+    controller.dispose();
+    idController.dispose();
+    seekToController.dispose();
+    timer.isActive ? timer.cancel() : null;
+    controlTimer?.cancel();
+
+    super.dispose();
   }
 
   void listener() {
+    bool isReady = controller.value.isReady;
+    bool isPlaying = controller.value.isPlaying;
+    bool isPaused = controller.value.playerState == PlayerState.paused;
+    bool isEnded = controller.value.playerState == PlayerState.ended;
+    bool isUnStarted = controller.value.playerState == PlayerState.unStarted;
+    bool isUnknown = controller.value.playerState == PlayerState.unknown;
+    int position = controller.value.position.inSeconds;
+    if (position > 5) {
+      if (!_initialThumbnail) {
+        //run timer
+        timer = Timer.periodic(Duration(seconds: 1), (timer) {
+          infoLog(
+              'listener is running  timer : $_initialThumbnail $showThumbnail $position ${timer.tick}');
+          if (timer.tick > 3) {
+            timer.cancel();
+          }
+          if (timer.tick == 3) {
+            showThumbnail = !(isReady || isPlaying);
+            _initialThumbnail = !showThumbnail;
+            notifyListeners();
+          }
+        });
+      } else {
+        timer.cancel();
+      }
+    } else {
+      showThumbnail = (isReady || isPlaying)
+          ? (position < 4 ? true : false)
+          : (isPaused || isEnded || isUnStarted || isUnknown)
+              ? true
+              : false;
+      notifyListeners();
+    }
+
     // infoLog(controller.value.playerState.toString());
     if (isPlayerReady && !controller.value.isFullScreen) {
       // infoLog('listener is running ${controller.flags.isLive}');
@@ -732,7 +824,7 @@ class PlayerProvider extends ChangeNotifier {
       playerState = controller.value.playerState;
       videoMetaData = controller.metadata;
       controller.value.copyWith(playbackQuality: 'small');
-      successLog('metadata--> ${videoMetaData}');
+      successLog('metadata--> ${controller}');
 
       // change video qaulity
       // controller.setSize(Size(Get.height, Get.width));
@@ -754,7 +846,7 @@ class PlayerProvider extends ChangeNotifier {
     controlTimer = Timer.periodic(Duration(seconds: s), (timer) {
       errorLog('playing: ${timer.tick}');
       if (timer.tick == 3) {
-        showControls = false;
+        showControls = controller.value.playerState == PlayerState.paused;
         notifyListeners();
         controlTimer?.cancel();
         infoLog('playing: showControls $showControls');
@@ -790,3 +882,148 @@ class PlayerProvider extends ChangeNotifier {
                 
 
 */
+
+class _LiveYTPlayer extends StatefulWidget {
+  const _LiveYTPlayer({super.key, required this.videoId, this.data});
+  final String videoId;
+  final bool isLive = true;
+  final Map<String, dynamic>? data;
+
+  @override
+  State<_LiveYTPlayer> createState() => __LiveYTPlayerState();
+}
+
+class __LiveYTPlayerState extends State<_LiveYTPlayer> {
+  late final PodPlayerController controller;
+  Map<String, dynamic>? eventData;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = PodPlayerController(
+        playVideoFrom:
+            PlayVideoFrom.youtube(widget.videoId, live: widget.isLive))
+      ..initialise()
+      ..enableFullScreen();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      setState(() {
+        eventData = widget.data;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: titleLargeText('Daily Webinar', context)),
+      body: Container(
+        height: double.maxFinite,
+        width: double.maxFinite,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+              image: userAppBgImageProvider(context),
+              fit: BoxFit.cover,
+              opacity: 1),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+                flex: 1,
+                // aspectRatio: 16 / 9,
+                child: PodVideoPlayer(controller: controller)),
+            _buildEvendDetails(context)
+          ],
+        ),
+      ),
+    );
+  }
+
+  Expanded _buildEvendDetails(BuildContext context) {
+    DateTime? date = DateTime.tryParse(eventData?['webinar_time'] ?? '');
+    return Expanded(
+      flex: 2,
+      child: Column(
+        children: [
+          height20(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                backgroundColor: (!widget.isLive ? Colors.red : appLogoColor)
+                    .withOpacity(0.2),
+                child: assetImages(Assets.appLogo_S, height: 25, width: 25),
+              ),
+              width10(),
+              Expanded(
+                child: titleLargeText(
+                    (eventData?['webinar_title'] ?? '').toString().capitalize!,
+                    context),
+              ),
+            ],
+          ),
+          height10(),
+          // create ui for time when started and total duration
+          if (date != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(Icons.calendar_month_rounded,
+                    color: Colors.white, size: 20),
+                width10(),
+                Expanded(
+                  child: bodyLargeText(
+                      'Started ${getTimeDifference(date)}', context,
+                      useGradient: false),
+                ),
+              ],
+            ),
+
+          height10(),
+          // show location
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Icon(Icons.location_on,
+          //         color: Colors.pink, size: 20),
+          //     width10(),
+          //     Expanded(
+          //       child: bodyLargeText(
+          //           'Location: 123, ABC, XYZ', context,
+          //           useGradient: false),
+          //     ),
+          //   ],
+          // ),
+
+          // description headline
+          Divider(color: Colors.white),
+          if (eventData != null && eventData!['webinar_desc'] != null)
+            Expanded(
+              child: ListView(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      width30(),
+                      Expanded(
+                          child: bodyLargeText(
+                              (eventData?['webinar_desc'] ?? ''), context,
+                              useGradient: false,
+                              color: Colors.white70,
+                              maxLines: 200))
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}

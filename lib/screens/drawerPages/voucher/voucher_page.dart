@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:coupon_uikit/coupon_uikit.dart';
@@ -9,6 +10,9 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/database/model/response/voucher_package_model.dart';
+import 'package:mycarclub/utils/default_logger.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../constants/app_constants.dart';
 import '../../../widgets/load_more_container.dart';
 import '/constants/assets_constants.dart';
@@ -33,10 +37,12 @@ class GiftVoucherPage extends StatefulWidget {
   State<GiftVoucherPage> createState() => _GiftVoucherPageState();
 }
 
-class _GiftVoucherPageState extends State<GiftVoucherPage> {
+class _GiftVoucherPageState extends State<GiftVoucherPage>
+    with TickerProviderStateMixin {
   var provider = sl.get<VoucherProvider>();
   @override
   void initState() {
+    provider.tabController = TabController(length: 2, vsync: this);
     provider.getVoucherList(true).then((value) {
       if (provider.packages.isNotEmpty) {
         provider.setCurrentIndex(0);
@@ -54,6 +60,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
     provider.packages.clear();
     provider.paymentTypes.clear();
     provider.history.clear();
+    provider.tabController.dispose();
     super.dispose();
   }
 
@@ -64,15 +71,19 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
   Future<void> _refresh() async {
     provider.voucherPage = 0;
     await provider.getVoucherList(false);
+    provider.tabController.animateTo(0);
+    if (provider.packages.isNotEmpty) {
+      provider.carouselController.animateToPage(0,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.fastLinearToSlowEaseIn);
+    }
   }
 
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYzYTNmOTI0NTNjODViYzEyNjU4ZjNiZSIsInVzZXJuYW1lIjoiSnVkZ2VfQ3JvbmluIiwiaWF0IjoxNjcxNjk3MTcxfQ.hbZLKSsS6Mdj1ndhAf4rm_5we4iWYvKY1VPSo51sQRM
   @override
   Widget build(BuildContext context) {
+    double sectionHeight = 200;
     return Consumer<VoucherProvider>(
       builder: (context, provider, child) {
-        print(
-            'gift voucher history length ${provider.history.length}/${provider.totalVouchers}}');
         return Scaffold(
           backgroundColor: mainColor,
           appBar: AppBar(
@@ -88,50 +99,77 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                   opacity: 1),
             ),
             child: !provider.loadingVoucher
-                ? LoadMoreContainer(
-                    finishWhen:
-                        provider.history.length >= provider.totalVouchers,
-                    onLoadMore: _loadMore,
-                    onRefresh: _refresh,
-                    builder: (scrollController, status) {
-                      return ListView(
-                        controller: scrollController,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-                        physics: BouncingScrollPhysics(),
-                        children: [
-                          Container(
-                            height: !provider.loadingVoucher &&
-                                    provider.packages.isEmpty
-                                ? Get.height * 0.3
-                                : Get.height * 0.3,
-                            width: double.maxFinite,
-                            child: (provider.loadingVoucher ||
-                                    provider.packages.isNotEmpty)
-                                ? Column(
-                                    children: [
-                                      height10(),
-                                      Expanded(child: VoucherCarousel()),
-                                      buildVoucherDetailsCard(provider, context)
-                                    ],
-                                  )
-                                : buildNoVouchers(context),
-                          ),
-                          SizedBox(height: 20),
-                          ...provider.history
-                              .map((e) => buildVoucher(e, context)),
-                          if (provider.history.isEmpty)
-                            Divider(color: Colors.white54),
-                          if (provider.history.isEmpty)
-                            buildEmptyHistory(context),
-                        ],
-                      );
-                    })
-                : Center(child: CircularProgressIndicator(color: Colors.white)),
+                ? Column(
+                    children: [
+                      _buildUpperSection(sectionHeight, provider, context),
+                      Expanded(
+                        child: LoadMoreContainer(
+                            finishWhen: provider.history.length >=
+                                provider.totalVouchers,
+                            onLoadMore: _loadMore,
+                            onRefresh: _refresh,
+                            builder: (scrollController, status) {
+                              return ListView(
+                                controller: scrollController,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 0),
+                                physics: const BouncingScrollPhysics(),
+                                children: [
+                                  ...provider.history.map((e) => Padding(
+                                      padding: const EdgeInsetsDirectional.only(
+                                          bottom: 8.0),
+                                      child: buildVoucher(e, context))),
+                                  if (provider.history.isEmpty)
+                                    const Divider(color: Colors.white54),
+                                  if (provider.history.isEmpty)
+                                    buildEmptyHistory(context),
+                                ],
+                              );
+                            }),
+                      ),
+                    ],
+                  )
+                : const Center(
+                    child: CircularProgressIndicator(color: Colors.white)),
           ),
           // bottomNavigationBar: buildBottomButton(context),
         );
       },
+    );
+  }
+
+  Column _buildUpperSection(
+      double sectionHeight, VoucherProvider provider, BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            _TabBarWidget(
+                sectionHeight: sectionHeight,
+                packages: provider.packages,
+                tabController: provider.tabController,
+                provider: provider),
+            Expanded(
+              child: SizedBox(
+                height: !provider.loadingVoucher && provider.packages.isEmpty
+                    ? sectionHeight
+                    : sectionHeight,
+                width: double.maxFinite,
+                child: (provider.loadingVoucher || provider.packages.isNotEmpty)
+                    ? Column(
+                        children: [
+                          height20(),
+                          Expanded(child: VoucherCarousel()),
+                        ],
+                      )
+                    : buildNoVouchers(context),
+              ),
+            ),
+          ],
+        ),
+        buildVoucherDetailsCard(provider, context),
+        height10(),
+      ],
     );
   }
 
@@ -146,9 +184,9 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
     );
   }
 
-  Container buildVoucherDetailsCard(
+  Widget buildVoucherDetailsCard(
       VoucherProvider provider, BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.maxFinite,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -166,7 +204,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
               //   )
               // ],
             ),
-            padding: EdgeInsets.all(5),
+            padding: const EdgeInsets.all(5),
             child: Row(
               children: [
                 UiCategoryTitleContainer(
@@ -187,12 +225,12 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
             onTap: () => checkServiceEnableORDisable(
                 'mobile_is_voucher', () => buildShowModalBottomSheet(context)),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              margin: EdgeInsets.only(right: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              margin: const EdgeInsets.only(right: 10),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   color: Colors.white,
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                         color: Colors.black12, blurRadius: 5, spreadRadius: 1)
                   ]),
@@ -228,11 +266,301 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
   Widget buildVoucher(VoucherModel e, BuildContext context) {
     String currency_icon = sl.get<AuthProvider>().userData.currency_icon ?? '';
 
-    bool used = e.usedBy != null;
+    bool used = e.usedBy != null && e.usedBy!.isNotEmpty;
     Color textColor = !used ? Colors.black : Colors.black54;
 
-    Color primaryColor1 = used ? Color(0xfff1e3d3) : Color(0xffcbf3f0);
-    Color appLogoColor2 = used ? Color(0xffd88c9a) : Color(0xff368f8b);
+    Color primaryColor1 =
+        used ? const Color(0xfff1e3d3) : const Color(0xffcbf3f0);
+
+    String packageType = e.packageType == '1' ? 'Joining' : 'Renewal';
+    String subType = e.packageId == '1'
+        ? 'Monthly'
+        : e.packageId == '2'
+            ? 'Gold'
+            : e.packageId == '3'
+                ? 'Platinum'
+                : '';
+    String date = '                                ';
+
+    if (e.createdAt != null && e.createdAt != '') {
+      try {
+        date =
+            '${DateFormat().add_yMMMd().format(DateTime.parse(e.createdAt ?? ""))}\n${DateFormat().add_jm().format(DateTime.parse(e.createdAt ?? ""))}';
+      } catch (e) {
+        date = 'Unknown';
+      }
+    }
+    String amount =
+        (double.tryParse(e.packageAmt ?? '0') ?? 0).toStringAsFixed(2);
+    // Color color1 = !used ? const Color(0xffd88c9a) : const Color(0xff368f8b);
+    //color for monthly, gold and platinum
+    Color monthlyColor = const Color(0xFFCC97D1);
+    Color goldColor = const Color(0xFFF9CE83);
+    Color platinumColor = const Color(0xFFB1B0B0);
+
+    Color color1 = e.packageId == '1'
+        ? monthlyColor
+        : e.packageId == '2'
+            ? goldColor
+            : e.packageId == '3'
+                ? platinumColor
+                : Colors.white;
+    Color color2 = e.packageId == '1'
+        ? const Color(0xFFD8CFF4)
+        : e.packageId == '2'
+            ? const Color.fromARGB(255, 230, 214, 188)
+            : e.packageId == '3'
+                ? const Color(0xFFC2C3C3)
+                : Colors.white;
+    Color color3 = e.packageId == '1'
+        ? const Color(0xFF96C5FF)
+        : e.packageId == '2'
+            ? const Color(0xFFFA8B8F)
+            : e.packageId == '3'
+                ? const Color(0xFF59F3CF)
+                : Colors.white;
+    Color usedColor = used
+        ? const Color.fromARGB(255, 236, 232, 232)
+        : const Color(0xff368f8b);
+
+    return ClipPath(
+      clipper: TicketPassClipper(
+        holeRadius: 30,
+      ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 0),
+        height: 150,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsetsDirectional.only(
+                start: 20,
+                end: 10,
+                top: 10,
+                bottom: 10,
+              ),
+              width: 60,
+              decoration: BoxDecoration(color: color1),
+              child: RotatedBox(
+                quarterTurns: 3,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        bodyLargeText(e.packageName ?? '', context,
+                            useGradient: false),
+                        capText('($packageType)', context, useGradient: false),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            //right part
+            Expanded(
+                child: Container(
+              padding: const EdgeInsetsDirectional.only(
+                start: 10,
+                end: 20,
+                top: 10,
+                bottom: 10,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color2.darken(30), color3],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AutoSizeText(amount,
+                              maxLines: 1,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold)),
+                          height10(),
+                          AutoSizeText(e.epin ?? '',
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold)),
+                        ],
+                      )),
+                  width10(),
+                  Expanded(
+                      flex: 3,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.access_time_rounded,
+                                    size: 15,
+                                    color: Colors.pink,
+                                  ),
+                                  width5(),
+                                  Column(
+                                    children: [
+                                      AutoSizeText(date,
+                                          textAlign: TextAlign.end,
+                                          style: const TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          // spacer
+                          const Spacer(),
+                          //used by
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const AutoSizeText('Used By : ',
+                                  textAlign: TextAlign.end,
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold)),
+                              width10(),
+                              Expanded(
+                                child: AutoSizeText(e.usedBy ?? '',
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                          // spacer
+                          const Spacer(),
+                          // share icon button , copy icon button and redeam text button with icon color white, all in a row
+                          Row(
+                            children: [
+                              GestureDetector(
+                                  onTap: used
+                                      ? null
+                                      : () async {
+                                          String promoMessage = """
+      🚀 Exciting News! 🚀
+      
+      Discover [Your App Name], the ultimate app for [Describe Your App's Purpose]! 📱
+      
+      🎉 Get started today and experience the future of [Your App's Functionality]. 🎁
+      
+      🌟 Key Features:
+      ✅ [Feature 1]: [Highlight its benefits]
+      ✅ [Feature 2]: [Highlight its benefits]
+      ✅ [Feature 3]: [Highlight its benefits]
+      
+      🤝 Join us today and use my referral code: [${sl.get<AuthProvider>().userData.username ?? ''}] for amazing rewards!
+      
+      💰 Don't forget to redeem your exclusive voucher code: [${e.epin ?? ''}] for fantastic discounts! Hurry, it won't last long! ⏳
+      
+      📲 Download the app now to unlock a world of possibilities:
+      👉 [${AppConstants().getDownloadUrlForIos()}] (iOS)
+      👉 [${AppConstants().getDownloadUrlForAndroid()}] (Android)
+      
+      Spread the word and let's [Your App's Mission] together! 🙌
+      #AwesomeApp #ReferralRewards #SaveBig
+      """;
+                                          final ByteData bytes =
+                                              await rootBundle.load(
+                                                  'assets/images/${Assets.appWebLogo}');
+                                          final Uint8List list =
+                                              bytes.buffer.asUint8List();
+                                          print('image path: $list');
+// _onShare method:
+                                          final box = context.findRenderObject()
+                                              as RenderBox?;
+                                          Share.share(
+                                            promoMessage,
+                                            subject:
+                                                'Check out this awesome app!',
+                                            sharePositionOrigin: box!
+                                                    .localToGlobal(
+                                                        Offset.zero) &
+                                                box.size,
+                                          );
+                                        },
+                                  child: Icon(Icons.share_rounded,
+                                      color: used
+                                          ? Colors.transparent
+                                          : Colors.white)),
+                              width10(),
+                              GestureDetector(
+                                  onTap: () => Clipboard.setData(
+                                          ClipboardData(text: e.epin ?? ''))
+                                      .then((value) => Fluttertoast.showToast(
+                                          msg: 'Voucher code copied!')),
+                                  child: const Icon(Icons.copy_rounded,
+                                      color: Colors.white)),
+                              width10(),
+                              Expanded(
+                                child: SizedBox(
+                                  height: 30,
+                                  child: FilledButton(
+                                    style: FilledButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5),
+                                        backgroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(50))),
+                                    onPressed: !used
+                                        ? () {
+                                            Clipboard.setData(ClipboardData(
+                                                    text: e.epin ?? ''))
+                                                .then((value) =>
+                                                    Fluttertoast.showToast(
+                                                        msg:
+                                                            'Voucher code copied!'));
+                                          }
+                                        : null,
+                                    child: AutoSizeText(
+                                        !used ? "REDEEM" : 'REDEEMED',
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        style: TextStyle(
+                                            color: usedColor,
+                                            // fontSize: 10,
+                                            fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                                // width10(),
+                              ),
+                            ],
+                          )
+                        ],
+                      )),
+                ],
+              ),
+            ))
+          ],
+        ),
+      ),
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0, left: 16, right: 16),
@@ -245,7 +573,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
           curveAxis: Axis.vertical,
           borderRadius: 10,
           firstChild: Container(
-            decoration: BoxDecoration(color: appLogoColor2),
+            decoration: BoxDecoration(color: usedColor),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -255,7 +583,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                         padding: const EdgeInsets.all(8.0),
                         child: Text(e.packageName ?? '',
                             textAlign: TextAlign.center,
-                            style: TextStyle(
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold))),
@@ -286,12 +614,12 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                               Expanded(
                                   child: capText(
                                       !used ? "REDEEM" : 'REDEEMED', context,
-                                      color: appLogoColor2,
+                                      color: usedColor,
                                       fontWeight: FontWeight.bold,
                                       textAlign: TextAlign.center)),
                               // width10(),
                               Icon(Icons.copy_rounded,
-                                  size: 15, color: appLogoColor2)
+                                  size: 15, color: usedColor)
                             ],
                           )),
                     ),
@@ -308,7 +636,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Spacer(),
+                const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -322,7 +650,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -331,12 +659,12 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontSize: 22,
-                          color: appLogoColor2,
+                          color: usedColor,
                           fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-                Spacer(),
+                const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -364,7 +692,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                     ),
                   ],
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -381,7 +709,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
                           fontWeight: FontWeight.w500),
                   ],
                 ),
-                Spacer(),
+                const Spacer(),
               ],
             ),
           )),
@@ -390,7 +718,7 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
 
   Padding buildBottomButton(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 10.0, right: 10, bottom: 10),
+      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.transparent,
@@ -420,17 +748,17 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         barrierColor: Colors.white24,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(20), topLeft: Radius.circular(20))),
         context: context,
-        builder: (context) => CreateVoucherDialogWidget());
+        builder: (context) => const CreateVoucherDialogWidget());
   }
 
   Column buildNoVouchers(BuildContext context) {
     return Column(
       children: [
-        Spacer(),
+        const Spacer(),
         Expanded(child: assetSvg(Assets.gift, color: Colors.white)),
         Expanded(
           child: Center(
@@ -438,6 +766,106 @@ class _GiftVoucherPageState extends State<GiftVoucherPage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _TabBarWidget extends StatefulWidget {
+  const _TabBarWidget({
+    super.key,
+    required this.sectionHeight,
+    required this.provider,
+    required this.packages,
+    required this.tabController,
+  });
+
+  final double sectionHeight;
+  final VoucherProvider provider;
+  final List<VoucherPackageModel> packages;
+  final TabController tabController;
+
+  @override
+  State<_TabBarWidget> createState() => _TabBarWidgetState();
+}
+
+class _TabBarWidgetState extends State<_TabBarWidget> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    int currentIndex = widget.provider.currentIndex;
+    int totalVouchers = widget.packages.length;
+    int totalRenewal =
+        widget.packages.where((element) => element.saleType == '2').length;
+    int totalJoining =
+        widget.packages.where((element) => element.saleType == '1').length;
+    return Container(
+      width: 50,
+      height: widget.sectionHeight,
+      decoration: BoxDecoration(
+        // border: Border.all(),
+        borderRadius: BorderRadius.circular(5),
+        // color: Colors.redAccent,
+        boxShadow: const [
+          // BoxShadow(
+          //   color: Colors.black12,
+          //   blurRadius: 5,
+          //   spreadRadius: 1,
+          // )
+        ],
+      ),
+      child: RotatedBox(
+        quarterTurns: 3,
+        child: Container(
+          // color: redDark,
+          width: 200,
+          padding: const EdgeInsets.all(8.0),
+          child: TabBar(
+            controller: widget.tabController,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: textGradiantColors
+                      .map((e) => e.withOpacity(0.7))
+                      .toList(),
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(5),
+                color: Colors.white),
+            indicatorPadding:
+                const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+            onTap: (index) {
+              widget.provider.setCurrentIndex(index);
+              widget.provider.carouselController.animateToPage(
+                  index == 0 ? 0 : totalJoining + 1,
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.fastLinearToSlowEaseIn);
+            },
+            tabs: [
+              Tab(
+                child: Text(
+                  'Joining ($totalJoining)',
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Tab(
+                child: Text(
+                  'Renewal ($totalRenewal)',
+                  style: const TextStyle(fontSize: 10),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -497,16 +925,22 @@ class VoucherCarousel extends StatelessWidget {
                 enableInfiniteScroll: false,
                 reverse: false,
                 autoPlay: false,
-                autoPlayInterval: Duration(seconds: 3),
-                autoPlayAnimationDuration: Duration(milliseconds: 800),
+                autoPlayInterval: const Duration(seconds: 3),
+                autoPlayAnimationDuration: const Duration(milliseconds: 800),
                 autoPlayCurve: Curves.fastOutSlowIn,
                 enlargeCenterPage: true,
                 // enlargeFactor: 0.3,
                 // onPageChanged: callbackFunction,
                 scrollDirection: Axis.horizontal,
                 onPageChanged: (page, reason) {
-                  print(page);
                   provider.setCurrentIndex(page);
+                  if (provider.currentPackage != null) {
+                    if (provider.currentPackage!.saleType == '1') {
+                      provider.tabController.animateTo(0);
+                    } else {
+                      provider.tabController.animateTo(1);
+                    }
+                  }
                 },
                 onScrolled: (page) {
                   // print(page);
@@ -543,10 +977,10 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                   image: userAppBgImageProvider(context),
                   fit: BoxFit.cover,
                   opacity: 1),
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                   topRight: Radius.circular(20), topLeft: Radius.circular(20))),
-          padding: EdgeInsets.symmetric(vertical: 10),
-          margin: EdgeInsets.only(top: kToolbarHeight * 1.5),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          margin: const EdgeInsets.only(top: kToolbarHeight * 1.5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -565,7 +999,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
               height20(),
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   children: [
                     SizedBox(
                       height: 150,
@@ -586,7 +1020,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                                 errorWidget: (context, url, error) =>
                                     assetImages(Assets.noImage),
                                 cacheManager: CacheManager(Config(
-                                  "${AppConstants.packageID}_${e}",
+                                  "${AppConstants.packageID}_$e",
                                   stalePeriod: const Duration(days: 7),
                                   //one week cache period
                                 )),
@@ -683,21 +1117,22 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                                 controller: provider.voucherCodeController,
                                 readOnly: provider.couponVerified != null,
                                 cursorColor: Colors.white,
-                                style: TextStyle(color: Colors.white),
+                                style: const TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
                                     hintText: 'Enter MCC Coupon Code',
-                                    hintStyle: TextStyle(color: Colors.white70),
+                                    hintStyle:
+                                        const TextStyle(color: Colors.white70),
                                     border: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white),
                                         borderRadius: BorderRadius.circular(5)),
                                     enabledBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white),
                                         borderRadius: BorderRadius.circular(5)),
                                     focusedBorder: OutlineInputBorder(
-                                        borderSide:
-                                            BorderSide(color: Colors.white),
+                                        borderSide: const BorderSide(
+                                            color: Colors.white),
                                         borderRadius: BorderRadius.circular(5)),
                                     suffixIcon:
                                         buildCouponFieldSuffix(provider)),
@@ -709,12 +1144,12 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                         if (provider.couponVerified != null)
                           RichText(
                               text: TextSpan(children: [
-                            TextSpan(
+                            const TextSpan(
                                 text: 'Coupon Applied: ',
                                 style: TextStyle(color: Colors.green)),
                             TextSpan(
                                 text: provider.voucherCodeController.text,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: Colors.green,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold)),
@@ -918,7 +1353,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
                 child: Row(
                   children: <Widget>[
                     Expanded(
-                        child: Container(
+                        child: SizedBox(
                       height: 40,
                       child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -963,7 +1398,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
 
   AnimatedContainer buildCouponFieldSuffix(VoucherProvider provider) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       width: provider.loadingVerifyCoupon ? 60 : 80,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
@@ -980,7 +1415,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
             ? Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
+                  const SizedBox(
                     width: 25,
                     height: 25,
                     child: Center(
@@ -991,7 +1426,7 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
               )
             : Text(
                 provider.couponVerified == null ? 'Check' : 'Clear',
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
       ),
     );
@@ -1019,38 +1454,51 @@ class _CreateVoucherDialogWidgetState extends State<CreateVoucherDialogWidget> {
 }
 
 class TicketPassClipper extends CustomClipper<Path> {
-  TicketPassClipper({this.position, this.holeRadius = 16});
+  TicketPassClipper({this.position, this.holeRadius = 16, this.radius = 10});
 
   double? position;
   final double holeRadius;
+  final double radius;
 
   @override
   Path getClip(Size size) {
-    position ??= size.width - 16;
-    if (position! > size.width) {
-      throw Exception('position is greater than width.');
-    }
-    final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0.0)
-      ..lineTo(size.width, (position! - holeRadius))
-      ..arcToPoint(
-        Offset(size.width, position!),
-        clockwise: false,
-        radius: const Radius.circular(2),
-      )
-      // ..lineTo(size.width, size.height)
+    double w = size.width;
+    double h = size.height;
+    var pos = position ?? 0.5;
+    if (pos > 1) pos = 1;
+    if (pos < 0) pos = 0;
 
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..lineTo(0, size.height - (size.height - position!))
-      ..arcToPoint(
-        Offset(0, position! - holeRadius),
-        clockwise: false,
-        radius: const Radius.circular(1),
-      )
-      ..lineTo(0, size.height - (size.height - position!));
-    // path.lineTo(0.0, size.height);
+    double hr = holeRadius / 2 + holeRadius * 0.0;
+
+    double p1 = (h * pos) - hr;
+    warningLog('p1 = $p1  ${(h * pos)}  $pos $h $holeRadius');
+
+    final path = Path()
+          ..lineTo(radius, 0.0)
+          ..lineTo(w - radius, 0.0)
+          ..quadraticBezierTo(w, 0.0, w, radius)
+          // curve to top right
+          ..lineTo(w, p1)
+          ..quadraticBezierTo(w - hr, p1, w - hr, p1 + hr)
+          ..quadraticBezierTo(w - hr, p1 + holeRadius, w, p1 + holeRadius)
+
+          //
+          ..lineTo(w, h - radius)
+          ..quadraticBezierTo(w, h, w - radius, h)
+          ..lineTo(radius, h)
+          ..quadraticBezierTo(0.0, h, 0.0, h - radius)
+
+          // curve to left
+          ..lineTo(0, p1 + holeRadius)
+          ..quadraticBezierTo(hr, p1 + holeRadius, hr, p1 + hr)
+          ..quadraticBezierTo(hr, p1, 0, p1)
+
+          //
+          ..lineTo(0.0, radius)
+          ..quadraticBezierTo(0.0, 0.0, radius, 0.0)
+
+        //
+        ;
 
     path.close();
     return path;

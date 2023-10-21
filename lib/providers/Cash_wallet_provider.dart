@@ -312,11 +312,16 @@ class CashWalletProvider extends ChangeNotifier {
   List<FundRequestModel> cardRequests = [];
   int cardPaymentPage = 0;
   int totalCardPayment = 0;
-  Future<void> getCardPaymentFundRequest([bool loading = false]) async {
+  String? tap_paymnet_return_url;
+  String? stripe_paymnet_success_url;
+  String? stripe_paymnet_cancel_url;
+  Future<void> getCardPaymentFundRequest(
+      [bool loading = false, int? page]) async {
     loadingCardRequestData = loading;
     notifyListeners();
     bool cacheExist = await APICacheManager()
         .isAPICacheKeyExist(AppConstants.getCardPaymentFundRequest);
+    if (page != null) cardPaymentPage = page;
     Map? map;
     if (isOnline) {
       ApiResponse apiResponse = await cashWalletRepo
@@ -379,6 +384,19 @@ class CashWalletProvider extends ChangeNotifier {
             cardPaymentPage++;
             totalCardPayment = int.parse(map['totalRows'] ?? '0');
             notifyListeners();
+          }
+        } catch (e) {}
+        try {
+          if (map['payment_return_url'] != null) {
+            tap_paymnet_return_url =
+                map['payment_return_url']?['tap']?['return'] ?? '';
+            stripe_paymnet_success_url =
+                map['payment_return_url']?['stripe']?['success'] ?? '';
+            stripe_paymnet_cancel_url =
+                map['payment_return_url']?['stripe']?['cancel'] ?? '';
+            successLog(
+                'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
+                'getCardPaymentFundRequest');
           }
         } catch (e) {}
         try {
@@ -483,14 +501,16 @@ class CashWalletProvider extends ChangeNotifier {
                   allowBack: false,
                   allowCopy: false,
                   conditions: [
-                    'https://mywealthclub.com/api/customer/card-fund-request-status'
+                    tap_paymnet_return_url ?? '',
+                    stripe_paymnet_success_url ?? '',
+                    stripe_paymnet_cancel_url ?? '',
                   ],
                   onResponse: (res) {
                     print('request url matched <res> $res');
                     Get.back();
                     hitPaymentResponse(
                       () => cashWalletRepo.hitPaymentResponse(res),
-                      () => getCardPaymentOrderId(amount, paymentType, 0),
+                      () => getCardPaymentFundRequest(true, 0),
                       tag: 'cardPaymentOrderId',
                     );
 

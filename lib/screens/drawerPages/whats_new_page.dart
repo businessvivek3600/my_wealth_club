@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mycarclub/utils/sizedbox_utils.dart';
-import 'package:mycarclub/utils/text.dart';
+import '/utils/sizedbox_utils.dart';
+import '/utils/text.dart';
 
 import '../../database/databases/firebase_database.dart';
 import '../../database/functions.dart';
@@ -19,7 +19,7 @@ class _WhatsNewPageState extends State<WhatsNewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Whats New'),
+        title: titleLargeText('Whats New', context, useGradient: true),
       ),
       body: Container(
         height: double.maxFinite,
@@ -34,24 +34,19 @@ class _WhatsNewPageState extends State<WhatsNewPage> {
           stream: sl.get<FirebaseDatabase>().listenWhatsNew(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
-              return Container(
-                  child: Center(
+              return const Center(
                 child: Text('Error'),
-              ));
+              );
             } else if (snapshot.connectionState == ConnectionState.waiting) {
-              return Container(
-                child: Center(
-                  child: Text('Loading...'),
-                ),
+              return const Center(
+                child: Text('Loading...'),
               );
             } else if (snapshot.hasData) {
               var data = snapshot.data as List<WhatsNewModel>;
               return _WhatsNewView(data: data);
             }
-            return Container(
-              child: Center(
-                child: Text('No Data'),
-              ),
+            return const Center(
+              child: Text('No Data'),
             );
           },
         ),
@@ -78,43 +73,55 @@ class _WhatsNewView extends StatelessWidget {
         return Column(
           children: [
             Container(
-              padding: EdgeInsets.all(10),
-              margin: EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(bottom: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (whatsNew.title != null && whatsNew.title != '')
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        titleLargeText(
-                          whatsNew.title ?? '',
-                          context,
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                        Divider(color: Colors.grey),
-                      ],
-                    ),
-                  capText(whatsNew.version.toString(), context,
-                      fontSize: whatsNew.title != null && whatsNew.title != ''
-                          ? 12
-                          : 16),
-                  if (whatsNew.title == null || whatsNew.title == '')
-                    Divider(color: Colors.grey),
+                  // if (whatsNew.title != null && whatsNew.title != '')
+                  //   Column(
+                  //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //     children: [
+                  //       titleLargeText(
+                  //         whatsNew.title ?? '',
+                  //         context,
+                  //         style: const TextStyle(
+                  //             fontSize: 18,
+                  //             fontWeight: FontWeight.bold,
+                  //             color: Colors.white),
+                  //       ),
+                  //       const Divider(color: Colors.grey),
+                  //     ],
+                  //   ),
+                  capText(
+                    whatsNew.version.toString(),
+                    context,
+                    fontSize:
+                        //  whatsNew.title != null && whatsNew.title != ''
+                        //     ? 12
+                        //     :
+                        18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  // if (whatsNew.title == null || whatsNew.title == '')
+                  const Divider(color: Colors.grey),
                   height10(),
                   if (whatsNew.description != null)
                     capText(
-                        parseHtmlString(whatsNew.description ?? ''), context,
-                        color: Colors.white70),
+                      parseHtmlString(whatsNew.description ?? '')
+                          .replaceFirst('(', '')
+                          .replaceAll('(', '\n'),
+                      context,
+                      color: Colors.white70,
+                      maxLines: 100,
+                    ),
                   if (whatsNew.link != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         height10(),
-                        capText(whatsNew.link ?? '', context),
+                        bodyMedText(whatsNew.link ?? '', context),
                       ],
                     ),
                   if (whatsNew.imageUrl != null)
@@ -137,7 +144,7 @@ class _WhatsNewView extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white),
+                                color: Colors.white.withOpacity(0.8)),
                             children: <TextSpan>[
                               TextSpan(
                                   text: formatDate(
@@ -145,8 +152,9 @@ class _WhatsNewView extends StatelessWidget {
                                           ? whatsNew.updatedAt!
                                           : whatsNew.createdAt!,
                                       'dd MMM yyyy hh:mm a'),
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.normal)),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                  )),
                             ],
                           ),
                         ),
@@ -159,7 +167,7 @@ class _WhatsNewView extends StatelessWidget {
         );
       },
       separatorBuilder: (context, index) {
-        return Divider(color: Colors.transparent);
+        return const Divider(color: Colors.transparent);
       },
     ));
   }

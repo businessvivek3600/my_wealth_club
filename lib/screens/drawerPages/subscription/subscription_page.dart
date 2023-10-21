@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '/utils/app_default_loading.dart';
 import '../../../widgets/load_more_container.dart';
 import '/database/functions.dart';
 import '/database/model/response/subscription_history_model.dart';
@@ -35,14 +32,16 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   void initState() {
     super.initState();
     provider.subPage = 0;
-    provider.mySubscriptions(true).then((value) {
-      if (widget.initPurchaseDialog) {
-        showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (_) => SubscriptionPurchaseDialog());
-      }
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      provider.mySubscriptions(true).then((value) {
+        if (widget.initPurchaseDialog) {
+          showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (_) => SubscriptionPurchaseDialog());
+        }
+      });
     });
   }
 

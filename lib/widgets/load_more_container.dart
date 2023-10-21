@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mycarclub/utils/color.dart';
+import '/utils/color.dart';
 import '/utils/default_logger.dart';
 import '/utils/text.dart';
 

@@ -73,6 +73,7 @@ class Assets {
   static const classPng = 'icons8-class-64.png';
   static const videoPng = 'icons8-video-64.png';
   static const downloadsPng = 'icons8-downloads-64.png';
+  static const liveStreamingPng = 'icons8-youtube-live-48.png';
   static const forgotPass = 'forgot-pass.png';
   static const blackNoImageIcon = 'black-no-image-icon.png';
   static const whiteNoImageIcon = 'white-no-image-icon.png';
@@ -89,6 +90,7 @@ class Assets {
   static const pendingImg = 'pending.png';
   static const chatIconImage = 'icons8-chat-64.png';
   static const dataFileImage = 'data-files-video-3d-icon-illustration-png.webp';
+  static const newPng = 'icons8-new-48.png';
 
   ///video
   static const appSplashVideo1 = 'SplashScreen1.mp4';
@@ -112,4 +114,6 @@ class Assets {
   static const tradingSignals = 'kaRTgezOn1.json';
   static const mail = 'mail.json';
   static const loading_mwc = 'loading_mwc.json';
+  static const liveLottie = 'live.json';
+  static const liveBroadcastLottie = 'live_broadcast_2s.json';
 }

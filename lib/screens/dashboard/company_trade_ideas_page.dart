@@ -6,6 +6,9 @@ import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/screens/dashboard/main_page.dart';
+import 'package:mycarclub/screens/drawerPages/subscription/subscription_page.dart';
+import '../../providers/auth_provider.dart';
 import '/database/model/response/trade_idea_model.dart';
 import 'package:provider/provider.dart';
 import '../../providers/dashboard_provider.dart';
@@ -29,29 +32,38 @@ class CompanyTradeIdeasPage extends StatefulWidget {
 
 class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
   var provider = sl.get<DashBoardProvider>();
+  var authProvider = sl.get<AuthProvider>();
   late Timer timer;
+  late bool isActive;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.getTradeIdea(true);
-      //timer
-      timer = Timer.periodic(Duration(seconds: 30), (Timer t) {
-        provider.tradeIdeaPage = 0;
-        provider.getTradeIdea(false);
-      });
+      isActive = authProvider.userData.salesActive == '1';
+      warningLog('isActive: $isActive');
+      if (isActive) {
+        provider.getTradeIdea(true);
+        //timer
+        timer = Timer.periodic(Duration(seconds: 30), (Timer t) {
+          provider.tradeIdeaPage = 0;
+          provider.getTradeIdea(false);
+        });
 
-      // check if there is any arguments
-      final args = ModalRoute.of(context)!.settings.arguments;
-      successLog('arguments--> $args ${args.runtimeType}');
-      if (args != null && args is String && args.isNotEmpty) {
-        Map<String, dynamic> data = jsonDecode(args);
-        var signal_id = data['signal_id'];
-        if (signal_id != null) {
-          Get.to(() =>
-              SignalDetail(trade: TradeIdeaModel(id: signal_id), init: true));
+        // check if there is any arguments
+        final args = ModalRoute.of(context)!.settings.arguments;
+        successLog('arguments--> $args ${args.runtimeType}');
+        if (args != null && args is String && args.isNotEmpty) {
+          Map<String, dynamic> data = jsonDecode(args);
+          var signal_id = data['signal_id'];
+          if (signal_id != null) {
+            Get.to(() =>
+                SignalDetail(trade: TradeIdeaModel(id: signal_id), init: true));
+          }
         }
+      } else {
+        inActiveUserAccessDeniedDialog(context,
+            onOk: () => Get.back(), onCancel: () => Get.back());
       }
     });
   }

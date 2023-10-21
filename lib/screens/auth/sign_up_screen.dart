@@ -9,7 +9,6 @@ import '/providers/auth_provider.dart';
 import '/sl_container.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/text.dart';
-import '/widgets/app_country_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../database/model/body/register_model.dart';
@@ -19,7 +18,7 @@ import '../../utils/picture_utils.dart';
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key, this.sponsor, this.placement})
       : super(key: key);
-  static const String routeName = '/SignUpScreen';
+  static const String routeName = '/signup';
   final String? sponsor;
   final String? placement;
   @override
@@ -811,7 +810,6 @@ class _SignUpScreenState extends State<SignUpScreen>
   removeCountryOverlay() {
     countryOverlay?.remove();
     countryOverlay = null;
-    setState(() {});
   }
 
   _showOverLay() async {

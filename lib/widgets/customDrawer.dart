@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import '../screens/drawerPages/whats_new_page.dart';
+import '../screens/youtube_video_play_widget.dart';
 import '/database/model/response/additional/mcc_content_models.dart';
 import '../screens/drawerPages/downlines/my_incomes_page.dart';
 import '../screens/drawerPages/downlines/team_view/fancy_team_view.dart';
@@ -33,9 +37,8 @@ import '/screens/drawerPages/pofile/profile_screen.dart';
 import '/screens/drawerPages/subscription/subscription_page.dart';
 import '/screens/drawerPages/support_pages/support_Page.dart';
 import '../screens/drawerPages/downlines/team_view/my_tree_view.dart';
-import '../screens/drawerPages/downlines/trem_member_page.dart';
+import '../screens/drawerPages/downlines/team_member_page.dart';
 import '/screens/drawerPages/voucher/voucher_page.dart';
-import '/sl_container.dart';
 import '/utils/color.dart';
 import '/utils/sizedbox_utils.dart';
 import '/utils/picture_utils.dart';
@@ -95,15 +98,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       scrollController: controller,
                       child: SingleChildScrollView(
                         controller: controller,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
                         physics: const AlwaysScrollableScrollPhysics(),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            buildMasterClass(context),
+                            buildMasterClass(context, authProvider),
                             height5(),
-                            buildCompanyTradeIdea(context),
+                            buildCompanyTradeIdea(context, authProvider),
                             height5(),
                             capText('Components', context,
                                 color: Colors.white70,
@@ -237,17 +240,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                               width: size.width * 0.7,
                               selected: dashBoardProvider.selectedDrawerTile ==
                                   whatsNew,
-                              trailing: Container(
-                                padding: EdgeInsets.all(5),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: capText('New', context,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 7),
-                              ),
+                              trailing: assetImages(Assets.newPng,
+                                  width: 25, height: 25),
                             ),
                             height10(),
 
@@ -269,11 +263,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  GestureDetector buildCompanyTradeIdea(BuildContext context) {
+  GestureDetector buildCompanyTradeIdea(
+      BuildContext context, AuthProvider authProvider) {
+    bool isActive = authProvider.userData.salesActive == '1';
     return GestureDetector(
       onTap: () {
-        Get.back();
-        Get.to(CompanyTradeIdeasPage());
+        if (!isActive) {
+          inActiveUserAccessDeniedDialog(context);
+        } else {
+          Get.back();
+          Get.to(const CompanyTradeIdeasPage());
+        }
       },
       child: Row(
         children: [
@@ -292,88 +292,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  Column buildMasterClass(BuildContext context) {
-    double imageWidth = 30;
-    double maxWidth = 100;
-    double minWidth = 100;
-    return Column(
-      children: [
-        Row(
-          children: [
-            assetImages(Assets.classPng, width: 20),
-            width5(),
-            bodyLargeText('Master Classes', context,
-                color: Colors.white70, fontWeight: FontWeight.bold),
-          ],
-        ),
-        height10(),
-        Container(
-          // height: 70,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              width20(),
-              //
-              GestureDetector(
-                onTap: () {
-                  Get.back();
-                  Get.to(DrawerVideosMainPage());
-                },
-                child: Container(
-                  constraints:
-                      BoxConstraints(maxWidth: maxWidth, minWidth: minWidth),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: appLogoColor.withOpacity(0.8)),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      assetImages(Assets.videoPng, height: imageWidth),
-                      height5(),
-                      capText('Educational\nVideos', context,
-                          color: Colors.white,
-                          textAlign: TextAlign.center,
-                          fontWeight: FontWeight.bold),
-                    ],
-                  ),
-                ),
-              ),
-              //
-              width10(),
-              //
-              GestureDetector(
-                onTap: () {
-                  Get.back();
-                  Get.to(DowanloadsMainPage());
-                },
-                child: Container(
-                  constraints:
-                      BoxConstraints(maxWidth: maxWidth, minWidth: minWidth),
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: appLogoColor.withOpacity(0.8)),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      assetImages(Assets.downloadsPng, height: imageWidth),
-                      height5(),
-                      capText('Educational Downloads', context,
-                          color: Colors.white,
-                          textAlign: TextAlign.center,
-                          fontWeight: FontWeight.bold),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+  Widget buildMasterClass(BuildContext context, AuthProvider authProvider) {
+    return const _MasterClasses();
   }
 
   Column buildOthersTile(
@@ -401,17 +321,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     btnOkText: 'Yes Sure!',
                     btnCancelOnPress: () {},
                     btnOkOnPress: () async {
-                      await logOut('log-out button')
-                          .then((value) => Get.offAll(LoginScreen()));
+                      await logOut('log-out button', showD: false)
+                          .then((value) => Get.offAll(const LoginScreen()));
                     },
                     reverseBtnOrder: true,
                   ).show();
                 } else if (e[0] == 'Notifications') {
-                  Get.to(NotificationPage());
+                  Get.to(const NotificationPage());
                 } else if (e[0] == 'Settings') {
-                  Get.to(SettingsPage());
+                  Get.to(const SettingsPage());
                 } else if (e[0] == 'Support') {
-                  Get.to(SupportPage());
+                  Get.to(const SupportPage());
                 }
               },
               leading: e[1],
@@ -433,7 +353,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       color: Colors.red,
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                     child: capText(
                       '${Provider.of<NotificationProvider>(context, listen: true).totalUnread}',
                       context,
@@ -515,8 +436,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
           child: Column(
             children: [
               ...[
-                teamMemeber,
                 directMember,
+                teamMemeber,
                 teamView,
                 generationTreeView,
                 generationAnalyzer,
@@ -531,14 +452,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           page = const TeamMemberPage();
                           break;
                         case teamView:
-                          page = FancyTreeView();
+                          page = const FancyTreeView();
                           break;
                         case generationTreeView:
                           page = MyTreeViewPage();
                           break;
 
                         case directMember:
-                          page = DirectMembersPage();
+                          page = const DirectMembersPage();
                           break;
                         case generationAnalyzer:
                           page = const GenerationAnalyzerPage();
@@ -567,7 +488,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     title: e,
                     width: size.width * 0.7,
                     selected: dashBoardProvider.selectedDrawerTile == e,
-                    opacity: 0.7,
+                    opacity: 0.8,
                   ),
                 ),
               ),
@@ -613,10 +534,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           page = const MyIncomesPage();
                           break;
                         case cashWallet:
-                          page = CashWalletPage();
+                          page = const CashWalletPage();
                           break;
                         case commissionWallet:
-                          page = CommissionWalletPage();
+                          page = const CommissionWalletPage();
                           break;
                         case withdrawals:
                           page = const WithdrawRequestHistoryPage();
@@ -686,10 +607,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       Widget page = const Scaffold(backgroundColor: mainColor);
                       switch (e) {
                         case profile:
-                          page = ProfileScreen();
+                          page = const ProfileScreen();
                           break;
                         case paymentMethods:
-                          page = PaymentMethodsPage();
+                          page = const PaymentMethodsPage();
                           break;
 
                         default:
@@ -936,7 +857,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                           launchTheLink(dashBoardProvider.pptLink ?? '');
                           break;
                         case gallery:
-                          page = GalleryMainPage();
+                          page = const GalleryMainPage();
                           break;
                         case promotionalVideo:
                           page = DrawerVideoScreen(
@@ -949,7 +870,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                               title: introVideo);
                           break;
                         case academicVideos:
-                          page = DrawerVideosMainPage();
+                          page = const DrawerVideosMainPage();
                           break;
                         default:
                           page = buildDefaultPage();
@@ -1022,12 +943,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ),*/
           Row(
             children: [
-              Spacer(flex: 1),
+              const Spacer(flex: 1),
               Expanded(
                   flex: 3,
                   child: CachedNetworkImage(
                     imageUrl: dashBoardProvider.logoUrl ?? '',
-                    placeholder: (context, url) => SizedBox(
+                    placeholder: (context, url) => const SizedBox(
                         height: 70,
                         width: 50,
                         child: Center(
@@ -1039,7 +960,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         "${AppConstants.packageID}_app_dash_logo",
                         stalePeriod: const Duration(days: 30))),
                   )),
-              Spacer(flex: 1)
+              const Spacer(flex: 1)
             ],
           ),
           height10(),
@@ -1049,7 +970,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               bodyMedText(
                 'Version $appVersion',
                 context,
-                style: TextStyle(color: Colors.white, fontSize: 10),
+                style: const TextStyle(color: Colors.white, fontSize: 10),
               ),
             ],
           ),
@@ -1188,6 +1109,159 @@ class _CustomDrawerState extends State<CustomDrawer> {
       ),
       body: Center(
         child: bodyLargeText('Comming soon...', context, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _MasterClasses extends StatelessWidget {
+  const _MasterClasses({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dashboardProvider = Provider.of<DashBoardProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
+    bool isActive = authProvider.userData.salesActive == '1';
+    bool isWebinarLive = dashboardProvider.wevinarEventVideo != null &&
+        dashboardProvider.wevinarEventVideo!.status == '1';
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            assetImages(Assets.classPng, width: 20),
+            width5(),
+            bodyLargeText('Master Classes', context,
+                color: Colors.white70, fontWeight: FontWeight.bold),
+          ],
+        ),
+        height10(),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // education videos
+            Expanded(
+              flex: 4,
+              child: _SectionTile(
+                onTap: () {
+                  if (!isActive) {
+                    inActiveUserAccessDeniedDialog(context);
+                  } else {
+                    Get.back();
+                    Get.to(const DrawerVideosMainPage());
+                  }
+                },
+                title: 'Educational\nVideos',
+                image: Assets.videoPng,
+              ),
+            ),
+            // education downloads
+            width5(),
+            Expanded(
+              flex: 4,
+              child: _SectionTile(
+                onTap: () {
+                  if (!isActive) {
+                    inActiveUserAccessDeniedDialog(context);
+                  } else {
+                    Get.back();
+                    Get.to(const DowanloadsMainPage());
+                  }
+                },
+                title: 'Educational\nDownloads',
+                image: Assets.downloadsPng,
+              ),
+            ),
+            // Daily webinars
+            width5(),
+            Expanded(
+              flex: 3,
+              child: _SectionTile(
+                onTap: () {
+                  if (!isActive) {
+                    inActiveUserAccessDeniedDialog(context);
+                  } else if (!isWebinarLive) {
+                    Fluttertoast.showToast(
+                        msg: 'Currently no webinar is live',
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.TOP,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.white54,
+                        textColor: Colors.black);
+                  } else {
+                    Get.back();
+                    Navigator.pushNamed(context, YoutubePlayerPage.routeName,
+                        arguments: jsonEncode({
+                          'videoId':
+                              dashboardProvider.wevinarEventVideo!.webinarId,
+                          // 'videoId': 'ezdP1lzsNUg',
+                          'isLive': true,
+                          'rotate': true,
+                          'data': dashboardProvider.wevinarEventVideo!.toJson()
+                        }));
+                    // Get.to(YoutubeApp());
+                  }
+                },
+                title: 'Daily\nWebinars',
+                image: Assets.liveStreamingPng,
+                leading: isWebinarLive
+                    ? assetLottie(Assets.liveBroadcastLottie, height: 37)
+                    : null,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SectionTile extends StatelessWidget {
+  const _SectionTile(
+      {super.key,
+      required this.title,
+      required this.image,
+      required this.onTap,
+      this.leading});
+
+  final String title;
+  final String image;
+  final void Function() onTap;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    double imageWidth = 30;
+    double maxWidth = 100;
+    double minWidth = 100;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        // constraints:
+        //     BoxConstraints(maxWidth: maxWidth, minWidth: minWidth),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: appLogoColor.withOpacity(0.8)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            leading != null ? leading! : assetImages(image, height: imageWidth),
+            if (leading == null) height5(),
+            capText(
+              title,
+              context,
+              color: Colors.white,
+              textAlign: TextAlign.center,
+              fontWeight: FontWeight.bold,
+              fontSize: 10,
+            ),
+          ],
+        ),
       ),
     );
   }

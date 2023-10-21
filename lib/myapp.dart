@@ -1,17 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
-import 'package:mycarclub/screens/dashboard/company_trade_ideas_page.dart';
+import 'package:mycarclub/screens/youtube_video_play_widget%20copy.dart';
+import '/screens/dashboard/company_trade_ideas_page.dart';
 import '/providers/web_view_provider.dart';
 import '/screens/drawerPages/event_tickets/event_tickets_page.dart';
 import '/screens/youtube_video_play_widget.dart';
 import 'package:video_player/video_player.dart';
 import '/database/my_notification_setup.dart';
-import '/main.dart';
 import '/providers/GalleryProvider.dart';
 import '/providers/auth_provider.dart';
 import '/providers/card_payment_provider.dart';
@@ -124,6 +122,8 @@ class _MyCarClubState extends State<MyCarClub> {
               create: (context) => sl.get<CardPaymentProvider>()),
           ChangeNotifierProvider(create: (context) => sl.get<PlayerProvider>()),
           ChangeNotifierProvider(
+              create: (context) => sl.get<PlayerProviderNew>()),
+          ChangeNotifierProvider(
               create: (context) => sl.get<WebViewProvider>()),
         ],
         child: Builder(builder: (context) {
@@ -149,12 +149,14 @@ class _MyCarClubState extends State<MyCarClub> {
               UpdateAppPage.routeName: (_) => UpdateAppPage(),
               SubscriptionPage.routeName: (_) => SubscriptionPage(),
               YoutubePlayerPage.routeName: (_) => YoutubePlayerPage(),
+              YoutubePlayerPageNew.routeName: (_) => YoutubePlayerPageNew(),
               NotificationPage.routeName: (_) => NotificationPage(
                   notificationAppLaunchDetails:
                       widget.notificationAppLaunchDetails),
               CompanyTradeIdeasPage.routeName: (_) => CompanyTradeIdeasPage(),
             },
             navigatorObservers: [routeObserver],
+            enableLog: true,
           );
         }),
       ),

@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:mycarclub/screens/dashboard/company_trade_ideas_page.dart';
+import '/screens/dashboard/company_trade_ideas_page.dart';
 import '/screens/youtube_video_play_widget.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';

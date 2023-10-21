@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/utils/sizedbox_utils.dart';
+import 'package:mycarclub/utils/text.dart';
 import '/database/repositories/settings_repo.dart';
 import '/utils/color.dart';
 import '/database/model/response/base/user_model.dart';
@@ -180,23 +182,64 @@ String parseHtmlString(String htmlString) {
   return parsedString;
 }
 
-Future<void> logOut(dynamic reason) async {
+Future<void> logOut(dynamic reason, {bool showD = true}) async {
   warningLog('logOut called  due to ${reason.toString()}');
-  await sl.get<AuthProvider>().clearSharedData();
-  await sl.get<AuthProvider>().clear();
-  sl.get<AuthProvider>().userData = UserData();
-  await sl.get<CashWalletProvider>().clear();
-  await sl.get<VoucherProvider>().clear();
-  await sl.get<EventTicketsProvider>().clear();
-  await sl.get<CommissionWalletProvider>().clear();
-  await sl.get<DashBoardProvider>().clear();
-  await sl.get<NotificationProvider>();
-  await sl.get<SubscriptionProvider>().clear();
-  await sl.get<SupportProvider>().clear();
-  await sl.get<TeamViewProvider>().clear();
-  await sl.get<GalleryProvider>().clear();
-  await APICacheManager().emptyCache();
-  sl.get<SettingsRepo>().setBiometric(false);
+  // show loding dialog for sesion expire
+  if (showD) {
+    showDialog(
+        context: MyCarClub.navigatorKey.currentContext!,
+        barrierDismissible: true,
+        barrierColor: Colors.white.withOpacity(0.1),
+        builder: (context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(30))),
+            backgroundColor: bColor(1),
+            title: titleLargeText(
+              'Session expired',
+              context,
+              useGradient: true,
+              textAlign: TextAlign.center,
+            ),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                bodyLargeText(
+                  'Your session has expired.\nPlease wait..',
+                  context,
+                  useGradient: false,
+                  color: Colors.white70,
+                  textAlign: TextAlign.center,
+                ),
+                height20(),
+                SizedBox.fromSize(
+                    size: const Size.square(70),
+                    child: const Center(
+                        child: CircularProgressIndicator(color: Colors.white))),
+              ],
+            ),
+          );
+        });
+  }
+  await Future.delayed(Duration(milliseconds: showD ? 2000 : 0), () async {
+    await sl.get<AuthProvider>().clearSharedData();
+    await sl.get<AuthProvider>().clear();
+    sl.get<AuthProvider>().userData = UserData();
+    await sl.get<CashWalletProvider>().clear();
+    await sl.get<VoucherProvider>().clear();
+    await sl.get<EventTicketsProvider>().clear();
+    await sl.get<CommissionWalletProvider>().clear();
+    await sl.get<DashBoardProvider>().clear();
+    await sl.get<SubscriptionProvider>().clear();
+    await sl.get<SupportProvider>().clear();
+    await sl.get<TeamViewProvider>().clear();
+    await sl.get<GalleryProvider>().clear();
+    await APICacheManager().emptyCache();
+    sl.get<SettingsRepo>().setBiometric(false);
+  }).then((value) {
+    Navigator.pop(MyCarClub.navigatorKey.currentContext!);
+  });
 
   MyCarClub.navigatorKey.currentState
       ?.pushNamedAndRemoveUntil(LoginScreen.routeName, (r) => false);
@@ -470,9 +513,10 @@ checkForUpdate(BuildContext context) async {
     textColor: Platform.isIOS ? Colors.black : Colors.white,
   );
   try {
-    await appcast.initialize();
+    await appcast
+        .initialize()
+        .then((value) => appcast.checkVersion(context: context));
   } catch (e) {
     errorLog('appcast.initialize() error $e');
   }
-  appcast.checkVersion(context: context);
 }

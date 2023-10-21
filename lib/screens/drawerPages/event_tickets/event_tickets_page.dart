@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
@@ -24,7 +22,6 @@ import '/utils/sizedbox_utils.dart';
 import '/utils/skeleton.dart';
 import '/utils/text.dart';
 import 'package:provider/provider.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class EventTicketsPage extends StatefulWidget {
@@ -39,8 +36,10 @@ class _EventTicketsPageState extends State<EventTicketsPage> {
   var provider = sl.get<EventTicketsProvider>();
   @override
   void initState() {
-    provider.getEventTickets(true);
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      provider.getEventTickets(true);
+    });
   }
 
   Future<void> _onRefresh() async {

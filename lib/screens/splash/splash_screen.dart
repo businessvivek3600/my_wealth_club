@@ -1,28 +1,19 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:get/get.dart';
-import 'package:in_app_update/in_app_update.dart';
-import 'package:local_auth/local_auth.dart';
-import '/database/app_update/upgrader.dart';
+import '../../utils/my_logger.dart';
 import '/utils/app_lock_authentication.dart';
-import '/database/repositories/auth_repo.dart';
 import '/database/repositories/settings_repo.dart';
 import '/providers/auth_provider.dart';
-import '/providers/dashboard_provider.dart';
-import '/screens/app_maintaing_page.dart';
 import '/screens/auth/login_screen.dart';
 import '/screens/auth/sign_up_screen.dart';
 import '/screens/dashboard/main_page.dart';
-import '/screens/update_app_page.dart';
 import '/sl_container.dart';
 import '/utils/color.dart';
 import '/utils/default_logger.dart';
 import '/utils/network_info.dart';
-import '/utils/no_internet_widget.dart';
 import 'package:video_player/video_player.dart';
 import '../../database/functions.dart';
 
@@ -42,6 +33,28 @@ class _SplashScreenState extends State<SplashScreen> {
   int position = 0;
   late VideoPlayerController _controller;
 
+  bool authorizedRoutes(String path) {
+    List<String> authorizedRoutes = [
+      '/dashboard',
+      '/subscription',
+      '/eventTickets',
+      '/notification',
+      '/inbox',
+      '/support',
+      '/teamView',
+      '/commissionWallet',
+      '/voucher',
+      '/cardPayment',
+      '/gallery',
+      '/cashWallet',
+      '/companyTradeIdeas',
+      '/forgotPassword',
+      '/updateApp',
+      '/ytLive'
+    ];
+    return authorizedRoutes.contains(path);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -55,11 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _controller = VideoPlayerController.asset('assets/videos/1_1.mp4')
       ..initialize().then((_) {
         _controller.play();
-
-        warningLog('SplashScreen video initialized: ${_controller.value}', tag,
-            'initState');
         duration = _controller.value.duration.inMilliseconds;
-        // _controller.setVolume(0.0);
       });
     _controller.addListener(_listner);
   }
@@ -71,12 +80,10 @@ class _SplashScreenState extends State<SplashScreen> {
           'initState');
     }
     if (_controller.value.isInitialized) {
-      // infoLog('video initialized: ${_controller.value}', tag, 'initState');
       duration = _controller.value.duration.inMilliseconds;
-      _controller.setVolume(0.0);
-    }
-    if (_controller.value.position.inMilliseconds >= 2960) {
-      checkLogin2();
+      if (_controller.value.position.inMilliseconds >= 2960) {
+        checkLogin2();
+      }
     }
   }
 
@@ -84,13 +91,13 @@ class _SplashScreenState extends State<SplashScreen> {
     var authProvider = sl.get<AuthProvider>();
     bool isLogin = authProvider.isLoggedIn();
     if (!isLogin) {
-      Get.offAll(LoginScreen());
+      Get.offAll(const LoginScreen());
     } else {
       var user = await authProvider.getUser();
       if (user != null) {
         authProvider.userData = user;
         authProvider.authRepo
-            .saveUserToken(await authProvider.authRepo.getUserToken());
+            .saveUserToken(authProvider.authRepo.getUserToken());
         bool isBiometric = sl.get<SettingsRepo>().getBiometric();
         if (isBiometric) {
           AppLockAuthentication.authenticate().then((value) {
@@ -110,28 +117,16 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       } else {
         logOut(tag);
-        Get.offAll(LoginScreen());
-        listenDynamicLinks();
+        Get.offAll(const LoginScreen());
       }
     }
-  }
-
-  checkAppUpdate() async {
-    var hasUpdate = sl.get<AuthRepo>().getAppCanUpdate();
-    var canRunApp = sl.get<AuthRepo>().getCanRunApp();
-
-    //method:1 check from package info and call store apis
-
-    //method:2 hit api and check from api
-
-    if (hasUpdate) {
-      Get.offAll(UpdatePage(required: true));
-    }
+    listenDynamicLinks();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _controller.removeListener(_listner);
     super.dispose();
   }
 
@@ -155,175 +150,52 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: VideoPlayer(_controller))
               : Container(),
         ),
-        /*if (position == duration)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height: 100,
-              width: double.maxFinite,
-              child: Center(
-                child: CircularProgressIndicator.adaptive(
-                    backgroundColor: Colors.white, strokeWidth: 2),
-              ),
-            ),
-          ),*/
-        /*      Align(
-          alignment: Alignment.bottomCenter,
-          child: FilledButton(
-              onPressed: _updateInfo?.updateAvailability ==
-                      UpdateAvailability.updateAvailable
-                  ? () {
-                      infoLog('performing immediateUpdateAllowed ');
-                      InAppUpdate.performImmediateUpdate().catchError((e) {
-                        Fluttertoast.showToast(msg: e.toString());
-                        return AppUpdateResult.inAppUpdateFailed;
-                      });
-                    }
-                  : () {},
-              child: titleLargeText('Update', context)),
-        )*/
       ],
     );
   }
 
-//
   Future<void> listenDynamicLinks() async {
-    streamSubscription = FlutterBranchSdk.initSession().listen((data) {
+    streamSubscription = FlutterBranchSdk.initSession().listen((data) async {
+      var authProvider = sl.get<AuthProvider>();
+      bool isLogin = authProvider.isLoggedIn();
+      var user = await authProvider.getUser();
       try {
-        print('----------- branch io data is ${data} -------------');
-        print('referring link is --> ' + (data['~referring_link'] ?? ''));
-        print('referring link is --> ' + (data['+non_branch_link'] ?? ""));
+        logger.d('listenDynamicLinks - DeepLink Data: $data');
+        logger.f(
+            'referring link is --> ${(data['~referring_link'] ?? '')}  \n  non_branch_link is --> ${(data['+non_branch_link'] ?? "")}');
         if (data['~referring_link'] != null ||
             data['+non_branch_link'] != null) {
           Uri uri =
               Uri.parse(data['~referring_link'] ?? data['+non_branch_link']);
-          print(uri.queryParameters);
+          logger.w('uri: $uri',
+              tag: '$tag listenDynamicLinks',
+              error:
+                  'path:${uri.path}\n queryParameters:${uri.queryParameters}\n query:${uri.query}\n fragment:${uri.fragment} \n host:${uri.host} \n origin:${uri.origin} \n port:${uri.port} \n scheme:${uri.scheme} \n userInfo:${uri.userInfo} ');
           var queryParams = uri.queryParameters;
-          if (queryParams.entries.isNotEmpty) {
+
+          // if (uri.path == '/refCode'|| '/signup) => signUpScreen
+          if ((uri.path == SignUpScreen.routeName || uri.path == '/refCode') &&
+              !isLogin) {
             String? sponsor;
             String? placement;
-            queryParams.entries.forEach((element) {
-              switch (element.key) {
-                case 'sponsor':
-                  print('found sponsor : ${element.value}');
-                  sponsor = element.value;
-                  break;
-                case 'placement':
-                  print('found placement : ${element.value}');
-                  placement = element.value;
-                  break;
-                default:
-                  print('queryParams : ${element}');
-                  break;
-              }
-            });
-            if (sponsor != null || placement != null) {
-              print(
-                  '****** going to sign up page-with data sponsor $sponsor   and  placement $placement  *******');
-              Get.to(SignUpScreen(sponsor: sponsor, placement: placement));
+            if (queryParams.entries.isNotEmpty) {
+              sponsor = queryParams['sponsor'];
+              placement = queryParams['placement'];
             }
+            Get.to(SignUpScreen(sponsor: sponsor, placement: placement));
+          }
+          //athorizedRoutes => mainPage
+          else if (authorizedRoutes(uri.path) && isLogin) {
+            Get.toNamed(uri.path, arguments: queryParams);
           }
         }
-/*        print('listenDynamicLinks - DeepLink Data: $data');
-        controllerData.sink.add((data.toString()));
-        if ((data.containsKey('+clicked_branch_link') &&
-            data['+clicked_branch_link'] == true)) {
-          print(
-              '------------------------------------Link clicked----------------------------------------------');
-          print('Custom string: ${data['custom_string']}');
-          print('Custom number: ${data['custom_number']}');
-          print('Custom bool: ${data['custom_bool']}');
-          print('Custom list number: ${data['custom_list_number']}');
-          print(
-              '------------------------------------------------------------------------------------------------');
-          Get.to(SignUpScreen());
-
-          // data['+non_branch_link']
-        }*/
       } catch (e) {
-        print(
-            '------------------------------------------------------ branch error  $e');
+        logger.e('listenDynamicLinks - error: ',
+            error: e, tag: '$tag listenDynamicLinks');
       }
     }, onError: (error) {
-      print('Init Session error: ${error.toString()}');
+      logger.e('listenDynamicLinks - error: ',
+          error: error, tag: '$tag listenDynamicLinks');
     });
   }
-
-  // AppUpdateInfo? _updateInfo;
-
-  // Future<void> checkLogin() async {
-  //   await checkFBForAppUpdate().first.then((value) async {
-  //     bool canRunApp = sl.get<AuthRepo>().getCanRunApp();
-  //     await checkForUpdate().then((value) async {
-  //       bool canUpdate = sl.get<AuthRepo>().getAppCanUpdate();
-  //       print('SplashScreen app can run $canRunApp &&& has Update $canUpdate');
-  //       if (!canRunApp && isOnline) {
-  //         Get.offAll(AppUnderMaintenancePage());
-  //       } else if (!canRunApp && !isOnline) {
-  //         Get.offAll(NoInternetWidget(
-  //           btnText: 'Restart',
-  //           callback: () => exitTheApp(),
-  //         ));
-  //       } else {
-  //         if (canUpdate) {
-  //           Get.offAll(
-  //               // Platform.isIOS ?
-  //               // UpdateAppPage() :
-  //               UpdatePage(required: true));
-  //           // updateApp();
-  //         } else {
-  //           bool isLogin = sl.get<AuthRepo>().isLoggedIn();
-  //           if (isLogin) {
-  //             await sl.get<AuthProvider>().userInfo().then((value) async {
-  //               if (value != null) {
-  //                 await _checkBiometrics().then((value) async {
-  //                   print(
-  //                       '_checkBiometrics $_canCheckBiometrics  ${await auth.canCheckBiometrics}');
-  //                   if (_canCheckBiometrics &&
-  //                       sl.get<SettingsRepo>().getBiometric()) {
-  //                     await _authenticateWithBiometrics().then((value) {
-  //                       if (value) {
-  //                         sl.get<DashBoardProvider>().getCustomerDashboard();
-  //                         Get.offAll(MainPage());
-  //                       } else {
-  //                         exitTheApp();
-  //                       }
-  //                     });
-  //                   } else {
-  //                     Get.offAll(MainPage());
-  //                   }
-  //                 });
-  //               } else {
-  //                 Get.offAll(LoginScreen());
-  //               }
-  //             });
-  //           } else {
-  //             Get.offAll(LoginScreen());
-  //             listenDynamicLinks();
-  //           }
-  //         }
-  //       }
-  //     });
-  //   });
-  // }
-
-  // Future<AppUpdateInfo?> checkForUpdate() async {
-  //   AppUpdateInfo? updateInfo;
-  //   if (Platform.isAndroid) {
-  //     InAppUpdate.checkForUpdate().then((info) {
-  //       setState(() {
-  //         _updateInfo = info;
-  //         updateInfo = info;
-  //       });
-  //       if (_updateInfo != null) {
-  //         sl.get<AuthRepo>().setAppCanUpdate(_updateInfo!.updateAvailability ==
-  //             UpdateAvailability.updateAvailable);
-  //         successLog(_updateInfo!.toString());
-  //       }
-  //     }).catchError((e) {
-  //       errorLog(e.toString());
-  //     });
-  //   }
-  //   return updateInfo;
-  // }
 }

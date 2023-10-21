@@ -282,12 +282,13 @@ class SubscriptionProvider extends ChangeNotifier {
             message = map["message"];
           } catch (e) {}
           try {
-            if (orderId == null) {
-              await mySubscriptions(false);
-            }
             if (status) {
+              if (orderId == null) {
+                await mySubscriptions(false);
+              }
               Get.back();
-              if (redirectUrl != '') {
+              if (redirectUrl != null && redirectUrl != '') {
+                // errorLog('redirect url $redirectUrl', 'buySubscription');
                 var res = await Get.to(WebViewExample(
                   url: redirectUrl,
                   allowBack: false,

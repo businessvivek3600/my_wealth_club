@@ -1,4 +1,6 @@
-import 'package:mycarclub/utils/default_logger.dart';
+import 'dart:io';
+
+import '/utils/default_logger.dart';
 import 'package:version/version.dart';
 
 import 'database.dart';
@@ -12,11 +14,12 @@ class FirebaseDatabase implements MyDatabase {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  FirebaseDatabase({required String collectionName})
-      : this.collectionName = collectionName,
-        whatsNewCollection = collectionName + '/whats_new/whats_new' {
+  FirebaseDatabase({required String collection})
+      : collectionName = collection,
+        whatsNewCollection =
+            '$collection/whats_new/whats_new_${Platform.isIOS ? 'ios' : 'android'}' {
     infoLog(
-        'FirebaseDatabase constructor collection : $collectionName, whatsNewCollection : $whatsNewCollection',
+        'FirebaseDatabase constructor collection : $collection, whatsNewCollection : $whatsNewCollection',
         TAG);
   }
 
@@ -30,9 +33,9 @@ class FirebaseDatabase implements MyDatabase {
     try {
       QuerySnapshot<Map<String, dynamic>> querySnapshot =
           await _firestore.collection(whatsNewCollection).get();
-      querySnapshot.docs.forEach((doc) {
+      for (var doc in querySnapshot.docs) {
         list.add(doc.data());
-      });
+      }
       infoLog('getAllDocs list : ${list.length}', TAG);
     } catch (e) {
       errorLog(e.toString(), TAG);
@@ -43,11 +46,12 @@ class FirebaseDatabase implements MyDatabase {
   //listen all docs from             collection name collectionName/whats_new/whats_new
   Stream<List<Map<String, dynamic>>> listenAllDocs() {
     return _firestore.collection(whatsNewCollection).snapshots().map((event) {
+      infoLog('listenAllDocs event : ${event.docs.length}', TAG);
       List<Map<String, dynamic>> list = [];
-      event.docs.forEach((doc) {
+      for (var doc in event.docs) {
         list.add(doc.data());
-      });
-      infoLog('listenAllDocs list : $list', TAG);
+      }
+      infoLog('listenAllDocs list path:$whatsNewCollection : $list', TAG);
       return list;
     });
   }
@@ -57,19 +61,37 @@ class FirebaseDatabase implements MyDatabase {
     await for (var list in listenAllDocs()) {
       List<WhatsNewModel> whatsNewList = [];
       try {
-        list.forEach((element) {
+        for (var element in list) {
           try {
             whatsNewList.add(WhatsNewModel.fromJson(element));
           } catch (e) {
             errorLog(e.toString(), TAG);
           }
-        });
+        }
         whatsNewList.sort((a, b) => b.version.compareTo(a.version));
       } catch (e) {
         errorLog(e.toString(), TAG);
       }
       infoLog('listenWhatsNew whatsNewList : ${list.length}', TAG);
       yield whatsNewList;
+    }
+  }
+
+// set new whats new model to collectionName/whats_new/whats_new
+  Future<void> setWhatsNew(WhatsNewModel whatsNewModel) async {
+    try {
+      DocumentReference ref =
+          _firestore.collection(whatsNewCollection).doc(whatsNewModel.id);
+      if (!(await ref.get().then((value) => value.exists))) {
+        whatsNewModel.setCreatedAt();
+        await ref.set(whatsNewModel.toJson());
+      } else {
+        whatsNewModel.setUpdatedAt();
+        await ref.update(whatsNewModel.toJson());
+      }
+      infoLog('setWhatsNew whatsNewModel : $whatsNewModel', TAG);
+    } catch (e) {
+      errorLog(e.toString(), TAG);
     }
   }
 }
@@ -79,10 +101,12 @@ class WhatsNewModel {
   Version version;
   String? title, description, link, imageUrl;
   DateTime? createdAt, updatedAt;
+  int updates;
 
   WhatsNewModel({
     required this.id,
     required this.version,
+    this.updates = 0,
     this.title,
     this.description,
     this.link,
@@ -90,17 +114,19 @@ class WhatsNewModel {
     this.createdAt,
     this.updatedAt,
   }) {
-    if (createdAt == null) {
-      this.createdAt = DateTime.now();
-    }
+    updatedAt = DateTime.now();
   }
 
   void setVersion(String version) {
     this.version = Version.parse(version);
   }
 
+  void setCreatedAt() {
+    createdAt = DateTime.now();
+  }
+
   void setUpdatedAt() {
-    this.updatedAt = DateTime.now();
+    updatedAt = DateTime.now();
   }
 
   void setTitle(String title) {
@@ -108,7 +134,7 @@ class WhatsNewModel {
   }
 
   void setID() {
-    this.id = DateTime.now().millisecondsSinceEpoch.toString();
+    id = DateTime.now().millisecondsSinceEpoch.toString();
   }
 
   Map<String, dynamic> toJson() {

@@ -8,10 +8,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/color.dart';
 import '/constants/app_constants.dart';
 import '/database/functions.dart';
 import '/sl_container.dart';
-import '/utils/color.dart';
 import '../providers/web_view_provider.dart';
 import '/utils/default_logger.dart';
 import '/utils/text.dart';
@@ -50,6 +50,7 @@ class WebViewExample extends StatefulWidget {
 }
 
 class _WebViewExampleState extends State<WebViewExample> {
+  final String tag = 'WebViewExample';
   var provider = sl.get<WebViewProvider>();
   // double loadingProgress = 0;
   late final PlatformWebViewControllerCreationParams params;
@@ -69,25 +70,27 @@ class _WebViewExampleState extends State<WebViewExample> {
               barrierDismissible: true,
               builder: (_) {
                 return AlertDialog(
-                  title: Text('Leave '),
-                  content: Text('Are you sure to go back?'),
-                  backgroundColor: Colors.white,
+                  title: titleLargeText('Leave the page?', context,
+                      useGradient: false),
+                  content: bodyMedText('Are you sure to go back?', context,
+                      useGradient: false, color: Colors.white70),
+                  backgroundColor: bColor(1),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   actions: [
                     TextButton(
                       onPressed: () {
                         willBack = false;
                         Get.back();
-                        return null;
                       },
-                      child: Text('No'),
+                      child: bodyLargeText('No', context, useGradient: false),
                     ),
                     TextButton(
                       onPressed: () {
                         willBack = true;
                         Get.back();
-                        return null;
                       },
-                      child: Text('Yes'),
+                      child: bodyLargeText('Yes', context, useGradient: false),
                     ),
                   ],
                 );
@@ -104,6 +107,7 @@ class _WebViewExampleState extends State<WebViewExample> {
   @override
   void initState() {
     super.initState();
+    provider.textEditingController = TextEditingController();
     if (widget.changeOrientation == '1') {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
@@ -116,6 +120,7 @@ class _WebViewExampleState extends State<WebViewExample> {
 
   @override
   void dispose() {
+    provider.textEditingController.dispose();
     provider.controller = null;
     provider.setUrl(null);
     SystemChrome.setPreferredOrientations(
@@ -162,15 +167,21 @@ class _WebViewExampleState extends State<WebViewExample> {
                     barrierDismissible: true,
                     builder: (_) {
                       return AlertDialog(
-                        title: Text('Leave '),
-                        content: Text('Are you sure to go back?'),
-                        backgroundColor: Colors.white,
+                        title: titleLargeText('Leave the page?', context,
+                            useGradient: false),
+                        content: bodyMedText(
+                            'Are you sure to go back?', context,
+                            useGradient: false, color: Colors.white70),
+                        backgroundColor: bColor(1),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         actions: [
                           TextButton(
                             onPressed: () {
                               Get.back();
                             },
-                            child: Text('No'),
+                            child: bodyLargeText('No', context,
+                                useGradient: false),
                           ),
                           TextButton(
                             onPressed: () {
@@ -178,7 +189,8 @@ class _WebViewExampleState extends State<WebViewExample> {
                               Future.delayed(const Duration(milliseconds: 500),
                                   () => Get.back());
                             },
-                            child: Text('Yes'),
+                            child: bodyLargeText('Yes', context,
+                                useGradient: false),
                           ),
                         ],
                       );
@@ -344,15 +356,15 @@ class _WebViewExampleState extends State<WebViewExample> {
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) {
           provider.setLoadinProgress(progress.toDouble());
-          infoLog('loadingProgress : ${provider.loadingProgress}%)');
+          infoLog('loadingProgress : ${provider.loadingProgress}%)', tag);
         },
         onPageStarted: (String url) {
-          infoLog('Page started loading: $url');
+          infoLog('Page started loading: $url', tag);
         },
         onPageFinished: (String url) {
           provider.setTitle();
           provider.setLoadinProgress(0);
-          infoLog('Page finished loading: $url');
+          infoLog('Page finished loading: $url', tag);
         },
         onWebResourceError: (WebResourceError error) {
           errorLog('''
@@ -364,7 +376,7 @@ class _WebViewExampleState extends State<WebViewExample> {
           ''', 'onWebResourceError');
         },
         onNavigationRequest: (NavigationRequest request) {
-          infoLog('onNavigationRequest : ${request.url}');
+          infoLog('onNavigationRequest : ${request.url} ', tag);
           try {
             if (widget.conditions != null && widget.conditions!.isNotEmpty) {
               blackLog(
@@ -390,7 +402,7 @@ class _WebViewExampleState extends State<WebViewExample> {
         },
         onUrlChange: (UrlChange change) async {
           provider.setUrl(change.url);
-          infoLog('url change to ${change.url}');
+          infoLog('url change to ${change.url}', tag);
         },
       ))
       ..addJavaScriptChannel('Toaster',

@@ -4,6 +4,7 @@ import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../database/repositories/subscription_repo.dart';
 import '../sl_container.dart';
@@ -25,6 +26,7 @@ class VoucherProvider extends ChangeNotifier {
   VoucherProvider({required this.voucherRepo});
   final controller = PageController(viewportFraction: 0.8, keepPage: true);
   CarouselController carouselController = CarouselController();
+  late TabController tabController;
 
   int currentIndex = 0;
   VoucherPackageModel? currentPackage;
@@ -147,6 +149,8 @@ class VoucherProvider extends ChangeNotifier {
                 .forEach((e) => _packages.add(VoucherPackageModel.fromJson(e)));
             packages.clear();
             packages = _packages;
+            packages.sort(
+                (a, b) => (a.saleType ?? '').compareTo((b.saleType ?? '')));
             notifyListeners();
           }
         } catch (e) {
@@ -155,9 +159,8 @@ class VoucherProvider extends ChangeNotifier {
         try {
           if (map['payment_type'] != null && map['payment_type'].isNotEmpty) {
             paymentTypes.clear();
-            map['payment_type'].entries
-              ..forEach(
-                  (e) => paymentTypes.addEntries([MapEntry(e.key, e.value)]));
+            map['payment_type'].entries.forEach(
+                (e) => paymentTypes.addEntries([MapEntry(e.key, e.value)]));
             notifyListeners();
           }
         } catch (e) {

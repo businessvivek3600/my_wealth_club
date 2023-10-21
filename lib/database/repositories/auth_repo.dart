@@ -131,34 +131,34 @@ class AuthRepo {
       await sharedPreferences.setString(
           SPConstants.user, jsonEncode(userData.toJson()));
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
   Future<UserData?> getUser() async {
-    UserData? _userData;
+    UserData? userData;
     try {
-      var data = await sharedPreferences.getString(SPConstants.user);
+      var data = sharedPreferences.getString(SPConstants.user);
       if (data != null) {
-        _userData = UserData.fromJson(jsonDecode(data));
+        userData = UserData.fromJson(jsonDecode(data));
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
-    return _userData;
+    return userData;
   }
 
   Future<String> getUserID() async {
-    UserData? _userData;
+    UserData? userData;
     String id = '';
     try {
-      var data = await sharedPreferences.getString(SPConstants.user) ?? '';
+      var data = sharedPreferences.getString(SPConstants.user) ?? '';
       if (data != '') {
-        _userData = UserData.fromJson(jsonDecode(data));
-        id = _userData.username ?? '';
+        userData = UserData.fromJson(jsonDecode(data));
+        id = userData.username ?? '';
       }
     } catch (e) {
-      throw e;
+      rethrow;
     }
     return id;
   }
@@ -168,7 +168,7 @@ class AuthRepo {
     try {
       await sharedPreferences.setString(SPConstants.userToken, token);
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 

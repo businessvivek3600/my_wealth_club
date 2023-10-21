@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:activity_ring/activity_ring.dart';
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:banner_carousel/banner_carousel.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -15,8 +16,9 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
-import 'package:mycarclub/screens/drawerPages/wallets/cash_wallet_page/cash_wallet_page.dart';
-import 'package:mycarclub/screens/drawerPages/wallets/commission_wallet/commission_wallet_page.dart';
+import 'package:mycarclub/utils/app_web_view_page.dart';
+import '/screens/drawerPages/wallets/cash_wallet_page/cash_wallet_page.dart';
+import '/screens/drawerPages/wallets/commission_wallet/commission_wallet_page.dart';
 import '../../database/databases/firebase_database.dart';
 import '../drawerPages/main_page_required_action_slider.dart';
 import '/database/repositories/settings_repo.dart';
@@ -93,6 +95,8 @@ class _MainPageState extends State<MainPage>
 
   @override
   void initState() {
+    // setErrorBuilder();
+
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (notificationPaylod != null) {
@@ -116,7 +120,9 @@ class _MainPageState extends State<MainPage>
 
       //check if user is logged in and show bottom sheet to save password
       if (widget.loginModel != null) {
-        Future.delayed(Duration(seconds: 2), () async {
+        Toasts.showSuccessNormalToast('You have logged in Successfully',
+            title: 'Welcome ${authProvider.userData.customerName ?? ''}');
+        Future.delayed(const Duration(seconds: 2), () async {
           var list = await authProvider.getSavedCredentials();
           bool isSaved = false;
           bool update = false;
@@ -153,7 +159,7 @@ class _MainPageState extends State<MainPage>
     await showModalBottomSheet(
         context: context,
         builder: (context) => Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               height: 150,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -164,6 +170,7 @@ class _MainPageState extends State<MainPage>
                       Expanded(
                         child: FilledButton.icon(
                             onPressed: () async {
+                              Navigator.pop(context);
                               if (!update) {
                                 await authProvider.saveCredentials(
                                     widget.loginModel!.username!,
@@ -173,13 +180,12 @@ class _MainPageState extends State<MainPage>
                                     widget.loginModel!.username!,
                                     widget.loginModel!.password!);
                               }
-                              Navigator.pop(context);
                             },
-                            icon: Icon(Icons.save_alt_rounded,
+                            icon: const Icon(Icons.save_alt_rounded,
                                 color: Colors.white),
                             label: Text(
                               update ? 'Update Password' : 'Save Password',
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                             )),
                       ),
                       width20(),
@@ -191,7 +197,7 @@ class _MainPageState extends State<MainPage>
                       width20(),
                       TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: Text('Cancel',
+                          child: const Text('Cancel',
                               style: TextStyle(color: Colors.red))),
                       width20(),
                     ],
@@ -203,7 +209,9 @@ class _MainPageState extends State<MainPage>
 
   @override
   void dispose() {
-    routeObserver.unsubscribe(this);
+    if (mounted) {
+      routeObserver.unsubscribe(this);
+    }
     super.dispose();
   }
 
@@ -224,12 +232,7 @@ class _MainPageState extends State<MainPage>
 
   @override
   Widget build(BuildContext context) {
-    // FirebaseMessaging.instance.subscribeToTopic(topic.signal.name);
-    // infoLog(' device token ${getDeviceToken()}');
-    warningLog(
-        'Main Page Build  route: ${ModalRoute.of(context)?.settings.name}  observer ${routeObserver.navigator!.context}}');
     final size = MediaQuery.of(context).size;
-    print(size);
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         return Consumer<DashBoardProvider>(
@@ -237,11 +240,12 @@ class _MainPageState extends State<MainPage>
             return GestureDetector(
               onTap: () {
                 primaryFocus?.unfocus();
+                logOut('Main Page Tap Test for logout');
               },
               child: Scaffold(
                 key: widget.dashScaffoldKey,
                 backgroundColor: Colors.transparent,
-                drawer: CustomDrawer(),
+                drawer: const CustomDrawer(),
                 body: Stack(
                   children: [
                     buildBody(context, dashBoardProvider, authProvider, size),
@@ -290,12 +294,12 @@ class _MainPageState extends State<MainPage>
         child: Stack(
           children: [
             Container(
-              padding:
-                  EdgeInsets.only(left: 20, top: 20, bottom: 10, right: 10),
+              padding: const EdgeInsets.only(
+                  left: 20, top: 20, bottom: 10, right: 10),
               // color: redDark,
               child: Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(10),
+                decoration: const BoxDecoration(
                     color: Color(0xFF03A84E), shape: BoxShape.circle),
                 child: assetSvg(Assets.chat, width: 15),
               ),
@@ -314,6 +318,7 @@ class _MainPageState extends State<MainPage>
 
   Container buildBody(BuildContext context, DashBoardProvider dashBoardProvider,
       AuthProvider authProvider, Size size) {
+    warningLog(' device token ${getDeviceToken()}');
     return Container(
       height: double.maxFinite,
       width: double.maxFinite,
@@ -328,13 +333,13 @@ class _MainPageState extends State<MainPage>
           SafeArea(
             child: Column(
               children: [
-                buildAppLogo(dashBoardProvider),
+                buildAppLogo(dashBoardProvider, authProvider),
                 Expanded(
                   child: SmartRefresher(
                     enablePullDown: true,
                     enablePullUp: false,
                     controller: _refreshController,
-                    header: MaterialClassicHeader(),
+                    header: const MaterialClassicHeader(),
                     onRefresh: _onRefresh,
                     // footer:null,
                     child: SingleChildScrollView(
@@ -347,13 +352,16 @@ class _MainPageState extends State<MainPage>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               //alerts
-                              if (dashboardProvider.alerts.isNotEmpty)
-                                MainPageRequiredActionSlider(),
+                              if (dashboardProvider.alerts
+                                  .where((element) => element.status == 1)
+                                  .isNotEmpty)
+                                const MainPageAlertsSlider(),
                               height10(),
+
                               AppLockAuthSuggestionWidget(
                                 showSuggestion:
                                     sl.get<SettingsRepo>().getBiometric(),
-                                margin: EdgeInsetsDirectional.symmetric(
+                                margin: const EdgeInsetsDirectional.symmetric(
                                     horizontal: 8),
                                 backgroundColor: Colors.white12,
                               ),
@@ -363,23 +371,26 @@ class _MainPageState extends State<MainPage>
                                   context, dashBoardProvider),
                               height10(),
 
-                              // _buildPlaceholderIdField(
-                              //     context, dashBoardProvider),
-                              // height10(),
-                              // GestureDetector(
-                              //   onTap: () =>
-                              //       _showBottomSheet(context),
-                              //   child: buildQRCodeContainer(
-                              //       dashBoardProvider),
-                              // ),
+                              /*
+                             _buildPlaceholderIdField(
+                                 context, dashBoardProvider),
+                             height10(),
+                             GestureDetector(
+                               onTap: () =>
+                                   _showBottomSheet(context),
+                               child: buildQRCodeContainer(
+                                   dashBoardProvider),
+                             ),
+                             */
 
                               // Trading view,
-                              buildTradingViewWidget(
-                                  context, size, dashBoardProvider),
+                              buildTradingViewWidget(context, size,
+                                  dashBoardProvider, authProvider),
                               // height10(),
                               // platinum member logo
 
                               // Upcommin Events,
+                              /*
                               if (dashboardProvider.wevinarEventVideo != null &&
                                   dashboardProvider.wevinarEventVideo!.status ==
                                       '1' &&
@@ -391,16 +402,19 @@ class _MainPageState extends State<MainPage>
                                     // height20(),
                                   ],
                                 ),
+                                */
                               // platinum member logo
-                              // GestureDetector(
-                              //   onTap: () =>
-                              //       Get.to(YoutubePlayerDemoApp()),
-                              //   child: buildPlatinumMemberLogo(
-                              //       dashBoardProvider),
-                              // ),
-                              // buildSubscriptionStatusBar(
-                              //     context, dashBoardProvider),
-                              // height30(),
+                              /*
+                              GestureDetector(
+                                onTap: () =>
+                                    Get.to(YoutubePlayerDemoApp()),
+                                child: buildPlatinumMemberLogo(
+                                    dashBoardProvider),
+                              ),
+                              buildSubscriptionStatusBar(
+                                  context, dashBoardProvider),
+                              height30(),
+                              */
                             ],
                           ),
                           buildSubscriptionHistory(
@@ -497,11 +511,11 @@ class _MainPageState extends State<MainPage>
                               .toList()),
                     ],
                   )
-                : SizedBox());
+                : const SizedBox());
   }
 
   Widget buildAccademicVideo(BuildContext context) {
-    return _MainPageAccademicVideoList();
+    return const _MainPageAccademicVideoList();
   }
 
   Padding buildAccountStatistics(BuildContext context,
@@ -519,10 +533,10 @@ class _MainPageState extends State<MainPage>
       padding: const EdgeInsetsDirectional.symmetric(vertical: 16),
       child: GridView(
           physics: const NeverScrollableScrollPhysics(),
-          padding: EdgeInsetsDirectional.symmetric(horizontal: 8),
+          padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
           shrinkWrap: true,
           scrollDirection: Axis.vertical,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
@@ -532,11 +546,11 @@ class _MainPageState extends State<MainPage>
             _buildStatisticsGridViewItem(
                 context, 'Commission Balance', bal_commission, currency_icon,
                 onTap: () {
-              Get.to(CommissionWalletPage());
+              Get.to(const CommissionWalletPage());
             }),
             _buildStatisticsGridViewItem(
                 context, 'Cash Balance', bal_cash, currency_icon, onTap: () {
-              Get.to(CashWalletPage());
+              Get.to(const CashWalletPage());
             }),
             _buildStatisticsGridViewItem(
                 context, 'Total Member', member.toDouble(), currency_icon,
@@ -557,7 +571,7 @@ class _MainPageState extends State<MainPage>
       child: Container(
         // height: 100,
         // width: 100,
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           color: bColor(),
@@ -578,11 +592,11 @@ class _MainPageState extends State<MainPage>
     );
   }
 
-  Widget buildTradingViewWidget(
-      BuildContext context, Size size, DashBoardProvider dashBoardProvider) {
+  Widget buildTradingViewWidget(BuildContext context, Size size,
+      DashBoardProvider dashBoardProvider, AuthProvider authProvider) {
     return GestureDetector(
       onTap: () {
-        Get.to(CompanyTradeIdeasPage());
+        Get.to(const CompanyTradeIdeasPage());
       },
       child: Stack(
         children: [
@@ -700,19 +714,20 @@ class _MainPageState extends State<MainPage>
   FloatingActionButton buildKYCButton(DashBoardProvider dashBoardProvider) {
     return FloatingActionButton.extended(
       shape: RoundedRectangleBorder(
-          side: BorderSide(color: appLogoColor),
+          side: const BorderSide(color: appLogoColor),
           borderRadius: BorderRadius.circular(30)),
       onPressed: () => launchTheLink(dashBoardProvider.kycUrl ?? ''),
-      label: Text(
+      label: const Text(
         'Verify KYC',
         style: TextStyle(color: appLogoColor),
       ),
     );
   }
 
-  PreferredSize buildAppLogo(DashBoardProvider dashBoardProvider) {
+  PreferredSize buildAppLogo(
+      DashBoardProvider dashBoardProvider, AuthProvider authProvider) {
     return PreferredSize(
-      preferredSize: Size.fromHeight(50),
+      preferredSize: const Size.fromHeight(50),
       child: Stack(
         children: [
           Row(
@@ -725,7 +740,7 @@ class _MainPageState extends State<MainPage>
                 // color: redDark,
                 child: CachedNetworkImage(
                   imageUrl: dashBoardProvider.logoUrl ?? '',
-                  placeholder: (context, url) => SizedBox(
+                  placeholder: (context, url) => const SizedBox(
                       height: 70,
                       width: 50,
                       child: Center(
@@ -745,56 +760,79 @@ class _MainPageState extends State<MainPage>
           ),
 
           //
-          buildDrawerMenuButton(dashBoardProvider),
+          buildDrawerMenuButton(dashBoardProvider, authProvider),
           buildSQRCodeContainer(dashBoardProvider),
         ],
       ),
     );
   }
 
-  Positioned buildDrawerMenuButton(DashBoardProvider dashBoardProvider) {
+  Positioned buildDrawerMenuButton(
+      DashBoardProvider dashBoardProvider, AuthProvider authProvider) {
+    bool isWebinarLive = dashboardProvider.wevinarEventVideo != null &&
+        dashboardProvider.wevinarEventVideo!.status == '1' &&
+        authProvider.userData.salesActive == '1';
     return Positioned(
       top: 0,
       left: 16,
       bottom: 0,
-      child: Container(
-        // color: Colors.red,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          GestureDetector(
+            onTap: () => widget.dashScaffoldKey.currentState?.openDrawer(),
+            child: Stack(
               children: [
-                GestureDetector(
-                  onTap: () =>
-                      widget.dashScaffoldKey.currentState?.openDrawer(),
-                  child: Container(
-                    height: 40,
-                    width: 40,
-                    decoration: BoxDecoration(
-                        gradient: buildButtonGradient(),
-                        shape: BoxShape.circle),
-                    child: Center(
-                      child: assetSvg(Assets.squareMenu, color: Colors.white),
-                    ),
+                Container(
+                  height: 40,
+                  width: 40,
+                  margin: const EdgeInsets.only(right: 10),
+                  decoration: BoxDecoration(
+                      // color: Colors.white,
+                      gradient: buildButtonGradient(),
+                      shape: BoxShape.circle),
+                  child: Center(
+                    child: assetSvg(Assets.squareMenu, color: Colors.white),
                   ),
                 ),
+                if (isWebinarLive)
+                  Positioned(
+                    bottom: 0,
+                    // right: 8,
+                    // top: -2,
+                    // left: -2,
+                    right: 10,
+                    // top: 15,
+                    child: Container(
+                        height: 20,
+                        width: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image: userAppBgImageProvider(context)),
+                        ),
+                        child: assetLottie(Assets.liveLottie, width: 25)),
+                  ),
                 if (Provider.of<NotificationProvider>(context, listen: true)
                         .totalUnread >
                     0)
                   Positioned(
-                    right: 2,
-                    top: 2,
+                    right: 0,
+                    top: 0,
                     child: Container(
-                      decoration: BoxDecoration(
-                          color: Colors.red, shape: BoxShape.circle),
-                      width: 8,
-                      height: 8,
+                      decoration: const BoxDecoration(
+                          color: Colors.transparent, shape: BoxShape.circle),
+                      width: 22,
+                      height: 22,
+                      child: const Icon(Icons.notifications,
+                          size: 20, color: Colors.red),
                     ),
                   ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -827,14 +865,14 @@ class _MainPageState extends State<MainPage>
                               color: Colors.white
                               // color: Color(appLogoColor.value).withOpacity(01),
                               ),
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: Hero(
                             tag: 'qr_code',
                             child: buildQRCodeContainer(
                               dashBoardProvider,
                               showLogo: true,
                               dataModuleShape: QrDataModuleShape.circle,
-                              size: Size(200, 200),
+                              size: const Size(200, 200),
                               color: Colors.black,
                             ),
                           ),
@@ -848,7 +886,7 @@ class _MainPageState extends State<MainPage>
               child: Hero(
                 tag: 'qr_code',
                 child: buildQRCodeContainer(dashBoardProvider,
-                    size: Size(40, 40), logoS: Size(10, 10)),
+                    size: const Size(40, 40), logoS: const Size(10, 10)),
               ),
             ),
           ),
@@ -880,12 +918,13 @@ class _MainPageState extends State<MainPage>
       right: 16,
       child: GestureDetector(
         onDoubleTap: () async => Clipboard.setData(ClipboardData(text: id))
-          ..then((_) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text('Id copied  to clipboard.'),
-              ))),
+          ..then(
+              (_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('Id copied  to clipboard.'),
+                  ))),
         child: Container(
           height: 40,
-          padding: EdgeInsets.symmetric(horizontal: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           // width: 40,
           decoration: BoxDecoration(
             color: Colors.white70,
@@ -929,7 +968,7 @@ class _MainPageState extends State<MainPage>
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             bodyMedText('View All', context),
-                            Icon(Icons.keyboard_arrow_right_rounded,
+                            const Icon(Icons.keyboard_arrow_right_rounded,
                                 color: Colors.white)
                           ],
                         ),
@@ -940,7 +979,7 @@ class _MainPageState extends State<MainPage>
               ),
               height20(),
               Card(
-                  margin: EdgeInsets.symmetric(horizontal: 8),
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
                   color: Colors.white24,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
@@ -949,7 +988,7 @@ class _MainPageState extends State<MainPage>
                           getFirstFourElements(dashboardProvider.activities))),
             ],
           )
-        : SizedBox();
+        : const SizedBox();
   }
 
   Column buildSubscriptionHistory(BuildContext context, Size size,
@@ -965,19 +1004,17 @@ class _MainPageState extends State<MainPage>
         UiCategoryTitleContainer(
             child: bodyLargeText('SUBSCRIPTION HISTORY', context)),
         AnimatedContainer(
-          duration: Duration(milliseconds: 500),
-          height: dashBoardProvider.loadingDash
-              ? 130
-              : dashBoardProvider.hasSubscription
-                  ? 210
-                  : null,
-          child: !showList
+          duration: const Duration(milliseconds: 500),
+          height: Get.height * 0.27,
+          child: !dashBoardProvider.loadingDash &&
+                  (!dashBoardProvider.hasSubscription ||
+                      dashBoardProvider.subscriptionPacks.isEmpty)
               ? Container(
                   width: double.maxFinite,
                   constraints: BoxConstraints(maxWidth: size.width),
-                  margin: EdgeInsetsDirectional.only(
+                  margin: const EdgeInsetsDirectional.only(
                       start: 8, end: 8, top: 10, bottom: 0),
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     // color: Colors.white,
@@ -996,9 +1033,9 @@ class _MainPageState extends State<MainPage>
                         height20(),
                         GestureDetector(
                           onTap: () => Get.to(
-                              SubscriptionPage(initPurchaseDialog: true)),
+                              const SubscriptionPage(initPurchaseDialog: true)),
                           child: Container(
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 15, vertical: 10),
                             decoration: BoxDecoration(
                               // color: appLogoColor,
@@ -1020,11 +1057,11 @@ class _MainPageState extends State<MainPage>
                 )
               : ListView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   scrollDirection: Axis.horizontal,
                   children: [
-                    if (!dashBoardProvider.loadingDash &&
-                        dashBoardProvider.hasSubscription)
+                    if (showList)
                       ...dashBoardProvider.subscriptionPacks
                           .map((pack) => Builder(builder: (context) {
                                 // return Container(
@@ -1033,139 +1070,221 @@ class _MainPageState extends State<MainPage>
                                 //   child: buildCachedNetworkImage(
                                 //       'https://mywealthclub.com/assets/customer-panel/img/product/usd-monthly-pack-1.png'),
                                 // );
+                                //color for monthly, gold and platinum
+                                Color monthlyColor = const Color(0xFFCC97D1);
+                                Color goldColor = const Color(0xFFF9CE83);
+                                Color platinumColor = const Color(0xFFB1B0B0);
+
+                                Color color1 = pack.packageId == '1'
+                                    ? monthlyColor
+                                    : pack.packageId == '2'
+                                        ? goldColor
+                                        : pack.packageId == '3'
+                                            ? platinumColor
+                                            : Colors.white;
+
+                                Color color2 = pack.packageId == '1'
+                                    ? const Color.fromARGB(255, 221, 212, 248)
+                                    : pack.packageId == '2'
+                                        ? const Color.fromARGB(
+                                            255, 255, 241, 199)
+                                        : pack.packageId == '3'
+                                            ? const Color.fromARGB(
+                                                255, 209, 245, 245)
+                                            : Colors.white;
+                                Color color3 = pack.packageId == '1'
+                                    ? const Color(0xFF96C5FF)
+                                    : pack.packageId == '2'
+                                        ? const Color(0xFFFA8B8F)
+                                        : pack.packageId == '3'
+                                            ? const Color(0xFF59F3CF)
+                                            : Colors.white;
                                 return Container(
                                   width: size.width * 0.4,
                                   margin: EdgeInsets.only(
-                                      right: pack != 4 ? 10 : 0),
-                                  child: Container(
-                                    width: size.width * 0.5,
-                                    margin: EdgeInsets.only(
-                                        top: size.height * 0.02),
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          //suggest gradient here
-                                          Colors.white,
-                                          Colors.white,
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(10),
-                                        topRight: Radius.circular(100),
-                                        bottomLeft: Radius.circular(10),
-                                        bottomRight: Radius.circular(10),
-                                      ),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                            color: Colors.black12,
-                                            spreadRadius: 5,
-                                            blurRadius: 5)
-                                      ],
+                                      top: size.height * 0.02,
+                                      right: dashboardProvider.subscriptionPacks
+                                                  .indexOf(pack) <
+                                              dashBoardProvider
+                                                      .subscriptionPacks
+                                                      .length -
+                                                  1
+                                          ? 10
+                                          : 0),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [color2.darken(30), color3],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
                                     ),
-                                    padding: EdgeInsets.all(10),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceAround,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color:
-                                                appLogoColor.withOpacity(0.7),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                  color: Colors.black12,
-                                                  spreadRadius: 5,
-                                                  blurRadius: 15)
-                                            ],
-                                          ),
-                                          padding: EdgeInsets.all(10),
-                                          child: titleLargeText(
-                                              '$currency_icon${pack.payableAmt ?? ''}',
-                                              context,
-                                              color: Colors.white,
-                                              useGradient: false),
-                                        ),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            titleLargeText(
-                                                pack.packageName ?? '', context,
-                                                color: Colors.black,
-                                                textAlign: TextAlign.center,
-                                                useGradient: false),
-                                            height5(),
-                                            bodyLargeText(
-                                                pack.paymentType ?? '', context,
-                                                color: Colors.black,
-                                                textAlign: TextAlign.center,
-                                                useGradient: false),
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(10),
+                                      topRight: Radius.circular(100),
+                                      bottomLeft: Radius.circular(10),
+                                      bottomRight: Radius.circular(10),
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                          color:
+                                              Color.fromARGB(29, 252, 197, 197),
+                                          spreadRadius: 5,
+                                          blurRadius: 5)
+                                    ],
+                                  ),
+                                  padding: const EdgeInsets.all(10),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: color1,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                                color: Colors.black12,
+                                                spreadRadius: 5,
+                                                blurRadius: 15)
                                           ],
                                         ),
-                                        capText(
-                                            '${DateFormat().add_yMMMEd().add_jm().format(DateTime.parse(pack.createdAt ?? ''))}',
+                                        padding: const EdgeInsets.all(10),
+                                        child: titleLargeText(
+                                            '$currency_icon${pack.payableAmt ?? ''}',
                                             context,
-                                            color: Colors.black,
-                                            textAlign: TextAlign.center),
-                                      ],
-                                    ),
+                                            color: Colors.white,
+                                            useGradient: false),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          titleLargeText(
+                                              pack.packageName ?? '', context,
+                                              color: Colors.white,
+                                              textAlign: TextAlign.center,
+                                              useGradient: false),
+                                          height5(),
+                                          bodyLargeText(
+                                              pack.paymentType ?? '', context,
+                                              color: Colors.white60,
+                                              textAlign: TextAlign.center,
+                                              useGradient: false),
+                                        ],
+                                      ),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.access_time_filled_rounded,
+                                              color: color3, size: 20),
+                                          width5(),
+                                          Expanded(
+                                            child: capText(
+                                              DateFormat()
+                                                  .add_yMMMEd()
+                                                  // .add_jm()
+                                                  .format(DateTime.parse(
+                                                      pack.createdAt ?? '')),
+                                              context,
+                                              color: const Color.fromARGB(
+                                                  255, 255, 255, 255),
+                                              textAlign: TextAlign.start,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 );
                               }))
                           .toList(),
                     if (dashBoardProvider.loadingDash)
                       ...[1, 2, 3, 4].map(
-                        (e) => Container(
-                          width: size.width * 0.8,
-                          margin: EdgeInsets.only(right: e != 4 ? 10 : 0),
-                          child: Stack(
-                            children: [
-                              Padding(
-                                padding:
-                                    EdgeInsets.only(top: size.height * 0.07),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Skeleton(
-                                    width: size.width * 0.8,
-                                    textColor: Colors.white70,
-                                    height: double.maxFinite,
-                                  ),
-                                ),
+                        (e) => Builder(builder: (context) {
+                          Color color1 = const Color(0xFFCC97D1);
+                          Color color2 =
+                              const Color.fromARGB(255, 221, 212, 248);
+                          Color color3 = const Color(0xFF96C5FF);
+                          return Container(
+                            width: size.width * 0.4,
+                            margin: EdgeInsets.only(
+                                top: size.height * 0.02, right: e < 4 ? 10 : 0),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [color2.darken(30), color3],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
                               ),
-                              Positioned(
-                                top: size.height * 0.02,
-                                left: 0,
-                                right: 0,
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    height: size.height * 0.1,
-                                    width: size.width * 0.3,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(10),
+                                topRight: Radius.circular(100),
+                                bottomLeft: Radius.circular(10),
+                                bottomRight: Radius.circular(10),
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                    color: Color.fromARGB(29, 252, 197, 197),
+                                    spreadRadius: 5,
+                                    blurRadius: 5)
+                              ],
+                            ),
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
                                     decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.9),
-                                        borderRadius: BorderRadius.circular(20),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                              color: Colors.black,
-                                              spreadRadius: 0,
-                                              blurRadius: 5,
-                                              offset: Offset(0, 0))
-                                        ]),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
+                                      color: color1.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                            color: Colors.black12,
+                                            spreadRadius: 5,
+                                            blurRadius: 15)
+                                      ],
                                     ),
-                                  ),
+                                    padding: const EdgeInsets.all(10),
+                                    child: Skeleton(
+                                      height: 20,
+                                      width: 50,
+                                      borderRadius: BorderRadius.circular(10),
+                                    )),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Skeleton(
+                                      height: 20,
+                                      width: 50,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    height5(),
+                                    Skeleton(
+                                      height: 20,
+                                      width: 50,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
+                                Row(
+                                  children: [
+                                    Icon(Icons.access_time_filled_rounded,
+                                        color: color3, size: 20),
+                                    width5(),
+                                    Expanded(
+                                      child: Skeleton(
+                                        height: 20,
+                                        width: 50,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       ),
                   ],
                 ),
@@ -1201,7 +1320,7 @@ class _MainPageState extends State<MainPage>
                               child: RichText(
                                 text: TextSpan(
                                     text: 'Your subscription will expire on',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold),
@@ -1210,16 +1329,16 @@ class _MainPageState extends State<MainPage>
                                         TextSpan(
                                             text:
                                                 ' ${formatDate(expiryDate, 'dd MMMM yyyy')} ',
-                                            style: TextStyle(
+                                            style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 17,
                                                 fontWeight: FontWeight.bold)),
-                                      TextSpan(
+                                      const TextSpan(
                                         text: '. ',
                                       ),
                                       TextSpan(
                                         text: '\nUpgrade Now',
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                             color: appLogoColor,
                                             decoration:
                                                 TextDecoration.underline,
@@ -1227,12 +1346,9 @@ class _MainPageState extends State<MainPage>
                                             fontWeight: FontWeight.bold),
                                         recognizer: TapGestureRecognizer()
                                           ..onTap = () {
-                                            Get.to(SubscriptionPage(
+                                            Get.to(const SubscriptionPage(
                                                 initPurchaseDialog: true));
                                           },
-                                      ),
-                                      TextSpan(
-                                        text: ' to keep trading.',
                                       ),
                                     ]),
                               ),
@@ -1368,7 +1484,7 @@ class _MainPageState extends State<MainPage>
                         Skeleton(
                           height: 20,
                           width: double.maxFinite,
-                          textColor: Color.fromARGB(255, 78, 112, 78),
+                          textColor: const Color.fromARGB(255, 78, 112, 78),
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ],
@@ -1432,8 +1548,8 @@ class _MainPageState extends State<MainPage>
                     child: Container(
                         width: logoS?.width ?? 40,
                         height: logoS?.height ?? 40,
-                        padding: logoS == null ? EdgeInsets.all(5) : null,
-                        decoration: BoxDecoration(
+                        padding: logoS == null ? const EdgeInsets.all(5) : null,
+                        decoration: const BoxDecoration(
                             shape: BoxShape.circle, color: Colors.white),
                         child:
                             assetImages(Assets.appLogo_S, fit: BoxFit.contain)),
@@ -1446,7 +1562,7 @@ class _MainPageState extends State<MainPage>
 
   Widget _buildPlaceholderIdField(
       BuildContext context, DashBoardProvider dashBoardProvider) {
-    return _MainPagePlacementIdWidget();
+    return const _MainPagePlacementIdWidget();
   }
 
   Widget _buildTeamBuildingReferralLink(
@@ -1508,7 +1624,8 @@ class _MainPageState extends State<MainPage>
                                     context, 'Link copied to clipboard.',
                                     icon: Icons.copy,
                                     bgColor: appLogoColor.withOpacity(0.9))),
-                        icon: Icon(Icons.copy, color: Colors.white, size: 15),
+                        icon: const Icon(Icons.copy,
+                            color: Colors.white, size: 15),
                       )
                     ],
                   ),
@@ -1646,15 +1763,17 @@ class _MainPageState extends State<MainPage>
               child: bodyLargeText('Buy Credit Cards'.toUpperCase(), context)),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              scrollDirection: Axis.horizontal,
               children: [
                 if (!dashboardProvider.loadingDash)
-                  ...dashboardProvider.cards.map(
-                    (card) => buildMainPageCardImageWidget(
-                        context, size, dashBoardProvider, card),
-                  ),
+                  ...dashboardProvider.cards
+                      .map(
+                        (card) => buildMainPageCardImageWidget(
+                            context, size, dashBoardProvider, card),
+                      )
+                      .toList(),
               ],
-              scrollDirection: Axis.horizontal,
             ),
           ),
         ],
@@ -1672,7 +1791,7 @@ class _MainPageState extends State<MainPage>
         children: [
           Container(
             width: size.width * 0.8,
-            margin: EdgeInsets.only(right: 20),
+            margin: const EdgeInsets.only(right: 20),
             decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(10)),
@@ -1702,7 +1821,7 @@ class _MainPageState extends State<MainPage>
                               Shadow(
                                   offset: Offset(offset, offset),
                                   blurRadius: 8.0,
-                                  color: Color.fromARGB(0, 0, 0, 0)),
+                                  color: const Color.fromARGB(0, 0, 0, 0)),
                               Shadow(
                                   offset: Offset(offset, offset),
                                   blurRadius: 10.0,
@@ -1747,19 +1866,19 @@ class _EventsSliderWidget extends StatefulWidget {
 class _EventsSliderWidgetState extends State<_EventsSliderWidget> {
   late PageController pageController;
   int currentIndex = 0;
-  late Timer timer;
+  Timer? timer;
   @override
   void initState() {
     super.initState();
     pageController = PageController(initialPage: currentIndex);
     if (widget.listBanners.length > 1) {
-      timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
         currentIndex < widget.listBanners.length - 1
             ? currentIndex++
             : currentIndex = 0;
         pageController.animateToPage(
           currentIndex,
-          duration: Duration(milliseconds: 350),
+          duration: const Duration(milliseconds: 350),
           curve: Curves.easeIn,
         );
       });
@@ -1769,15 +1888,12 @@ class _EventsSliderWidgetState extends State<_EventsSliderWidget> {
   @override
   void dispose() {
     pageController.dispose();
-    timer.cancel();
+    timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('listBanners: ${widget.listBanners.length}');
-    print(widget.listBanners[0].imagePath);
-
     /// Carousel Customized
     return BannerCarousel(
       // banners: widget.listBanners,
@@ -1811,7 +1927,7 @@ class _EventsSliderWidgetState extends State<_EventsSliderWidget> {
           );
         }).toList(),
       ],
-      customizedIndicators: IndicatorModel.animation(
+      customizedIndicators: const IndicatorModel.animation(
           width: 7, height: 7, spaceBetween: 2, widthAnimation: 15),
       height: 500,
       activeColor: appLogoColor,
@@ -1831,13 +1947,13 @@ class _EventsSliderWidgetState extends State<_EventsSliderWidget> {
     );
 
     return Container(
-      padding: EdgeInsetsDirectional.symmetric(horizontal: 10),
+      padding: const EdgeInsetsDirectional.symmetric(horizontal: 10),
       child: CarouselSlider(
         options: CarouselOptions(
           height: 600.0,
           autoPlay: true,
-          autoPlayInterval: Duration(seconds: 5),
-          autoPlayAnimationDuration: Duration(milliseconds: 800),
+          autoPlayInterval: const Duration(seconds: 5),
+          autoPlayAnimationDuration: const Duration(milliseconds: 800),
           autoPlayCurve: Curves.fastOutSlowIn,
           pauseAutoPlayOnTouch: false,
           viewportFraction: 1,
@@ -1877,6 +1993,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
     return Consumer<GalleryProvider>(builder: (context, provider, _) {
       bool showList = provider.categoryVideos.isNotEmpty &&
           provider.categoryVideos[0].videoList!.isNotEmpty;
+      bool isActive = sl.get<AuthProvider>().userData.salesActive == '1';
       return Container(
         // color: Colors.tealAccent.withOpacity(0.1),
         child: Column(
@@ -1896,7 +2013,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   child: GestureDetector(
-                    onTap: () => Get.to(DrawerVideosMainPage()),
+                    onTap: () => Get.to(const DrawerVideosMainPage()),
                     child: Container(
                       decoration: BoxDecoration(
                           color: Colors.transparent,
@@ -1909,7 +2026,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
                             'View All',
                             context,
                           ),
-                          Icon(Icons.keyboard_arrow_right_rounded,
+                          const Icon(Icons.keyboard_arrow_right_rounded,
                               color: Colors.white)
                         ],
                       ),
@@ -1921,7 +2038,7 @@ class _MainPageAccademicVideoList extends StatelessWidget {
             //build video list
             height10(),
             AnimatedContainer(
-              duration: Duration(milliseconds: 500),
+              duration: const Duration(milliseconds: 500),
               height: provider.loadingVideos
                   ? 150
                   : showList
@@ -1936,50 +2053,63 @@ class _MainPageAccademicVideoList extends StatelessWidget {
                     ...provider.categoryVideos[0].videoList!.map((video) {
                       var i =
                           provider.categoryVideos[0].videoList!.indexOf(video);
-                      return Container(
-                        margin: const EdgeInsetsDirectional.only(end: 8),
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: bColor(),
-                          border: Border.all(
-                              color: appLogoColor.withOpacity(0.9), width: 1),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: AccademicVideoCard(
-                          category: provider.categoryVideos[0],
-                          video: video,
-                          i: i,
-                          showBorder: false,
-                          showCategories: false,
-                          border: Border.all(color: appLogoColor, width: 1),
-                          textColor: Colors.white,
-                          loading: false,
+                      return GestureDetector(
+                        onTap: () {
+                          if (!isActive) {
+                            inActiveUserAccessDeniedDialog(context);
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsetsDirectional.only(end: 8),
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: bColor(),
+                            border: Border.all(
+                                color: appLogoColor.withOpacity(0.9), width: 1),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: AbsorbPointer(
+                            absorbing: !isActive,
+                            child: AccademicVideoCard(
+                              category: provider.categoryVideos[0],
+                              video: video,
+                              i: i,
+                              showBorder: false,
+                              showCategories: false,
+                              border: Border.all(color: appLogoColor, width: 1),
+                              textColor: Colors.white,
+                              loading: false,
+                            ),
+                          ),
                         ),
                       );
                     }),
                   if (provider.loadingVideos)
                     ...List.generate(
                         5,
-                        (index) => Container(
-                              margin: const EdgeInsetsDirectional.only(end: 8),
-                              padding: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                color: bColor(),
-                                border: Border.all(
-                                    color: appLogoColor.withOpacity(0.9),
-                                    width: 1),
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                              child: AccademicVideoCard(
-                                category: VideoCategoryModel(),
-                                video: CategoryVideo(),
-                                i: index,
-                                showBorder: false,
-                                showCategories: false,
-                                border:
-                                    Border.all(color: appLogoColor, width: 1),
-                                textColor: Colors.white,
-                                loading: true,
+                        (index) => AbsorbPointer(
+                              child: Container(
+                                margin:
+                                    const EdgeInsetsDirectional.only(end: 8),
+                                padding: const EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: bColor(),
+                                  border: Border.all(
+                                      color: appLogoColor.withOpacity(0.9),
+                                      width: 1),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                child: AccademicVideoCard(
+                                  category: VideoCategoryModel(),
+                                  video: CategoryVideo(),
+                                  i: index,
+                                  showBorder: false,
+                                  showCategories: false,
+                                  border:
+                                      Border.all(color: appLogoColor, width: 1),
+                                  textColor: Colors.white,
+                                  loading: true,
+                                ),
                               ),
                             )),
                 ],
@@ -1990,6 +2120,68 @@ class _MainPageAccademicVideoList extends StatelessWidget {
       );
     });
   }
+}
+
+Future<dynamic> inActiveUserAccessDeniedDialog(BuildContext context,
+    {void Function()? onOk, void Function()? onCancel}) {
+  AwesomeDialog dialog = AwesomeDialog(
+    dialogType: DialogType.info,
+    dismissOnBackKeyPress: false,
+    dismissOnTouchOutside: false,
+    title: 'Access Denied?',
+    desc: 'You are not active user. Please subscribe to get access.',
+    context: context,
+    btnOkText: 'Subscribe Now',
+    btnCancelText: 'Not Now',
+    btnCancelOnPress: () {
+      if (onCancel != null) onCancel();
+    },
+    btnOkOnPress: () {
+      if (onOk != null) onOk();
+      Get.to(() => const SubscriptionPage(initPurchaseDialog: true));
+    },
+    reverseBtnOrder: true,
+  );
+  return dialog.show();
+  return Get.defaultDialog(
+    title: 'Access Denied',
+    radius: 10,
+    middleText: 'You are not active user. Please subscribe to get access.',
+    confirmTextColor: Colors.white,
+    titleStyle: const TextStyle(color: Colors.white),
+    middleTextStyle: const TextStyle(color: Colors.white70),
+    backgroundColor: bColor(1),
+    actions: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(
+                  color: appLogoColor, width: 1, style: BorderStyle.solid),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
+            ),
+            onPressed: () => Get.back(),
+            child: const Text('Not Now', style: TextStyle(color: Colors.white)),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: appLogoColor,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30)),
+            ),
+            onPressed: () {
+              Get.back();
+              Get.to(() => const SubscriptionPage(initPurchaseDialog: true));
+            },
+            child: const Text('Subscribe Now',
+                style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    ],
+  );
 }
 
 class _BuildUpcomingEventCard extends StatelessWidget {
@@ -2052,7 +2244,7 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                         : buildCachedNetworkImage(
                             url,
                             fit: BoxFit.cover,
-                            cache: false,
+                            cache: true,
                             ph: double.infinity,
                             pw: double.infinity,
                             placeholderImg: Assets.videoPlaceholder,
@@ -2073,7 +2265,7 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                             color: Colors.black.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
 
                     child: Row(
                       children: [
@@ -2144,7 +2336,7 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                                       fontSize: titleS,
                                       textAlign: TextAlign.start,
                                     ),
-                              Spacer(),
+                              const Spacer(),
                               Row(
                                 children: [
                                   Row(
@@ -2243,7 +2435,8 @@ class _BuildUpcomingEventCard extends StatelessWidget {
                           color: Colors.black.withOpacity(1),
                           shape: BoxShape.circle,
                         ),
-                        padding: EdgeInsets.only(left: 6, top: 10, bottom: 10),
+                        padding:
+                            const EdgeInsets.only(left: 6, top: 10, bottom: 10),
                         child: Center(child: assetImages('playbutton.png')),
                       ),
                     ),
@@ -2355,8 +2548,8 @@ class UiCategoryTitleContainer extends StatelessWidget {
         children: [
           Container(
               height: 40,
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              decoration: BoxDecoration(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              decoration: const BoxDecoration(
                   gradient: LinearGradient(
                       colors: [
                     Colors.white12,
@@ -2374,7 +2567,7 @@ class UiCategoryTitleContainer extends StatelessWidget {
           Container(
             width: 5,
             height: 40,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
                 color: appLogoColor,
                 borderRadius: BorderRadius.only(
                   topRight: Radius.circular(5),
@@ -2466,24 +2659,29 @@ class _MainPagePlacementIdWidgetState
                                     : Colors.white)),
                     cursorColor: Colors.white,
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 10),
                       filled: false,
                       hintText: 'Enter Placement ID',
                       border: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 1),
                           borderRadius: BorderRadius.circular(5)),
                       enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 1),
                           borderRadius: BorderRadius.circular(5)),
                       focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 1),
                           borderRadius: BorderRadius.circular(5)),
                       errorBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white, width: 1),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 1),
                           borderRadius: BorderRadius.circular(5)),
                       disabledBorder: OutlineInputBorder(
                           borderSide:
-                              BorderSide(color: Colors.white54, width: 1),
+                              const BorderSide(color: Colors.white54, width: 1),
                           borderRadius: BorderRadius.circular(5)),
                       suffixIcon: IconButton(
                         onPressed: () async => await Clipboard.setData(
@@ -2492,7 +2690,7 @@ class _MainPagePlacementIdWidgetState
                                 context, 'Link copied to clipboard.',
                                 icon: Icons.copy,
                                 bgColor: appLogoColor.withOpacity(0.9))),
-                        icon: Icon(
+                        icon: const Icon(
                           Icons.copy,
                           color: Colors.white,
                           size: 15,
@@ -2521,23 +2719,24 @@ class _MainPagePlacementIdWidgetState
                           : null,
                       child: provider.submittingPlacementId ==
                               ButtonLoadingState.loading
-                          ? SizedBox(
+                          ? const SizedBox(
                               width: 40,
                               child: Padding(
-                                padding: const EdgeInsets.all(5.0),
+                                padding: EdgeInsets.all(5.0),
                                 child: CircularProgressIndicator(
                                     color: Colors.blue),
                               ),
                             )
                           : provider.submittingPlacementId ==
                                   ButtonLoadingState.failed
-                              ? Icon(Icons.report_gmailerrorred_rounded,
+                              ? const Icon(Icons.report_gmailerrorred_rounded,
                                   color: Colors.red)
                               : provider.submittingPlacementId ==
                                       ButtonLoadingState.completed
-                                  ? Icon(Icons.file_download_done,
+                                  ? const Icon(Icons.file_download_done,
                                       color: Colors.green)
-                                  : Icon(Icons.done, color: Colors.blueAccent),
+                                  : const Icon(Icons.done,
+                                      color: Colors.blueAccent),
                     ),
                   Row(
                     children: [
@@ -2547,8 +2746,8 @@ class _MainPagePlacementIdWidgetState
                           toggleEditingMode(provider);
                         },
                         child: provider.editingMode
-                            ? Icon(Icons.clear, color: Colors.red)
-                            : Icon(Icons.edit, color: Colors.blue),
+                            ? const Icon(Icons.clear, color: Colors.red)
+                            : const Icon(Icons.edit, color: Colors.blue),
                       ),
                     ],
                   ),
@@ -2709,7 +2908,7 @@ class _DashBoardCustomerRewardTileState
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
             child: Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -2794,7 +2993,7 @@ class _DashBoardCustomerRewardTileState
                         dashBoardProvider.get_active_Leg.isNotEmpty &&
                         (widget.completed || widget.active),
                     child: Container(
-                      margin: EdgeInsets.only(top: 10),
+                      margin: const EdgeInsets.only(top: 10),
                       height: 200,
                       // child: BarChartRace(data: widget.data),
                       child: _BarChartWidget(
@@ -2864,7 +3063,7 @@ class _BarChartWidgetState extends State<_BarChartWidget> {
           ),
           enableTooltip: true,
           isVisible: true,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
             topRight: Radius.circular(3),
             bottomRight: Radius.circular(3),
           ),
@@ -2873,22 +3072,22 @@ class _BarChartWidgetState extends State<_BarChartWidget> {
       primaryXAxis: CategoryAxis(
         title: AxisTitle(
           text: 'Legs',
-          textStyle: TextStyle(color: Colors.white, fontSize: 9),
+          textStyle: const TextStyle(color: Colors.white, fontSize: 9),
         ),
-        labelStyle: TextStyle(color: Colors.white, fontSize: 0),
+        labelStyle: const TextStyle(color: Colors.white, fontSize: 0),
         isVisible: false,
         labelRotation: 45,
         interval: 1,
-        majorGridLines: MajorGridLines(color: Colors.transparent),
-        minorGridLines: MinorGridLines(color: Colors.transparent),
-        axisLine: AxisLine(width: 0, color: Colors.transparent),
+        majorGridLines: const MajorGridLines(color: Colors.transparent),
+        minorGridLines: const MinorGridLines(color: Colors.transparent),
+        axisLine: const AxisLine(width: 0, color: Colors.transparent),
       ),
       primaryYAxis: NumericAxis(
         edgeLabelPlacement: EdgeLabelPlacement.shift,
-        labelStyle: TextStyle(color: Colors.white),
-        majorGridLines: MajorGridLines(color: Colors.transparent),
-        minorGridLines: MinorGridLines(color: Colors.transparent),
-        axisLine: AxisLine(width: 0, color: Colors.transparent),
+        labelStyle: const TextStyle(color: Colors.white),
+        majorGridLines: const MajorGridLines(color: Colors.transparent),
+        minorGridLines: const MinorGridLines(color: Colors.transparent),
+        axisLine: const AxisLine(width: 0, color: Colors.transparent),
       ),
       isTransposed: true,
     );
@@ -2922,7 +3121,7 @@ class MainPageRewardImageCard extends StatelessWidget {
                 (!dashBoardProvider.loadingDash && show) ||
                 (!dashBoardProvider.loadingDash && title == 'Achieved'),
             child: Container(
-              margin: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              margin: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
               height: 250,
               width: double.maxFinite,
               decoration: BoxDecoration(
@@ -2943,7 +3142,7 @@ class MainPageRewardImageCard extends StatelessWidget {
                       shadows: [
                         Shadow(
                           color: Colors.black.withOpacity(00.7),
-                          offset: Offset(1, 2),
+                          offset: const Offset(1, 2),
                           blurRadius: 2,
                         ),
                       ],
@@ -2985,7 +3184,7 @@ class MainPageRewardImageCard extends StatelessWidget {
           left: 0,
           right: 0,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(5),
               child: AnimatedOpacity(
@@ -3018,7 +3217,7 @@ class _NotificationExampleState extends State<NotificationExample> {
   }
 
   Future<void> showNotification(int id, String title, String body) async {
-    var androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    var androidPlatformChannelSpecifics = const AndroidNotificationDetails(
       'channel_id', // Replace with your channel ID
       'Channel name', // Replace with your channel name
       channelDescription:
@@ -3053,7 +3252,7 @@ class _NotificationExampleState extends State<NotificationExample> {
             showNotification(i, 'Notification $i', 'This is notification $i');
           }
         },
-        child: Text('Show Notifications'),
+        child: const Text('Show Notifications'),
       ),
     );
   }

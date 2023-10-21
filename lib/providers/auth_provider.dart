@@ -275,7 +275,6 @@ class AuthProvider with ChangeNotifier {
       // return false;
       // await Future.delayed(Duration(milliseconds: 10000));
       ApiResponse apiResponse = await authRepo.login(loginBody);
-      Get.back();
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         Map map = apiResponse.response!.data;
@@ -324,6 +323,7 @@ class AuthProvider with ChangeNotifier {
     } else {
       Toasts.showWarningNormalToast('You are offline');
     }
+    Get.back();
     return loggedIn;
   }
 

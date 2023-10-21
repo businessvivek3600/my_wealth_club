@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -32,10 +31,9 @@ class WebViewProvider with ChangeNotifier {
   }
 
   ///webview  text controller
-  TextEditingController _textEditingController = TextEditingController();
-  TextEditingController get textEditingController => _textEditingController;
+  late TextEditingController textEditingController;
   setTextEditingController(String val) {
-    _textEditingController.text = val;
+    textEditingController.text = val;
     notifyListeners();
   }
 }

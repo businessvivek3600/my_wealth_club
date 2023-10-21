@@ -83,7 +83,7 @@ class _MyTreeViewPageState extends State<MyTreeViewPage> {
                                 Expanded(
                                   child: InteractiveViewer(
                                       constrained: false,
-                                      boundaryMargin: EdgeInsets.all(100),
+                                      boundaryMargin: const EdgeInsets.all(100),
                                       minScale: 0.5,
                                       maxScale: 10.6,
                                       child: GraphView(
@@ -106,12 +106,12 @@ class _MyTreeViewPageState extends State<MyTreeViewPage> {
                               ],
                             )
                           : buildEmptyList(context)
-                      : Center(
+                      : const Center(
                           child:
                               CircularProgressIndicator(color: appLogoColor)),
                 ],
               )
-            : NoInternetWidget());
+            : const NoInternetWidget());
   }
 
   Random r = Random();
@@ -336,7 +336,7 @@ class _TeamViewUserIconWidgetState extends State<TeamViewUserIconWidget>
     return GestureDetector(
       onTap: widget.callBack,
       child: Container(
-        padding: EdgeInsets.all(2),
+        padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(2),
             border: Border.all(
@@ -407,8 +407,8 @@ class _TeamViewUserIconWidgetState extends State<TeamViewUserIconWidget>
                       child: Container(
                           width: 5,
                           height: 5,
-                          padding: EdgeInsets.all(0.3),
-                          decoration: BoxDecoration(
+                          padding: const EdgeInsets.all(0.3),
+                          decoration: const BoxDecoration(
                               shape: BoxShape.circle, color: Colors.white),
                           child: assetImages(Assets.chatIconImage)),
                     ),
@@ -430,12 +430,12 @@ class _TeamViewUserIconWidgetState extends State<TeamViewUserIconWidget>
                   Container(
                       width: 5,
                       height: 5,
-                      margin: EdgeInsets.only(right: 2),
-                      child: CircularProgressIndicator(
+                      margin: const EdgeInsets.only(right: 2),
+                      child: const CircularProgressIndicator(
                         color: Colors.white,
                         strokeWidth: 0.5,
                       )),
-                capText('${widget.user.username ?? ''}'.toUpperCase(), context,
+                capText((widget.user.username ?? '').toUpperCase(), context,
                     color: Colors.white, fontSize: 3),
               ],
             ),
@@ -443,13 +443,17 @@ class _TeamViewUserIconWidgetState extends State<TeamViewUserIconWidget>
               Column(
                 children: [
                   height5(2),
-                  capText('Total M: ${widget.user.totalMember}'.toUpperCase(),
+                  capText(
+                      '${int.tryParse(widget.user.totalMember ?? '') ?? '0'} Members',
                       context,
-                      color: Colors.white, fontSize: 3),
+                      color: Colors.white,
+                      fontSize: 3),
                   height5(2),
-                  capText('Active M: ${widget.user.activeMember}'.toUpperCase(),
+                  capText(
+                      '${int.tryParse(widget.user.activeMember ?? '') ?? '0'} Active Members',
                       context,
-                      color: Colors.white, fontSize: 3),
+                      color: Colors.white,
+                      fontSize: 2),
                 ],
               ),
           ],
@@ -488,7 +492,7 @@ class _TeamViewUserIconWidgetState extends State<TeamViewUserIconWidget>
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(1),
                       color: Colors.white70),
-                  padding: EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
                       Container(
@@ -570,7 +574,7 @@ class _MessageDialogState extends State<_MessageDialog> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               bodyLargeText(
-                                  '${widget.user.username ?? ''}'.toUpperCase(),
+                                  (widget.user.username ?? '').toUpperCase(),
                                   context,
                                   color: tColor),
                               height5(2),
@@ -595,7 +599,7 @@ class _MessageDialogState extends State<_MessageDialog> {
                       ),
                       Row(
                         children: [
-                          Spacer(flex: 3),
+                          const Spacer(flex: 3),
                           Expanded(
                             flex: 1,
                             child: MultiStageButton(
@@ -606,18 +610,18 @@ class _MessageDialogState extends State<_MessageDialog> {
                                 // idleColor: Colors.transparent,
                                 iconMode: true,
                                 idleColor: Colors.green,
-                                idleIcon: Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
+                                idleIcon: const Padding(
+                                    padding: EdgeInsets.only(left: 8.0),
                                     child:
                                         Icon(Icons.send, color: Colors.white)),
                                 failColor: Colors.red,
-                                failedIcon: Padding(
-                                    padding: const EdgeInsets.only(left: 5.0),
+                                failedIcon: const Padding(
+                                    padding: EdgeInsets.only(left: 5.0),
                                     child:
                                         Icon(Icons.error, color: Colors.white)),
                                 completedColor: Colors.green,
-                                completedIcon: Padding(
-                                    padding: const EdgeInsets.only(left: 5.0),
+                                completedIcon: const Padding(
+                                    padding: EdgeInsets.only(left: 5.0),
                                     child: Icon(Icons.done_all,
                                         color: Colors.white)),
                                 onPressed: () => _formKey.currentState
@@ -690,7 +694,7 @@ class _MessageDialogState extends State<_MessageDialog> {
                     controller: message,
                     onEditingComplete: () => primaryFocus?.unfocus(),
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.all(10),
+                      contentPadding: const EdgeInsets.all(10),
                       counterText: '',
                       filled: true,
                       fillColor: Colors.grey.withOpacity(0.1),

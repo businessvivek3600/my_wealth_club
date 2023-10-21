@@ -179,6 +179,7 @@ Widget titleLargeText(
   TextDecoration? decoration,
   bool useGradient = false,
   double opacity = 1.0,
+  List<Color>? gradiantColors,
 }) {
   Widget txt = GradientText(
     text,

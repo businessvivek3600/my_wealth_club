@@ -35,13 +35,25 @@
                 />
 
 <!--        flutter deeplinking-->
-            <intent-filter android:autoVerify="true">
+            <!-- <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="mycarclub.com" />
+                <data android:scheme="https" android:host="mywealthclub.com" />
                 <data android:pathPrefix="/refCode" />
-            </intent-filter>
+            </intent-filter> -->
+             <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+             <intent-filter android:autoVerify="true">
+                 <action android:name="android.intent.action.VIEW" />
+                 <category android:name="android.intent.category.DEFAULT" />
+                 <category android:name="android.intent.category.BROWSABLE" />
+                 <data android:scheme="http" android:host="mywealthclub.com" />
+                 <data android:scheme="https" />
+                 <data android:pathPrefix="/refCode" />
+                 <data android:pathPrefix="/signup" />
+                 <data android:pathPrefix="/ytLive" />
+             </intent-filter>
+            
 
 <!--         branch Io-->
             <!-- Branch URI Scheme -->
@@ -58,10 +70,10 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="g0jyw-alternate.app.link" />
-                <data android:scheme="https" android:host="g0jyw.app.link" />
-                <data android:scheme="https" android:host="g0jyw-alternate.test-app.link" />
-                <data android:scheme="https" android:host="g0jyw.test-app.link" />
+                <data android:scheme="https" android:host="mywealthclub-alternate.app.link" />
+                <data android:scheme="https" android:host="mywealthclub.app.link" />
+                <data android:scheme="https" android:host="mywealthclub-alternate.test-app.link" />
+                <data android:scheme="https" android:host="mywealthclub.test-app.link" />
             </intent-filter>
 
             <intent-filter>
