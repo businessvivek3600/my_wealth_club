@@ -44,6 +44,7 @@ class AppConstants {
 
   //subscription
   static const String myInbox = 'inbox';
+  static const String loginLogs = 'get-login-logs';
 
   //subscription
   static const String mySubscription = 'customer/my-subscription';
@@ -73,6 +74,7 @@ class AppConstants {
   static const String voucherList = 'customer/voucher-list';
   static const String createVoucher = 'customer/create-voucher';
   static const String createVoucherSubmit = 'customer/create-voucher-submit';
+  //event-tickets
   //event-tickets
   static const String myEventTickets = 'customer/my-event-tickets';
   static const String buyEventTickets = 'customer/buy-event-ticket';

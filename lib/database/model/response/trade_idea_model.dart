@@ -57,23 +57,23 @@ class TradeIdeaModel {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['date'] = this.date;
-    data['time'] = this.time;
-    data['direction'] = this.direction;
-    data['market'] = this.market;
-    data['entry'] = this.entry;
-    data['stop_loss'] = this.stopLoss;
-    data['TP1'] = this.tP1;
-    data['TP2'] = this.tP2;
-    data['TP3'] = this.tP3;
-    data['TP4'] = this.tP4;
-    data['TP5'] = this.tP5;
-    data['updates'] = this.updates;
-    data['status'] = this.status;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['date'] = date;
+    data['time'] = time;
+    data['direction'] = direction;
+    data['market'] = market;
+    data['entry'] = entry;
+    data['stop_loss'] = stopLoss;
+    data['TP1'] = tP1;
+    data['TP2'] = tP2;
+    data['TP3'] = tP3;
+    data['TP4'] = tP4;
+    data['TP5'] = tP5;
+    data['updates'] = updates;
+    data['status'] = status;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
     return data;
   }
 }

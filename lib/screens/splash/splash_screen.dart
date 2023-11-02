@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_branch_sdk/flutter_branch_sdk.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/database/my_notification_setup.dart';
 import '../../utils/my_logger.dart';
 import '/utils/app_lock_authentication.dart';
 import '/database/repositories/settings_repo.dart';
@@ -186,7 +188,9 @@ class _SplashScreenState extends State<SplashScreen> {
           }
           //athorizedRoutes => mainPage
           else if (authorizedRoutes(uri.path) && isLogin) {
-            Get.toNamed(uri.path, arguments: queryParams);
+            logger.t('authorizedRoutes => splashScreen',
+                tag: '$tag listenDynamicLinks', error: queryParams);
+            selectNotificationStream.add(jsonEncode(queryParams));
           }
         }
       } catch (e) {

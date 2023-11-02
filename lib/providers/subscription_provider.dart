@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
@@ -101,8 +102,16 @@ class SubscriptionProvider extends ChangeNotifier {
             totalSubscriptions = int.parse(map['totalRows'] ?? '0');
           }
           if (map['buy_package'] != null && map['buy_package'].isNotEmpty) {
-            map['buy_package']
-                .forEach((e) => _history.add(SubscriptionHistory.fromJson(e)));
+            map['buy_package'].forEach((e) {
+              if (!Platform.isAndroid) {
+                if (e['status'] != null &&
+                    !e['status'].toString().contains('6')) {
+                  _history.add(SubscriptionHistory.fromJson(e));
+                }
+              } else {
+                _history.add(SubscriptionHistory.fromJson(e));
+              }
+            });
             _history.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
             if (subPage == 0) {
               history.clear();
@@ -134,9 +143,9 @@ class SubscriptionProvider extends ChangeNotifier {
                 map['payment_return_url']?['stripe']?['success'] ?? '';
             stripe_paymnet_cancel_url =
                 map['payment_return_url']?['stripe']?['cancel'] ?? '';
-            successLog(
-                'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
-                'getSubscription');
+            // successLog(
+            //     'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
+            //     'getSubscription');
           }
         } catch (e) {}
         try {

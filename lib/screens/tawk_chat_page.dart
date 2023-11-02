@@ -26,13 +26,13 @@ class TawkChatPage extends StatelessWidget {
     return Consumer<WebViewProvider>(builder: (context, provider, child) {
       return Scaffold(
         backgroundColor: provider.controller != null
-            ? Color(0xFF03A84E)
+            ? const Color(0xFF03A84E)
             : Colors.transparent,
         appBar: AppBar(
           backgroundColor: provider.controller != null
-              ? Color(0xFF03A84E)
+              ? const Color(0xFF03A84E)
               : Colors.transparent,
-          title: Text('Tawk.to Chat'),
+          title: const Text('Tawk.to Chat'),
           leading: IconButton(
               onPressed: () async {
                 if (provider.controller != null) {
@@ -73,7 +73,7 @@ class TawkChatPage extends StatelessWidget {
             onLinkTap: (String url) {
               print('Link tapped: $url');
             },
-            placeholder: Center(child: CircularProgressIndicator()),
+            placeholder: const Center(child: CircularProgressIndicator()),
           ),
         ),
       );
@@ -124,7 +124,7 @@ class _TawkState extends State<Tawk> {
                     Center(
                         child: CircularProgressIndicator(
                             color: provider.controller != null
-                                ? Color(0xFF03A84E)
+                                ? const Color(0xFF03A84E)
                                 : Colors.white))
                 : Container(),
           ],
@@ -256,6 +256,7 @@ class _TawkState extends State<Tawk> {
   @override
   void initState() {
     super.initState();
+    provider.textEditingController = TextEditingController();
     initController();
   }
 

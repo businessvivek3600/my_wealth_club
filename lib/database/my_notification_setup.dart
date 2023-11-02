@@ -245,7 +245,7 @@ class MyNotification {
               isDefaultAction: true,
               onPressed: () async {
                 Navigator.of(context, rootNavigator: true).pop();
-                await MyCarClub.navigatorKey.currentState?.pushNamed(
+                await MyWealthClub.navigatorKey.currentState?.pushNamed(
                     NotificationPage.routeName,
                     arguments: receivedNotification.payload);
               },
@@ -295,14 +295,14 @@ class MyNotification {
           if (routeName == YoutubePlayerPage.routeName) {
             if (data['isLive'] != null &&
                 data['isLive'].toString() == true.toString()) {
-              await MyCarClub.navigatorKey.currentState
+              await MyWealthClub.navigatorKey.currentState
                   ?.pushNamed(routeName, arguments: payload);
             } else {
               // await MyCarClub.navigatorKey.currentState
               //     ?.pushReplacementNamed(MainPage.routeName);
             }
           } else if (routeName != YoutubePlayerPage.routeName) {
-            await MyCarClub.navigatorKey.currentState
+            await MyWealthClub.navigatorKey.currentState
                 ?.pushNamed(routeName, arguments: payload);
           }
 

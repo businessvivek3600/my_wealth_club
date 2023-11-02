@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/my_logger.dart';
 import '/utils/default_logger.dart';
 import '/utils/sp_utils.dart';
 import '/database/functions.dart';
@@ -84,8 +86,8 @@ class AuthProvider with ChangeNotifier {
           ? Toasts.showSuccessNormalToast(message.split('.').first)
           : Toasts.showErrorNormalToast(message.split('.').first);
       if (status) {
-        Future.delayed(
-            Duration(milliseconds: 2000), () => Get.offAll(LoginScreen()));
+        Future.delayed(const Duration(milliseconds: 2000),
+            () => Get.offAll(const LoginScreen()));
       }
       notifyListeners();
     } else {
@@ -117,8 +119,8 @@ class AuthProvider with ChangeNotifier {
           status = map["status"];
         } catch (e) {}
         try {
-          var is_logged_in = map["is_logged_in"];
-          if (is_logged_in == 0) {
+          var isLoggedIn = map["is_logged_in"];
+          if (isLoggedIn == 0) {
             logOut('user data not found in updateProfile');
           }
         } catch (e) {}
@@ -131,8 +133,8 @@ class AuthProvider with ChangeNotifier {
             ? Toasts.showSuccessNormalToast(message.split('.').first)
             : Toasts.showErrorNormalToast(message.split('.').first);
         if (status) {
-          await userInfo().then((value) =>
-              Future.delayed(Duration(milliseconds: 1000), () => Get.back()));
+          await userInfo().then((value) => Future.delayed(
+              const Duration(milliseconds: 1000), () => Get.back()));
         }
         notifyListeners();
       } else {
@@ -212,15 +214,17 @@ class AuthProvider with ChangeNotifier {
     }
     if (map != null) {
       try {
-        if (map['company_info'] != null)
+        if (map['company_info'] != null) {
           companyInfo = CompanyInfoModel.fromJson(map['company_info']);
+        }
         notifyListeners();
       } catch (e) {
         print('company info error on getSignUpInitialData $e');
       }
       try {
-        if (map['mwc_content'] != null && map['mwc_content'] != false)
+        if (map['mwc_content'] != null && map['mwc_content'] != false) {
           mwc_content = MWC_Content.fromJson(map['mwc_content']);
+        }
         notifyListeners();
       } catch (e) {
         print('mwc_content error on getSignUpInitialData $e');
@@ -272,24 +276,23 @@ class AuthProvider with ChangeNotifier {
 
     if (isOnline) {
       showLoading(dismissable: false, useRootNavigator: true);
+      log('loginBody ${loginBody.toJson()}');
       // return false;
       // await Future.delayed(Duration(milliseconds: 10000));
       ApiResponse apiResponse = await authRepo.login(loginBody);
+      // Navigator.of(Get.context!).pop();
+
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         Map map = apiResponse.response!.data;
         UserData? _userData;
-        String? login_token;
+        String? loginToken;
         String message = '';
         bool status = false;
         try {
           status = map["status"];
-        } catch (e) {}
-        try {
           message = map["message"];
-        } catch (e) {}
-        try {
-          login_token = map["login_token"];
+          loginToken = map["login_token"];
         } catch (e) {}
         try {
           if (status) {
@@ -301,35 +304,37 @@ class AuthProvider with ChangeNotifier {
             // sl.get<SettingsRepo>().setBiometric(true);
             await fcmSubscriptionRepo.subscribeToTopic(SPConstants.topic_all);
             await fcmSubscriptionRepo.subscribeToTopic(SPConstants.topic_event);
+            if (status && loginToken != null && loginToken.isNotEmpty) {
+              authRepo.saveUserToken(loginToken);
+              authRepo.saveUser(userData);
+            }
           }
         } catch (e) {
           // print('user could not be generated ${_userData?.toJson()} \n $e');
-        }
-        if (status && login_token != null && login_token.isNotEmpty) {
-          authRepo.saveUserToken(login_token);
-          authRepo.saveUser(userData);
         }
         if (!status) Toasts.showErrorNormalToast(message.split('.').first);
         loggedIn = status;
       } else {
         if (apiResponse.error is String) {
-          print(apiResponse.error.toString());
+          logger.e(apiResponse.error.toString(),
+              tag: 'login', error: apiResponse.error);
         } else {
           ErrorResponse errorResponse = apiResponse.error;
-          print('error message from login ${errorResponse.errors[0].message}');
+          logger.e(' ${errorResponse.errors[0].message}',
+              tag: 'login', error: errorResponse.errors);
         }
+        // Get.back();
         Toasts.showErrorNormalToast('Some thing went wrong!');
       }
     } else {
       Toasts.showWarningNormalToast('You are offline');
     }
-    Get.back();
     return loggedIn;
   }
 
   bool loadingStates = false;
   List<States> states = [];
-  Future<void> getStates(String country_id) async {
+  Future<void> getStates(String countryId) async {
     bool cacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.getStates);
     loadingStates = true;
@@ -338,7 +343,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
     if (isOnline) {
       ApiResponse apiResponse =
-          await authRepo.getStates({'country_id': country_id});
+          await authRepo.getStates({'country_id': countryId});
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         bool status = false;
@@ -385,12 +390,12 @@ class AuthProvider with ChangeNotifier {
     bool isCacheExist =
         await APICacheManager().isAPICacheKeyExist(SPConstants.user);
     UserData? _userData;
-    String? login_token;
+    String? loginToken;
 
     print('user data exist userInfo $isCacheExist ');
     if (!isCacheExist) {
       print('user data not exist ');
-      Get.offAll(LoginScreen());
+      Get.offAll(const LoginScreen());
       return _userData;
     } else if (isOnline) {
       ApiResponse apiResponse = await authRepo.userInfo();
@@ -402,7 +407,7 @@ class AuthProvider with ChangeNotifier {
           status = map["status"];
         } catch (e) {}
         try {
-          login_token = map["login_token"];
+          loginToken = map["login_token"];
         } catch (e) {}
         if (map['userData'] == null) {
           logOut('user data not found in userInfo');
@@ -417,12 +422,13 @@ class AuthProvider with ChangeNotifier {
         } catch (e) {
           // print('user could not be generated ${_userData?.toJson()} \n $e');
         }
-        if (status && login_token != null && login_token.isNotEmpty) {
-          authRepo.saveUserToken(login_token);
+        if (status && loginToken != null && loginToken.isNotEmpty) {
+          authRepo.saveUserToken(loginToken);
           authRepo.saveUser(userData);
         }
         notifyListeners();
-        return Future.delayed(Duration(milliseconds: 2000), () => _userData);
+        return Future.delayed(
+            const Duration(milliseconds: 2000), () => _userData);
       } else {
         String errorMessage = "";
         if (apiResponse.error is String) {
@@ -445,9 +451,9 @@ class AuthProvider with ChangeNotifier {
         // print('cacheModel -> ${jsonDecode(cacheModel)}');
         _userData = UserData.fromJson(jsonDecode(cacheModel));
         userData = _userData;
-        login_token = (await SharedPreferences.getInstance())
+        loginToken = (await SharedPreferences.getInstance())
             .getString(SPConstants.userToken);
-        authRepo.saveUserToken(login_token!);
+        authRepo.saveUserToken(loginToken!);
         authRepo.saveUser(userData);
       } catch (e) {
         // print('user could not be generated ${_userData?.toJson()} \n $e');
@@ -645,8 +651,8 @@ class AuthProvider with ChangeNotifier {
               : Toasts.showErrorNormalToast(message.split('.').first);
           if (status) {
             Future.delayed(
-                Duration(milliseconds: 1000),
-                () => MyCarClub.navigatorKey.currentState
+                const Duration(milliseconds: 1000),
+                () => MyWealthClub.navigatorKey.currentState
                     ?.pushNamedAndRemoveUntil(
                         LoginScreen.routeName, (route) => false));
           }
@@ -775,7 +781,7 @@ class AuthProvider with ChangeNotifier {
       if (isOnline) {
         loadingVerifyEmail = true;
         notifyListeners();
-        await Future.delayed(Duration(milliseconds: 3000));
+        await Future.delayed(const Duration(milliseconds: 3000));
         ApiResponse apiResponse =
             await authRepo.verifyEmail({'username': userData.username ?? ''});
         infoLog('verify Email online hit  ${apiResponse.response?.data}');

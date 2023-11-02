@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -42,36 +43,9 @@ Future<void> main() async {
 
   await initPlatformState();
   // Non-async exceptions
-  const bool fatalError = true;
-  // FirebaseCrashlytics.instance
-  //     .setCustomKey('device_info', sl.get<DeviceInfoConfig>().deviceData);
-  try {
-    FirebaseCrashlytics.instance
-        .setUserIdentifier(sl.get<DeviceInfoConfig>().deviceData.toString());
-    FirebaseCrashlytics.instance.setUserIdentifier(
-        '${sl.get<DeviceInfoConfig>().deviceData[Platform.isIOS ? 'systemName' : 'device']} *** user ${(await sl.get<AuthProvider>().getUser())?.username ?? ''}');
 
-    FlutterError.onError = (errorDetails) {
-      if (fatalError) {
-        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-        // ignore: dead_code
-      } else {
-        FirebaseCrashlytics.instance.recordFlutterError(errorDetails);
-      }
-    };
-    // Async exceptions
-    PlatformDispatcher.instance.onError = (error, stack) {
-      if (fatalError) {
-        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-        // ignore: dead_code
-      } else {
-        FirebaseCrashlytics.instance.recordError(error, stack);
-      }
-      return true;
-    };
-  } catch (e) {
-    errorLog('FirebaseCrashlytics.instance : $e', 'main');
-  }
+  //crashlytics
+  _crashlystics();
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   MyNotification().initialize(flutterLocalNotificationsPlugin);
@@ -88,19 +62,8 @@ Future<void> main() async {
         notificationAppLaunchDetails?.notificationResponse?.payload;
     selectNotificationStream.add(selectedNotificationPayload);
   }
-  // FlutterError.onError = (FlutterErrorDetails details) {
-  //   errorLog("FlutterError.onError : ${details.exception}");
-  //   try {
-  //     // Navigator.pushAndRemoveUntil(
-  //     //     MyCarClub.navigatorKey.currentContext!,
-  //     //     MaterialPageRoute(builder: (context) => MainPage()),
-  //     //     (route) => false);
-  //   } catch (e) {
-  //     errorLog(e.toString());
-  //   }
-  // };
-  // setErrorBuilder();
-  runApp(MyCarClub(
+
+  runApp(MyWealthClub(
       initialRoute: initialRoute,
       notificationAppLaunchDetails: notificationAppLaunchDetails));
 }
@@ -121,7 +84,7 @@ class ErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Error")),
+      appBar: AppBar(title: const Text("Error")),
       body: Container(
         height: double.maxFinite,
         width: double.maxFinite,
@@ -162,4 +125,58 @@ class ErrorPage extends StatelessWidget {
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
     );
   }
+}
+
+Future<void> _crashlystics() async {
+  try {
+    const bool fatalError = true;
+
+    // FirebaseCrashlytics.instance.setUserIdentifier("12345");
+    // FirebaseCrashlytics.instance
+    //     .setUserIdentifier(sl.get<DeviceInfoConfig>().deviceData.toString());
+    FirebaseCrashlytics.instance.setUserIdentifier(
+        '${sl.get<DeviceInfoConfig>().deviceData[Platform.isIOS ? 'systemName' : 'device']} *** user ${(await sl.get<AuthProvider>().getUser())?.username ?? ''}');
+
+    FlutterError.onError = (errorDetails) {
+      if (fatalError) {
+        FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+        // ignore: dead_code
+      } else {
+        FirebaseCrashlytics.instance.recordFlutterError(errorDetails);
+      }
+    };
+    // Async exceptions
+    PlatformDispatcher.instance.onError = (error, stack) {
+      if (fatalError) {
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        // ignore: dead_code
+      } else {
+        FirebaseCrashlytics.instance.recordError(error, stack);
+      }
+      return true;
+    };
+    //outside of runApp
+    // Isolate.current.addErrorListener(RawReceivePort((pair) async {
+    //   final List<dynamic> errorAndStacktrace = pair;
+    //   await FirebaseCrashlytics.instance.recordError(
+    //     errorAndStacktrace.first,
+    //     errorAndStacktrace.last,
+    //     fatal: true,
+    //   );
+    // }).sendPort);
+  } catch (e) {
+    errorLog('FirebaseCrashlytics.instance : $e', 'main');
+  }
+  // FlutterError.onError = (FlutterErrorDetails details) {
+  //   errorLog("FlutterError.onError : ${details.exception}");
+  //   try {
+  //     // Navigator.pushAndRemoveUntil(
+  //     //     MyCarClub.navigatorKey.currentContext!,
+  //     //     MaterialPageRoute(builder: (context) => MainPage()),
+  //     //     (route) => false);
+  //   } catch (e) {
+  //     errorLog(e.toString());
+  //   }
+  // };
+  // setErrorBuilder();
 }

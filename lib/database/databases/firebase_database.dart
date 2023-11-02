@@ -68,7 +68,7 @@ class FirebaseDatabase implements MyDatabase {
             errorLog(e.toString(), TAG);
           }
         }
-        whatsNewList.sort((a, b) => b.version.compareTo(a.version));
+        whatsNewList.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
       } catch (e) {
         errorLog(e.toString(), TAG);
       }

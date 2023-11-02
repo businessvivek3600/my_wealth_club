@@ -122,7 +122,6 @@ class _WebViewExampleState extends State<WebViewExample> {
   void dispose() {
     provider.textEditingController.dispose();
     provider.controller = null;
-    provider.setUrl(null);
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     super.dispose();

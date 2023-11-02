@@ -382,7 +382,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       children: <Widget>[
                         Expanded(
                             child: OutlinedButton(
-                          onPressed: () => MyCarClub.navigatorKey.currentState
+                          onPressed: () => MyWealthClub
+                              .navigatorKey.currentState
                               ?.pushNamedAndRemoveUntil(
                                   LoginScreen.routeName, (route) => false),
                           child: Padding(

@@ -33,6 +33,7 @@ class Assets {
   static const arrowIn = 'arrow-left-296-svgrepo-com.svg';
   static const arrowBack = 'arrow-left-md-svgrepo-com.svg';
   static const arrowForwardIos = 'arrow-right-336-svgrepo-com.svg';
+  static const logsSvg = 'logs-svgrepo-com.svg';
 
   static const pdf = 'pdf-document-svgrepo-com.svg';
   static const ppt = 'ppt-document-svgrepo-com.svg';
@@ -99,6 +100,7 @@ class Assets {
   static const emptyMessage = 'empty_message.riv';
   static const appDefaultLoading = 'square_jumping_loading.riv';
   static const loadingDots = 'loading_dots.riv';
+  static const succesRive = 'success.riv';
 
   //lottie
   static const emptyCards = '131552-empty.json';

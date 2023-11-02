@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/widgets/SubscriptionPurchaseDialog_test.dart';
 import '../../../widgets/load_more_container.dart';
 import '/database/functions.dart';
 import '/database/model/response/subscription_history_model.dart';
@@ -39,10 +42,16 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
-              builder: (_) => SubscriptionPurchaseDialog());
+              builder: (_) => _returnDialog());
         }
       });
     });
+  }
+
+  Widget _returnDialog() {
+    return Platform.isIOS
+        ? const SubscriptionPurchaseDialogTest()
+        : const SubscriptionPurchaseDialog();
   }
 
   @override
@@ -114,12 +123,11 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                                       context: context,
                                       isScrollControlled: true,
                                       backgroundColor: Colors.transparent,
-                                      builder: (_) =>
-                                          SubscriptionPurchaseDialog());
+                                      builder: (_) => _returnDialog());
                                   // Get.dialog(
-                                  //     const SubscriptionPurchaseDialog());
+                                  //     const _returnDialog());
                                 }),
-                            child: Text('Purchase')),
+                            child: const Text('Purchase')),
                       ),
                     ],
                   ),
@@ -146,7 +154,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             height: 300,
                             color: Colors.white,
                           ));
-                  // Get.bottomSheet(const SubscriptionPurchaseDialog(),
+                  // Get.bottomSheet(const _returnDialog(),
                   // enterBottomSheetDuration: const Duration(milliseconds: 200),
                   // enableDrag: false,
                   // isScrollControlled: true,
@@ -320,7 +328,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         Container(
           // height: 100,
           width: double.maxFinite,
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           decoration: const BoxDecoration(
             color: Colors.white10,
             borderRadius: BorderRadius.only(
@@ -399,9 +407,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                               context: context,
                               isScrollControlled: true,
                               backgroundColor: Colors.transparent,
-                              builder: (_) => SubscriptionPurchaseDialog());
+                              builder: (_) => _returnDialog());
                         },
-                        child: Text('Purchase')),
+                        child: const Text('Purchase')),
                   ),
                 ),
               ],
@@ -428,26 +436,27 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       actions: [
         Row(
           children: [
-            SizedBox(
-              height: 25,
-              child: ElevatedButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const SubscriptionRequestsPage(),
+            if (Platform.isAndroid)
+              SizedBox(
+                height: 25,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SubscriptionRequestsPage(),
+                    ),
                   ),
+                  style: ElevatedButton.styleFrom(
+                    // backgroundColor: appLogoColor,
+                    backgroundColor: Colors.transparent,
+                    padding: const EdgeInsets.all(0),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: const BorderSide(color: appLogoColor)),
+                  ),
+                  child: bodyLargeText('History', context,
+                      fontWeight: FontWeight.normal),
                 ),
-                style: ElevatedButton.styleFrom(
-                  // backgroundColor: appLogoColor,
-                  backgroundColor: Colors.transparent,
-                  padding: EdgeInsets.all(0),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      side: BorderSide(color: appLogoColor)),
-                ),
-                child: bodyLargeText('History', context,
-                    fontWeight: FontWeight.normal),
               ),
-            ),
             width10(),
           ],
         ),

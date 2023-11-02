@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:mycarclub/utils/default_logger.dart';
-import '../../utils/my_logger.dart';
+import 'package:mycarclub/utils/my_logger.dart';
 import '/database/functions.dart';
 import '/constants/assets_constants.dart';
 import '/database/model/body/login_model.dart';
@@ -53,19 +53,26 @@ class _LoginScreenState extends State<LoginScreen> {
     OverlayState? overlayState = Overlay.of(context);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       checkForUpdate(context);
-      globalKey;
     });
     _focusNode.addListener(() {
       warningLog('Has focus: ${_focusNode.hasFocus}', 'LoginScreen');
       if (_focusNode.hasFocus) {
         _overlayEntry = _createOverlay();
-        overlayState.insert(_overlayEntry!);
+        if (_overlayEntry != null) overlayState.insert(_overlayEntry!);
       } else {
         if (_overlayEntry != null) {
-          _overlayEntry!.remove();
+          _overlayEntry?.remove();
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _userNameController.dispose();
+    _passwordController.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   // Load saved credentials
@@ -75,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> saveCredentials() async => await sl
       .get<AuthProvider>()
       .saveCredentials(_userNameController.text, _passwordController.text);
+
   @override
   Widget build(BuildContext context) {
     // logger.e('LoginScreen', tag: 'LoginScreen', error: 'error');
@@ -210,8 +218,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (val != null) {
                         _userNameController.text = val.keys.first;
                         _passwordController.text = val.values.first;
-                        if (_overlayEntry != null) _overlayEntry!.remove();
                       }
+                      primaryFocus?.unfocus();
                     }),
               ),
             ));
@@ -256,9 +264,10 @@ class _LoginScreenState extends State<LoginScreen> {
             await sl
                 .get<AuthProvider>()
                 .login(LoginModel(
-                    username: _userNameController.text,
-                    password: _passwordController.text,
-                    device_id: ''))
+                  username: _userNameController.text,
+                  password: _passwordController.text,
+                  device_id: '',
+                ))
                 .then((value) {
               if (value) {
                 controller.success();
@@ -267,9 +276,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Duration(milliseconds: 2000),
                     () => Get.offAll(MainPage(
                           loginModel: LoginModel(
-                              username: _userNameController.text,
-                              password: _passwordController.text,
-                              device_id: ''),
+                            username: _userNameController.text,
+                            password: _passwordController.text,
+                            device_id: '',
+                          ),
                         )));
               } else {
                 controller.failure();
@@ -338,6 +348,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       cursorColor: Colors.white,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(hintText: 'Username'),
+                      textInputAction: TextInputAction.next,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Please enter username';
@@ -390,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () => MyCarClub.navigatorKey.currentState
+                  onPressed: () => MyWealthClub.navigatorKey.currentState
                       ?.pushNamed(ForgotPasswordScreen.routeName),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -432,9 +443,10 @@ class _LoginScreenState extends State<LoginScreen> {
         await sl
             .get<AuthProvider>()
             .login(LoginModel(
-                username: _userNameController.text,
-                password: _passwordController.text,
-                device_id: ''))
+              username: _userNameController.text,
+              password: _passwordController.text,
+              device_id: '',
+            ))
             .then((value) {
           if (value) {
             sl.get<DashBoardProvider>().getCustomerDashboard();
@@ -448,8 +460,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Duration(milliseconds: 000),
                 () => Get.offAll(MainPage(
                       loginModel: LoginModel(
-                          username: _userNameController.text,
-                          password: _passwordController.text,
+                          username: _userNameController.text.trim(),
+                          password: _passwordController.text.trim(),
                           device_id: ''),
                     )));
           }

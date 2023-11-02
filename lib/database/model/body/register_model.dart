@@ -11,6 +11,7 @@ class RegisterModel {
   String? sponser_username;
   String? placement_username;
   String? country_code;
+  String? device_name;
 
   RegisterModel({
     this.device_id,
@@ -25,6 +26,7 @@ class RegisterModel {
     this.sponser_username,
     this.placement_username,
     this.country_code,
+    this.device_name,
   });
 
   RegisterModel.fromJson(Map<String, dynamic> json) {
@@ -39,22 +41,24 @@ class RegisterModel {
     sponser_username = json['sponser_username'];
     placement_username = json['placement_username'];
     country_code = json['country_code'];
+    device_id = json['device_id'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['device_id'] = this.device_id;
-    data['customer_email'] = this.email;
-    data['username'] = this.username;
-    data['spassword'] = this.password;
-    data['first_name'] = this.fName;
-    data['last_name'] = this.lName;
-    data['customer_mobile'] = this.phone;
-    data['spassword'] = this.spassword;
-    data['confirm_password'] = this.confirm_password;
-    data['sponser_username'] = this.sponser_username;
-    data['placement_username'] = this.placement_username;
-    data['country_code'] = this.country_code ?? '';
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['device_id'] = device_id;
+    data['customer_email'] = email;
+    data['username'] = username;
+    data['spassword'] = password;
+    data['first_name'] = fName;
+    data['last_name'] = lName;
+    data['customer_mobile'] = phone;
+    data['spassword'] = spassword;
+    data['confirm_password'] = confirm_password;
+    data['sponser_username'] = sponser_username;
+    data['placement_username'] = placement_username;
+    data['country_code'] = country_code ?? '';
+    data['device_name'] = device_name;
     return data;
   }
 }

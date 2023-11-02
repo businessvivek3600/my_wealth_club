@@ -19,7 +19,7 @@ class _WhatsNewPageState extends State<WhatsNewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: titleLargeText('Whats New', context, useGradient: true),
+        title: titleLargeText('Changelogs', context, useGradient: true),
       ),
       body: Container(
         height: double.maxFinite,
@@ -147,10 +147,7 @@ class _WhatsNewView extends StatelessWidget {
                                 color: Colors.white.withOpacity(0.8)),
                             children: <TextSpan>[
                               TextSpan(
-                                  text: formatDate(
-                                      whatsNew.updatedAt != null
-                                          ? whatsNew.updatedAt!
-                                          : whatsNew.createdAt!,
+                                  text: formatDate(whatsNew.createdAt!,
                                       'dd MMM yyyy hh:mm a'),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.normal,
@@ -167,7 +164,7 @@ class _WhatsNewView extends StatelessWidget {
         );
       },
       separatorBuilder: (context, index) {
-        return const Divider(color: Colors.transparent);
+        return const Divider(color: Colors.transparent, height: 0);
       },
     ));
   }

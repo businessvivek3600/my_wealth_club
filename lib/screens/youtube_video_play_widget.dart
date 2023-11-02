@@ -123,7 +123,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
   Widget build(BuildContext context) {
     return videoId != '' && videoId != null
         ? _LiveYTPlayer(videoId: videoId!, data: eventData)
-        : Center(child: CircularProgressIndicator(color: Colors.white));
+        : const Center(child: CircularProgressIndicator(color: Colors.white));
     DateTime? date = DateTime.tryParse(eventData?['webinar_time'] ?? '');
     // return Container();
     return Scaffold(
@@ -157,7 +157,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                     controller: provider.controller,
                     showVideoProgressIndicator: true,
                     progressIndicatorColor: Colors.white,
-                    progressColors: ProgressBarColors(
+                    progressColors: const ProgressBarColors(
                         playedColor: Colors.blueAccent,
                         handleColor: Colors.blueAccent),
                     topActions: <Widget>[],
@@ -238,7 +238,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Icon(Icons.calendar_month_rounded,
+                                      const Icon(Icons.calendar_month_rounded,
                                           color: Colors.white, size: 20),
                                       width10(),
                                       Expanded(
@@ -267,7 +267,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                                 // ),
 
                                 // description headline
-                                Divider(color: Colors.white),
+                                const Divider(color: Colors.white),
                                 if (eventData != null &&
                                     eventData!['webinar_desc'] != null)
                                   Expanded(
@@ -335,8 +335,8 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
   AppBar buildAppBar({required bool isLive, required PlayerProvider provider}) {
     return AppBar(
       backgroundColor:
-          !isLive ? appLogoColor : Color.fromARGB(255, 227, 20, 20),
-      title: Text('Event Name', style: TextStyle(color: Colors.white)),
+          !isLive ? appLogoColor : const Color.fromARGB(255, 227, 20, 20),
+      title: const Text('Event Name', style: TextStyle(color: Colors.white)),
       actions: [],
     );
   }
@@ -353,8 +353,9 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
             duration: const Duration(milliseconds: 300),
             child: IconButton(
               icon: provider.controller.value.isPlaying
-                  ? Icon(Icons.pause, color: Colors.white, size: 45.0)
-                  : Icon(Icons.play_arrow, color: Colors.white, size: 45.0),
+                  ? const Icon(Icons.pause, color: Colors.white, size: 45.0)
+                  : const Icon(Icons.play_arrow,
+                      color: Colors.white, size: 45.0),
               onPressed: () {
                 setState(() {
                   provider.controller.value.isPlaying
@@ -406,8 +407,8 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                           SystemUiOverlay.bottom
                         ]);
                   },
-                  icon:
-                      Icon(Icons.close_rounded, color: Colors.white, size: 20)),
+                  icon: const Icon(Icons.close_rounded,
+                      color: Colors.white, size: 20)),
             ),
           ),
         ));
@@ -447,8 +448,8 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                       duration: const Duration(milliseconds: 300),
                       child: GestureDetector(
                         child: provider.controller.value.isPlaying
-                            ? Icon(Icons.pause, color: Colors.white)
-                            : Icon(Icons.play_arrow, color: Colors.white),
+                            ? const Icon(Icons.pause, color: Colors.white)
+                            : const Icon(Icons.play_arrow, color: Colors.white),
                         onTap: () {
                           setState(() {
                             provider.controller.value.isPlaying
@@ -486,7 +487,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                       timeLabelLocation: TimeLabelLocation.above,
                       timeLabelPadding: 5,
                       timeLabelTextStyle:
-                          TextStyle(color: Colors.white, fontSize: 12.0),
+                          const TextStyle(color: Colors.white, fontSize: 12.0),
                       onSeek: (duration) {
                         provider.controller.seekTo(duration);
                       },
@@ -503,7 +504,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                                                   .playbackRate ==
                                               e
                                           ? appLogoColor
-                                          : Color.fromRGBO(0, 0, 0, 1)),
+                                          : const Color.fromRGBO(0, 0, 0, 1)),
                                   value: e,
                                 ))
                             .toList(),
@@ -553,7 +554,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
             decoration: BoxDecoration(
               image: DecorationImage(
                   image: (thumbnail ??
-                      AssetImage(Assets.appWebLogo,
+                      const AssetImage(Assets.appWebLogo,
                           package: 'youtube_player_flutter')) as ImageProvider,
                   fit: BoxFit.cover),
             ),
@@ -650,13 +651,13 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
       case PlayerState.unStarted:
         return Colors.pink;
       case PlayerState.ended:
-        return Color.fromARGB(255, 86, 54, 244);
+        return const Color.fromARGB(255, 86, 54, 244);
       case PlayerState.playing:
         return isLive ? Colors.red : appLogoColor;
       case PlayerState.paused:
         return Colors.orange;
       case PlayerState.buffering:
-        return Color.fromARGB(255, 241, 226, 85);
+        return const Color.fromARGB(255, 241, 226, 85);
       case PlayerState.cued:
         return Colors.blue[900]!;
       default:
@@ -782,7 +783,7 @@ class PlayerProvider extends ChangeNotifier {
     if (position > 5) {
       if (!_initialThumbnail) {
         //run timer
-        timer = Timer.periodic(Duration(seconds: 1), (timer) {
+        timer = Timer.periodic(const Duration(seconds: 1), (timer) {
           infoLog(
               'listener is running  timer : $_initialThumbnail $showThumbnail $position ${timer.tick}');
           if (timer.tick > 3) {
@@ -948,81 +949,86 @@ class __LiveYTPlayerState extends State<_LiveYTPlayer> {
     DateTime? date = DateTime.tryParse(eventData?['webinar_time'] ?? '');
     return Expanded(
       flex: 2,
-      child: Column(
-        children: [
-          height20(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                backgroundColor: (!widget.isLive ? Colors.red : appLogoColor)
-                    .withOpacity(0.2),
-                child: assetImages(Assets.appLogo_S, height: 25, width: 25),
-              ),
-              width10(),
-              Expanded(
-                child: titleLargeText(
-                    (eventData?['webinar_title'] ?? '').toString().capitalize!,
-                    context),
-              ),
-            ],
-          ),
-          height10(),
-          // create ui for time when started and total duration
-          if (date != null)
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Column(
+          children: [
+            height20(),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.calendar_month_rounded,
-                    color: Colors.white, size: 20),
+                CircleAvatar(
+                  backgroundColor: (!widget.isLive ? Colors.red : appLogoColor)
+                      .withOpacity(0.2),
+                  child: assetImages(Assets.appLogo_S, height: 25, width: 25),
+                ),
                 width10(),
                 Expanded(
-                  child: bodyLargeText(
-                      'Started ${getTimeDifference(date)}', context,
-                      useGradient: false),
+                  child: titleLargeText(
+                      (eventData?['webinar_title'] ?? '')
+                          .toString()
+                          .capitalize!,
+                      context),
                 ),
               ],
             ),
-
-          height10(),
-          // show location
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     Icon(Icons.location_on,
-          //         color: Colors.pink, size: 20),
-          //     width10(),
-          //     Expanded(
-          //       child: bodyLargeText(
-          //           'Location: 123, ABC, XYZ', context,
-          //           useGradient: false),
-          //     ),
-          //   ],
-          // ),
-
-          // description headline
-          Divider(color: Colors.white),
-          if (eventData != null && eventData!['webinar_desc'] != null)
-            Expanded(
-              child: ListView(
+            height10(),
+            // create ui for time when started and total duration
+            if (date != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      width30(),
-                      Expanded(
-                          child: bodyLargeText(
-                              (eventData?['webinar_desc'] ?? ''), context,
-                              useGradient: false,
-                              color: Colors.white70,
-                              maxLines: 200))
-                    ],
+                  const Icon(Icons.calendar_month_rounded,
+                      color: Colors.white, size: 20),
+                  width10(),
+                  Expanded(
+                    child: bodyLargeText(
+                        'Started ${getTimeDifference(date)}', context,
+                        useGradient: false),
                   ),
                 ],
               ),
-            ),
-        ],
+
+            height10(),
+            // show location
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //   children: [
+            //     Icon(Icons.location_on,
+            //         color: Colors.pink, size: 20),
+            //     width10(),
+            //     Expanded(
+            //       child: bodyLargeText(
+            //           'Location: 123, ABC, XYZ', context,
+            //           useGradient: false),
+            //     ),
+            //   ],
+            // ),
+
+            // description headline
+            const Divider(color: Colors.white),
+            if (eventData != null && eventData!['webinar_desc'] != null)
+              Expanded(
+                child: ListView(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        width30(),
+                        Expanded(
+                            child: bodyLargeText(
+                                (eventData?['webinar_desc'] ?? ''), context,
+                                useGradient: false,
+                                color: Colors.white70,
+                                maxLines: 200))
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

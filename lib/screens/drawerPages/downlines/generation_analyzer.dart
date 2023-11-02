@@ -58,7 +58,8 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
   scrollGeneration(int index) {
     try {
       Scrollable.ensureVisible(generationKeys[index].currentContext!,
-          duration: Duration(milliseconds: 700), curve: Curves.fastOutSlowIn);
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.fastOutSlowIn);
     } catch (e) {
       errorLog(e.toString());
     }
@@ -126,7 +127,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
 
   Future<void> _refresh(TeamViewProvider provider) async {
     print("my Incomes ,onRefresh");
-    await Future.delayed(Duration(seconds: 0, milliseconds: 2000));
+    await Future.delayed(const Duration(seconds: 0, milliseconds: 2000));
     provider.generationAnalyzerPage = 0;
     await provider.getGenerationAnalyzer(
         (provider.breadCrumbContent.last.user as GenerationAnalyzerUser)
@@ -158,7 +159,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
               Expanded(
                   child: provider.loadingGUsers.name ==
                           ButtonLoadingState.loading.name
-                      ? Center(
+                      ? const Center(
                           child: CircularProgressIndicator(color: appLogoColor))
                       : buildGrid(provider)),
             ]),
@@ -191,13 +192,13 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
                   color: Colors.red,
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                         offset: Offset(0, 1),
                         blurRadius: 3,
                         color: Colors.black26)
                   ]),
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -236,13 +237,13 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
             )
           : GridView.builder(
               controller: _scrollController,
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                   left: 10,
                   right: 10,
                   top: 0,
                   bottom: kBottomNavigationBarHeight),
               itemCount: provider.gUsers.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
@@ -272,11 +273,11 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                     _animateToLast();
                   },
                   child: Container(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
                         color: bColor(),
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(
                               offset: Offset(0, 1),
                               blurRadius: 3,
@@ -286,7 +287,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Icon(Icons.person, color: appLogoColor, size: 40),
+                        const Icon(Icons.person, color: appLogoColor, size: 40),
                         Column(
                           children: [
                             bodyLargeText(user.child ?? '', context,
@@ -301,7 +302,8 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                             capText('Generation ${user.level}', context,
                                 useGradient: false),
                             height5(),
-                            capText('Ref: ${user.parent}', context),
+                            capText('Ref: ${user.parent}', context,
+                                fontSize: 8, maxLines: 1),
                           ],
                         ),
                       ],
@@ -319,11 +321,11 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
           // color: Colors.white,
-          boxShadow: [
+          boxShadow: const [
             BoxShadow(
                 offset: Offset(0, 1), blurRadius: 3, color: Colors.black26)
           ]),
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       child: BreadCrumb.builder(
         itemCount: provider.breadCrumbContent.length,
         builder: (index) {
@@ -346,7 +348,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
             },
           );
         },
-        divider: Icon(Icons.chevron_right, color: Colors.white, size: 20),
+        divider: const Icon(Icons.chevron_right, color: Colors.white, size: 20),
         overflow: ScrollableOverflow(
             direction: Axis.horizontal,
             reverse: false,
@@ -358,10 +360,10 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
 
   ConstrainedBox chipsTile(TeamViewProvider provider) {
     return ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: 50),
+        constraints: const BoxConstraints(maxHeight: 50),
         child: ListView(
           controller: generationScoll,
-          physics: BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
           scrollDirection: Axis.horizontal,
           children: [
             ...generationList.map((gen) => Builder(builder: (context) {
@@ -386,17 +388,21 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                           provider.generationAnalyzerSearchController.clear();
                           provider.setSelectedGeneration(0);
                           provider.generationAnalyzerPage = 0;
-                          provider.setGenerationUsers(index == 0
-                              ? authProvider.userData.username ?? ''
-                              : '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).child}');
+                          provider.setGenerationUsers(
+                              // index == 0
+                              // ? authProvider.userData.username ?? ''
+                              // :
+                              '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).child}');
                           scrollGeneration(provider.selectedGeneration);
                         },
                         onSelect: (index) {
                           provider.setSelectedGeneration(index);
                           provider.generationAnalyzerPage = 0;
-                          provider.setGenerationUsers(index == 0
-                              ? authProvider.userData.username ?? ''
-                              : '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).child}');
+                          provider.setGenerationUsers(
+                              // index == 0
+                              // ? authProvider.userData.username ?? ''
+                              // :
+                              '${(provider.breadCrumbContent.last.user as GenerationAnalyzerUser).child}');
                           scrollGeneration(provider.selectedGeneration);
                         },
                       ),
@@ -410,7 +416,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
   AppBar buildAppBar(BuildContext context) {
     return AppBar(
         title: AnimatedSwitcher(
-            duration: Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 500),
             child: provider.isSearchingGUsers
                 ? SizedBox(
                     height: 40,
@@ -419,13 +425,13 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                       autofocus: true,
                       cursorColor: Colors.white,
                       textInputAction: TextInputAction.search,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 5, horizontal: 10),
                         isDense: true,
                         hintText: 'Search...',
-                        hintStyle: TextStyle(color: fadeTextColor),
+                        hintStyle: const TextStyle(color: fadeTextColor),
                         border: InputBorder.none,
                         suffixIcon: IconButton(
                           onPressed: () {
@@ -435,7 +441,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                               // isSearching = !isSearching;
                             });
                           },
-                          icon: Icon(CupertinoIcons.clear_circled_solid,
+                          icon: const Icon(CupertinoIcons.clear_circled_solid,
                               color: Colors.white),
                         ),
                       ),
@@ -452,13 +458,13 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                     useGradient: true)),
         actions: [
           AnimatedSwitcher(
-            duration: Duration(milliseconds: 500),
+            duration: const Duration(milliseconds: 500),
             child: !provider.isSearchingGUsers
                 ? IconButton(
                     onPressed: () {
                       provider.setSearchingGUsers(!provider.isSearchingGUsers);
                     },
-                    icon: Icon(Icons.search))
+                    icon: const Icon(Icons.search))
                 : Transform.rotate(
                     angle: pi / 2,
                     child: IconButton(
@@ -466,7 +472,7 @@ class _GenerationAnalyzerPageState extends State<GenerationAnalyzerPage> {
                           provider
                               .setSearchingGUsers(!provider.isSearchingGUsers);
                         },
-                        icon: Icon(Icons.u_turn_left)),
+                        icon: const Icon(Icons.u_turn_left)),
                   ),
           ),
         ]);
@@ -498,14 +504,14 @@ class _GenerationChip extends StatelessWidget {
       onTap: () => onSelect(index),
       child: Container(
         // width: 100,
-        constraints: BoxConstraints(maxHeight: 30),
-        margin: EdgeInsets.symmetric(horizontal: 5),
-        padding: EdgeInsets.symmetric(horizontal: 10),
+        constraints: const BoxConstraints(maxHeight: 30),
+        margin: const EdgeInsets.symmetric(horizontal: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(50),
           border: Border.all(color: fadeTextColor, width: 1),
           gradient: selected
-              ? LinearGradient(
+              ? const LinearGradient(
                   colors: [Color.fromARGB(138, 186, 243, 105), appLogoColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -520,20 +526,20 @@ class _GenerationChip extends StatelessWidget {
                     color: selected ? Colors.white : fadeTextColor)),
             if (selected && total != null)
               Container(
-                margin: EdgeInsets.only(left: 5),
+                margin: const EdgeInsets.only(left: 5),
                 padding:
                     const EdgeInsets.symmetric(vertical: 2.0, horizontal: 5),
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(50), color: Colors.red),
-                child: capText('${total.toString()}', context,
-                    color: Color.fromARGB(255, 255, 255, 255)),
+                child: capText(total.toString(), context,
+                    color: const Color.fromARGB(255, 255, 255, 255)),
               ),
             if (selected)
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: GestureDetector(
                   onTap: () => onCancel(index),
-                  child: Icon(CupertinoIcons.clear_circled_solid,
+                  child: const Icon(CupertinoIcons.clear_circled_solid,
                       color: Colors.white, size: 15),
                 ),
               )

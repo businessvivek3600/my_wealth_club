@@ -27,28 +27,28 @@ class DioClient {
     dio = dioC ?? Dio();
     dio
       ..options.baseUrl = baseUrl
-      ..options.connectTimeout = Duration(milliseconds: 30000)
-      ..options.receiveTimeout = Duration(milliseconds: 30000)
+      ..options.connectTimeout = const Duration(milliseconds: 30000)
+      ..options.receiveTimeout = const Duration(milliseconds: 30000)
       ..httpClientAdapter
       ..options.headers = {
         'content-type': 'multipart/form-data',
-        'x-api-key': '$token',
+        'x-api-key': token,
       }
       ..options.responseType = ResponseType.json;
     dio.interceptors.add(loggingInterceptor);
   }
 
   void updateHeader(String? token, {String? contentType}) {
-    token = token == null ? this.token : token;
+    token = token ?? this.token;
     this.token = token;
     dio.options.headers = {
       'Content-Type': contentType ?? 'application/json; charset=UTF-8',
-      'x-api-key': '${token}',
+      'x-api-key': token,
     };
   }
 
   void updateUserToken(String? userToken) {
-    _userToken = userToken == null ? this._userToken : userToken;
+    _userToken = userToken ?? _userToken;
   }
 
   Future<Response> get(
@@ -67,12 +67,12 @@ class DioClient {
         onReceiveProgress: onReceiveProgress,
       );
       return response;
-    } on SocketException catch (e) {
-      throw SocketException(e.toString());
+    } on SocketException catch (err) {
+      throw SocketException(err.toString());
     } on FormatException catch (_) {
-      throw FormatException("Unable to process the data");
+      throw const FormatException("Unable to process the data");
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -87,8 +87,7 @@ class DioClient {
     bool token = false,
   }) async {
     try {
-      FormData formData = new FormData();
-      blackLog('post dio client data: ${data}');
+      FormData formData = FormData();
       formData.fields.addAll((data ?? <String, dynamic>{})
           .entries
           .toList()
@@ -96,7 +95,7 @@ class DioClient {
       if (token) {
         formData.fields.add(MapEntry('login_token', _userToken ?? ''));
       }
-      print(formData.fields);
+      infoLog('FieldData', uri, formData.fields.toString());
       var response = await dio.post(
         uri,
         data: formData,
@@ -111,7 +110,7 @@ class DioClient {
       throw FormatException("Unable to process the data $e");
     } catch (e) {
       errorLog('post cache error $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -134,11 +133,12 @@ class DioClient {
         onSendProgress: onSendProgress,
         onReceiveProgress: onReceiveProgress,
       );
+
       return response;
     } on FormatException catch (_) {
-      throw FormatException("Unable to process the data");
+      throw const FormatException("Unable to process the data");
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 
@@ -159,9 +159,9 @@ class DioClient {
       );
       return response;
     } on FormatException catch (_) {
-      throw FormatException("Unable to process the data");
+      throw const FormatException("Unable to process the data");
     } catch (e) {
-      throw e;
+      rethrow;
     }
   }
 }

@@ -170,7 +170,7 @@ class _SignUpScreenState extends State<SignUpScreen>
             TextSpan(
                 text: ' Sign In',
                 recognizer: TapGestureRecognizer()..onTap = () => Get.back(),
-                style: TextStyle(
+                style: const TextStyle(
                     color: appLogoColor, fontWeight: FontWeight.bold)),
           ]),
         ),
@@ -216,8 +216,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                       textInputAction: TextInputAction.next,
                       enabled: !haveReferer,
                       cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(
                           hintText: 'Referer Id', errorStyle: TextStyle()),
                       onChanged: (val) {
                         setState(() {
@@ -243,11 +243,11 @@ class _SignUpScreenState extends State<SignUpScreen>
               CheckboxListTile(
                 value: haveReferer,
                 checkboxShape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.white70),
+                    side: const BorderSide(color: Colors.white70),
                     borderRadius: BorderRadius.circular(5)),
-                side: BorderSide(color: Colors.white),
+                side: const BorderSide(color: Colors.white),
                 shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.white70),
+                    side: const BorderSide(color: Colors.white70),
                     borderRadius: BorderRadius.circular(5)),
                 checkColor: appLogoColor,
                 activeColor: Colors.white,
@@ -264,7 +264,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   //   _pUserNameController.text = _sUserNameController.text;
                   // }
                 }),
-                contentPadding: EdgeInsets.all(0),
+                contentPadding: const EdgeInsets.all(0),
               ),
               height20(height * 0.01),
 
@@ -308,8 +308,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                       focusNode: _userNameFocus,
                       enabled: true,
                       cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white),
-                      decoration: InputDecoration(hintText: 'Username'),
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(hintText: 'Username'),
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Please enter username';
@@ -341,9 +341,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 focusNode: _fNameFocus,
                                 enabled: true,
                                 cursorColor: Colors.white,
-                                style: TextStyle(color: Colors.white),
-                                decoration:
-                                    InputDecoration(hintText: 'First Name'),
+                                style: const TextStyle(color: Colors.white),
+                                decoration: const InputDecoration(
+                                    hintText: 'First Name'),
                                 validator: (val) {
                                   if (val == null || val.isEmpty) {
                                     return 'Please enter first name';
@@ -418,8 +418,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                       focusNode: _passwordFocus,
                       enabled: true,
                       cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white),
-                      decoration: InputDecoration(hintText: 'Password'),
+                      style: const TextStyle(color: Colors.white),
+                      decoration: const InputDecoration(hintText: 'Password'),
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Please enter your password';
@@ -574,7 +574,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                       focusNode: _emailFocus,
                       enabled: true,
                       cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Please enter your email address.';
@@ -588,7 +588,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                         }
                         return null;
                       },
-                      decoration: InputDecoration(hintText: 'Email Id'),
+                      decoration: const InputDecoration(hintText: 'Email Id'),
                     ),
                   ),
                 ],
@@ -599,9 +599,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                 children: [
                   Checkbox(
                     value: acceptedTerms,
-                    side: BorderSide(color: Colors.white),
+                    side: const BorderSide(color: Colors.white),
                     shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.white70),
+                        side: const BorderSide(color: Colors.white70),
                         borderRadius: BorderRadius.circular(5)),
                     checkColor: appLogoColor,
                     activeColor: Colors.white,
@@ -621,16 +621,16 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () =>
                                       launchTheLink(authProvider.term ?? ''),
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: appLogoColor,
                                     fontWeight: FontWeight.bold)),
-                            TextSpan(text: ' and'),
+                            const TextSpan(text: ' and'),
                             TextSpan(
                                 text: ' Privacy Policy',
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () =>
                                       launchTheLink(authProvider.privacy ?? ''),
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: appLogoColor,
                                     fontWeight: FontWeight.bold)),
                           ]),
@@ -645,9 +645,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                 children: [
                   Checkbox(
                     value: acceptedDisclaimer,
-                    side: BorderSide(color: Colors.white),
+                    side: const BorderSide(color: Colors.white),
                     shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.white70),
+                        side: const BorderSide(color: Colors.white70),
                         borderRadius: BorderRadius.circular(5)),
                     checkColor: appLogoColor,
                     activeColor: Colors.white,
@@ -667,16 +667,16 @@ class _SignUpScreenState extends State<SignUpScreen>
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () => launchTheLink(
                                       authProvider.cancellation_policy ?? ''),
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: appLogoColor,
                                     fontWeight: FontWeight.bold)),
-                            TextSpan(text: ' and'),
+                            const TextSpan(text: ' and'),
                             TextSpan(
                                 text: ' Refund Policy',
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () => launchTheLink(
                                       authProvider.cancellation_policy ?? ''),
-                                style: TextStyle(
+                                style: const TextStyle(
                                     color: appLogoColor,
                                     fontWeight: FontWeight.bold)),
                           ]),
@@ -692,9 +692,9 @@ class _SignUpScreenState extends State<SignUpScreen>
                 children: [
                   Checkbox(
                     value: above18,
-                    side: BorderSide(color: Colors.white),
+                    side: const BorderSide(color: Colors.white),
                     shape: RoundedRectangleBorder(
-                        side: BorderSide(color: Colors.white70),
+                        side: const BorderSide(color: Colors.white70),
                         borderRadius: BorderRadius.circular(5)),
                     checkColor: appLogoColor,
                     activeColor: Colors.white,
@@ -707,7 +707,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                     children: [
                       Expanded(
                         child: RichText(
-                          text: TextSpan(
+                          text: const TextSpan(
                               text:
                                   "I am over 18 years old and I agree to the terms and conditions.",
                               children: []),
@@ -731,7 +731,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                             width: Get.width / 2,
                             child: ElevatedButton.icon(
                               onPressed: acceptedTerms && acceptedDisclaimer
-                                  ? () {
+                                  ? () async {
                                       if (_formKey.currentState?.validate() ??
                                           false) {
                                         sl
@@ -766,7 +766,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                                   disabledBackgroundColor: Colors.grey,
                                   shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(30))),
-                              label: Icon(Icons.arrow_forward,
+                              label: const Icon(Icons.arrow_forward,
                                   size: 22, weight: 10, color: Colors.white),
                             ),
                           ),
@@ -786,7 +786,8 @@ class _SignUpScreenState extends State<SignUpScreen>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.info_outline, color: Colors.amber, size: 15),
+                        const Icon(Icons.info_outline,
+                            color: Colors.amber, size: 15),
                         width5(7),
                         capText('Registration process is temporary disabled.',
                             context,
@@ -835,7 +836,7 @@ class _SignUpScreenState extends State<SignUpScreen>
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: Colors.white70),
-                  padding: EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(10),
                   child: Column(
                     children: [
                       Container(
@@ -892,7 +893,7 @@ class MyCustomClipper extends CustomClipper<Path> {
   @override
   getClip(Size size) {
     Path path = Path()
-      ..addOval(Rect.fromPoints(Offset(0, 0), Offset(60, 60)))
+      ..addOval(Rect.fromPoints(const Offset(0, 0), const Offset(60, 60)))
       ..addOval(Rect.fromLTWH(0, size.height - 50, 100, 50))
       ..addOval(Rect.fromCircle(
           center: Offset(size.width / 2, size.height / 2), radius: 20))

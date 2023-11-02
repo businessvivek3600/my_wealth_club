@@ -101,7 +101,10 @@
             android:value="2" />
        <meta-data
            android:name="com.google.firebase.messaging.default_notification_channel_id"
-           android:value="your channel id"/>
+           android:value="AppNotification"/>
+       <meta-data
+           android:name="com.google.firebase.messaging.default_notification_icon"
+           android:value="@mipmap/launcher_icon"/>
     </application>
     <queries>
         <!-- If your app checks for SMS support -->

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/screens/drawerPages/downlines/my_login_logs_page.dart';
 import '../screens/drawerPages/whats_new_page.dart';
 import '../screens/youtube_video_play_widget.dart';
 import '/database/model/response/additional/mcc_content_models.dart';
@@ -68,6 +70,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
   @override
   Widget build(BuildContext context) {
     List<List<dynamic>> drawerOtherItems = [
+      ['Login Logs', Assets.logsSvg],
       ['Notifications', Assets.notification],
       ['Settings', Assets.settings],
       ['Support', Assets.support],
@@ -162,33 +165,38 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             height10(),
 
                             // Subscription
-                            DrawerTileItem(
-                              onTap: () {
-                                dashBoardProvider.setDrawerTile('Subscription');
-                                Widget page = const SubscriptionPage();
-                                Get.to(page);
-                              },
-                              leading: Assets.subscription,
-                              title: 'Subscription',
-                              width: size.width * 0.7,
-                              selected: dashBoardProvider.selectedDrawerTile ==
-                                  'Subscription',
-                            ),
+                            if (Platform.isAndroid)
+                              DrawerTileItem(
+                                onTap: () {
+                                  dashBoardProvider
+                                      .setDrawerTile('Subscription');
+                                  Widget page = const SubscriptionPage();
+                                  Get.to(page);
+                                },
+                                leading: Assets.subscription,
+                                title: 'Subscription',
+                                width: size.width * 0.7,
+                                selected:
+                                    dashBoardProvider.selectedDrawerTile ==
+                                        'Subscription',
+                              ),
                             height10(),
 
-                            //Gift Voucher
-                            DrawerTileItem(
-                              onTap: () {
-                                dashBoardProvider.setDrawerTile(giftVoucher);
-                                Widget page = const GiftVoucherPage();
-                                Get.to(page);
-                              },
-                              leading: Assets.gift,
-                              title: giftVoucher,
-                              width: size.width * 0.7,
-                              selected: dashBoardProvider.selectedDrawerTile ==
-                                  giftVoucher,
-                            ),
+                            ///Gift Voucher
+                            if (Platform.isAndroid)
+                              DrawerTileItem(
+                                onTap: () {
+                                  dashBoardProvider.setDrawerTile(giftVoucher);
+                                  Widget page = const GiftVoucherPage();
+                                  Get.to(page);
+                                },
+                                leading: Assets.gift,
+                                title: giftVoucher,
+                                width: size.width * 0.7,
+                                selected:
+                                    dashBoardProvider.selectedDrawerTile ==
+                                        giftVoucher,
+                              ),
                             height10(),
 
                             //Event Ticket
@@ -321,8 +329,12 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     btnOkText: 'Yes Sure!',
                     btnCancelOnPress: () {},
                     btnOkOnPress: () async {
-                      await logOut('log-out button', showD: false)
-                          .then((value) => Get.offAll(const LoginScreen()));
+                      await logOut(
+                        'log-out button',
+                        showD: false,
+                        title: 'Logout',
+                        content: 'Please wait...',
+                      ).then((value) => Get.offAll(const LoginScreen()));
                     },
                     reverseBtnOrder: true,
                   ).show();
@@ -332,6 +344,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                   Get.to(const SettingsPage());
                 } else if (e[0] == 'Support') {
                   Get.to(const SupportPage());
+                } else if (e[0] == 'Login Logs') {
+                  Get.to(const MyLoginLogsPage());
                 }
               },
               leading: e[1],
@@ -533,6 +547,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         case myIncomes:
                           page = const MyIncomesPage();
                           break;
+
                         case cashWallet:
                           page = const CashWalletPage();
                           break;

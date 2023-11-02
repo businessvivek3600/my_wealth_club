@@ -105,6 +105,18 @@ class DashboardRepo {
     }
   }
 
+  ///loginLogs activity
+  Future<ApiResponse> loginLogs(Map<String, dynamic> data) async {
+    try {
+      Response response =
+          await dioClient.post(AppConstants.loginLogs, token: true, data: data);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
   String getPDFLink() => sharedPreferences.getString(SPConstants.pdfLink) ?? "";
 
   String getPPTLink() => sharedPreferences.getString(SPConstants.pptLink) ?? "";

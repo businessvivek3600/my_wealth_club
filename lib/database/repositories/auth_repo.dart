@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import '/database/functions.dart';
@@ -24,7 +25,7 @@ class AuthRepo {
   final SharedPreferences sharedPreferences;
   AuthRepo({required this.dioClient, required this.sharedPreferences});
 
-  static final String tag = 'AuthRepo';
+  static const String tag = 'AuthRepo';
 
   ///:Registration
   Future<ApiResponse> getSignUpInitialData() async {
@@ -41,7 +42,7 @@ class AuthRepo {
     try {
       var fcmToken = await getDeviceToken(username: register.fName);
       register.device_id = fcmToken;
-      print(register.device_id);
+      register.device_name = await getDeviceName();
       Response response =
           await dioClient.post(AppConstants.signup, data: register.toJson());
       return ApiResponse.withSuccess(response);
@@ -75,6 +76,7 @@ class AuthRepo {
     try {
       var fcmToken = await getDeviceToken(username: loginBody.username);
       loginBody.device_id = fcmToken;
+      loginBody.device_name = await getDeviceName();
       warningLog('loginBody. device token : ${loginBody.device_id}', tag);
       Response response = await dioClient.post(AppConstants.LOGIN_URI,
           data: loginBody.toJson());

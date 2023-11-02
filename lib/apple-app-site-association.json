@@ -3,8 +3,8 @@
     "apps": [],
     "details": [
       {
-        "appID": "C2N8T6NM8W.com.mycarclub.cars",
-        "paths": ["*","/refCode","/page"]
+        "appID": "C2N8T6NM8W.com.mywealthclub",
+        "paths": ["*","/refCode","/signup","/ytPage"]
       }
     ]
   }

@@ -61,16 +61,16 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
         child: ListView(
-          padding: EdgeInsets.all(10),
-          physics: BouncingScrollPhysics(),
+          padding: const EdgeInsets.all(10),
+          physics: const BouncingScrollPhysics(),
           children: [
             buildAppLockTile(context),
             height10(),
             buildNewFeatureTile(context),
             height5(),
-            Divider(color: Colors.white10),
+            const Divider(color: Colors.white10),
             height5(),
-            bodyLargeText('Dangerous Area', context, color: Colors.white),
+            bodyLargeText('Account', context, color: Colors.white),
             height10(),
             ListTile(
               onTap: () => AwesomeDialog(
@@ -79,7 +79,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       title: 'Delete Account',
                       desc:
                           'Your account will be permanently deleted and your data could not be restored.\nDo you really want to delete your account?',
-                      titleTextStyle: TextStyle(
+                      titleTextStyle: const TextStyle(
                           color: Colors.red,
                           fontSize: 22,
                           fontWeight: FontWeight.bold),
@@ -149,7 +149,7 @@ class _SettingsPageState extends State<SettingsPage> {
       onChanged: (val) {
         if (!settingNewFeatureNotification) setNewFeatureNotification(val!);
       },
-      side: BorderSide(color: Colors.white),
+      side: const BorderSide(color: Colors.white),
     );
   }
 
@@ -184,7 +184,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } else {
       Fluttertoast.showToast(msg: 'No internet connection');
     }
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     setState(() {
       settingNewFeatureNotification = false;
       newFeatureNotification = repo.getNewFeaturesValue;
@@ -212,14 +212,14 @@ class _SettingsPageState extends State<SettingsPage> {
       if (value[0] == AuthStatus.available) {
         if (value[1] == AuthStatus.success) {
           showLoading();
-          await Future.delayed(Duration(seconds: 3));
+          await Future.delayed(const Duration(seconds: 3));
           Get.back();
           logOut('deleteAccount').then((value) =>
               Toasts.showSuccessNormalToast('Your account has been deleted'));
         }
       } else {
         showLoading();
-        await Future.delayed(Duration(seconds: 3));
+        await Future.delayed(const Duration(seconds: 3));
         Get.back();
         logOut('deleteAccount').then((value) =>
             Toasts.showSuccessNormalToast('Your account has been deleted'));

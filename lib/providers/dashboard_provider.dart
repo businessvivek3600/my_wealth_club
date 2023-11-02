@@ -5,6 +5,8 @@ import 'package:api_cache_manager/utils/cache_manager.dart';
 import 'package:cherry_toast/resources/arrays.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mycarclub/utils/my_logger.dart';
+import '../database/model/response/login_logs_model.dart';
 import '/database/model/response/income_activity_model.dart';
 import '/database/model/response/trade_idea_model.dart';
 import '/database/model/response/yt_video_model.dart';
@@ -245,7 +247,7 @@ class DashBoardProvider extends ChangeNotifier {
             // wevinarEventVideo = WebinarEventModel.fromJson(map['webinar_event']);
           }
           member_sale = map['member_sale'] ?? {};
-          infoLog('dashboard webinar_event ${wevinarEventVideo?.toJson()}');
+          // infoLog('dashboard webinar_event ${wevinarEventVideo?.toJson()}');
           // get_active_member = 274;
 
           notifyListeners();
@@ -421,7 +423,7 @@ class DashBoardProvider extends ChangeNotifier {
             ErrorResponse errorResponse = apiResponse.error;
             errorMessage = errorResponse.errors[0].message;
           }
-          print('error message from changePlacement ${errorMessage}');
+          print('error message from changePlacement $errorMessage');
 
           notifyListeners();
         }
@@ -502,7 +504,7 @@ class DashBoardProvider extends ChangeNotifier {
           ErrorResponse errorResponse = apiResponse.error;
           errorMessage = errorResponse.errors[0].message;
         }
-        errorLog('error message from getDashCardDetails ${errorMessage}');
+        errorLog('error message from getDashCardDetails $errorMessage');
         // Toasts.showErrorNormalToast(errorMessage);
       }
     }
@@ -542,7 +544,7 @@ class DashBoardProvider extends ChangeNotifier {
           notifyListeners();
         }
       } catch (e) {
-        errorLog('card details cards_buy ${type} error ${e}');
+        errorLog('card details cards_buy $type error $e');
       }
     }
     loadingCardDetail = false;
@@ -590,7 +592,7 @@ class DashBoardProvider extends ChangeNotifier {
         Toasts.showWarningNormalToast('You are offline');
       }
     } catch (e) {
-      errorLog('purchaseACard failed ${e}');
+      errorLog('purchaseACard failed $e');
     }
     return status;
   }
@@ -635,7 +637,7 @@ class DashBoardProvider extends ChangeNotifier {
           ErrorResponse errorResponse = apiResponse.error;
           errorMessage = errorResponse.errors[0].message;
         }
-        errorLog('error message from getIncomeActivity ${errorMessage}');
+        errorLog('error message from getIncomeActivity $errorMessage');
         Toasts.showErrorNormalToast(errorMessage);
       }
     } else if (!isOnline && isIncomeActivityCacheExist) {
@@ -644,7 +646,7 @@ class DashBoardProvider extends ChangeNotifier {
           var data = (await APICacheManager()
                   .getCacheData(AppConstants.myIncomeActivity))
               .syncData;
-          Map map = jsonDecode(data);
+          map = jsonDecode(data);
         }
         warningLog('getIncomeActivity cache hit $map');
       } catch (e) {
@@ -676,6 +678,88 @@ class DashBoardProvider extends ChangeNotifier {
     return _incomeActivity;
   }
 
+  List<LoginLogs> loginActivities = [];
+  bool loadingLoginLogs = true;
+  int totalLoginLogs = 0;
+  int loginLogsPage = 0;
+  Future<List<LoginLogs>> getLoginLogs([bool loading = false]) async {
+    loadingLoginLogs = loading;
+    notifyListeners();
+    List<LoginLogs> _loginActivity = [];
+    Map? map;
+
+    bool isIncomeActivityCacheExist =
+        await APICacheManager().isAPICacheKeyExist(AppConstants.loginLogs);
+    if (isOnline) {
+      ApiResponse apiResponse =
+          await dashBoardRepo.loginLogs({'page': loginLogsPage.toString()});
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        bool status = false;
+        map = apiResponse.response!.data;
+        try {
+          status = map?["status"];
+          if (map?['is_logged_in'] != 1) {
+            logOut('getLoginLogs');
+          }
+        } catch (e) {}
+        if (status && loginLogsPage == 0) {
+          try {
+            var cacheModel = APICacheDBModel(
+                key: AppConstants.loginLogs, syncData: jsonEncode(map));
+            await APICacheManager().addCacheData(cacheModel);
+          } catch (e) {}
+        }
+        notifyListeners();
+      } else {
+        String errorMessage = "";
+        if (apiResponse.error is String) {
+          errorMessage = apiResponse.error.toString();
+        } else {
+          ErrorResponse errorResponse = apiResponse.error;
+          errorMessage = errorResponse.errors[0].message;
+        }
+        errorLog('error message from get Login Logs $errorMessage');
+        Toasts.showErrorNormalToast(errorMessage);
+      }
+    } else if (!isOnline && isIncomeActivityCacheExist) {
+      try {
+        if (loginLogsPage == 0) {
+          var data =
+              (await APICacheManager().getCacheData(AppConstants.loginLogs))
+                  .syncData;
+          map = jsonDecode(data);
+        }
+        warningLog('get Login Logs cache hit $map');
+      } catch (e) {
+        errorLog('get Login Logs cache hit failed! $e');
+      }
+    } else {
+      Toasts.showWarningNormalToast('You are offline!');
+    }
+    if (map != null) {
+      try {
+        totalLoginLogs = int.parse((map['total_rows'] ?? '0').toString());
+        if (map['loginLogs'] != null && map['loginLogs'] is List) {
+          map['loginLogs']
+              .forEach((e) => _loginActivity.add(LoginLogs.fromJson(e)));
+          if (loginLogsPage == 0) {
+            loginActivities.clear();
+            loginActivities = _loginActivity;
+          } else {
+            loginActivities.addAll(_loginActivity);
+          }
+          loginLogsPage++;
+        }
+      } catch (e) {
+        errorLog('login activity error $e');
+      }
+    }
+    loadingLoginLogs = false;
+    notifyListeners();
+    return _loginActivity;
+  }
+
 // company trade ideas
   //income api
   List<TradeIdeaModel> tradeIdeas = [];
@@ -693,12 +777,17 @@ class DashBoardProvider extends ChangeNotifier {
     if (isOnline) {
       ApiResponse apiResponse =
           await dashBoardRepo.tradeIdeas({'page': tradeIdeaPage.toString()});
+      // logger.i('tradeIdeas ',
+      //     tag: 'tradeIdeas', error: apiResponse.response!.data);
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         bool status = false;
         map = apiResponse.response!.data;
         try {
           status = map?["status"];
+          if (map?['is_logged_in'] != 1) {
+            logOut('getTradeIdea');
+          }
         } catch (e) {}
         if (status && tradeIdeaPage == 0) {
           try {
@@ -716,7 +805,7 @@ class DashBoardProvider extends ChangeNotifier {
           ErrorResponse errorResponse = apiResponse.error;
           errorMessage = errorResponse.errors[0].message;
         }
-        errorLog('error message from tradeIdeas ${errorMessage}');
+        errorLog('error message from tradeIdeas $errorMessage');
         Toasts.showErrorNormalToast(errorMessage);
       }
     } else if (!isOnline && isIncomeActivityCacheExist) {
@@ -759,18 +848,22 @@ class DashBoardProvider extends ChangeNotifier {
 
   Future<TradeIdeaModel?> tradeIdeasDetails(String id) async {
     TradeIdeaModel? tradeIdeaModel;
-
     if (isOnline) {
       ApiResponse apiResponse =
           await dashBoardRepo.tradeIdeasDetails({'signal_id': id});
-      infoLog('tradeIdeasDetails ${apiResponse.response!.data}');
+      infoLog('tradeIdeasDetails ${apiResponse.response?.data}');
       if (apiResponse.response != null &&
           apiResponse.response!.statusCode == 200) {
         bool status = false;
         Map? map = apiResponse.response!.data;
         try {
           status = map?["status"];
-        } catch (e) {}
+          if (map?['is_logged_in'] != 1) {
+            logOut('tradeIdeasDetails');
+          }
+        } catch (e) {
+          errorLog('tradeIdeasDetails error $e');
+        }
         if (status) {
           try {
             if (map!['data'] != null) {

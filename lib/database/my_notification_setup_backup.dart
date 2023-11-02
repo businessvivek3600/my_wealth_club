@@ -231,7 +231,7 @@ class MyNotification {
     void _handleMessage(RemoteMessage message) {
       print('notification is selected now ');
       selectNotificationStream.add(parseHtmlString(jsonEncode(message.data)));
-      MyCarClub.navigatorKey.currentState
+      MyWealthClub.navigatorKey.currentState
           ?.pushNamed(NotificationPage.routeName, arguments: message.data);
     }
 

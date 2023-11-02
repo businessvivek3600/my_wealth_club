@@ -6,11 +6,11 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>tycbm.app.link</string>
-		<string>tycbm-alternate.app.link</string>
-		<string>applinks:mycarclub.com</string>
-		<string>tycbm.test-app.link</string>
-		<string>tycbm-alternate.test-app.link</string>
+		<string>mywealthclub.app.link</string>
+		<string>mywealthclub-alternate.app.link</string>
+		<string>applinks:mywealthclub.com</string>
+		<string>mywealthclub.test-app.link</string>
+		<string>mywealthclub-alternate.test-app.link</string>
 	</array>
 </dict>
 </plist>

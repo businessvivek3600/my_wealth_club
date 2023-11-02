@@ -12,15 +12,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_progress_indicator/liquid_progress_indicator.dart';
-import 'package:mycarclub/utils/app_web_view_page.dart';
+import 'package:mycarclub/test_in_app_purchase.dart';
 import '/screens/drawerPages/wallets/cash_wallet_page/cash_wallet_page.dart';
 import '/screens/drawerPages/wallets/commission_wallet/commission_wallet_page.dart';
 import '../../database/databases/firebase_database.dart';
-import '../drawerPages/main_page_required_action_slider.dart';
+import '../drawerPages/dashboard_alert_widget.dart';
 import '/database/repositories/settings_repo.dart';
 import '../tawk_chat_page.dart';
 import '/widgets/app_lock_auth_suggest_view.dart';
@@ -122,30 +123,36 @@ class _MainPageState extends State<MainPage>
       if (widget.loginModel != null) {
         Toasts.showSuccessNormalToast('You have logged in Successfully',
             title: 'Welcome ${authProvider.userData.customerName ?? ''}');
-        Future.delayed(const Duration(seconds: 2), () async {
-          var list = await authProvider.getSavedCredentials();
-          bool isSaved = false;
-          bool update = false;
-          if (list.isNotEmpty &&
-              list.entries.any(
-                  (element) => element.key == widget.loginModel!.username)) {
-            update = list.entries
-                    .firstWhere(
-                        (element) => element.key == widget.loginModel!.username)
-                    .value !=
-                widget.loginModel!.password;
-            isSaved = true;
-          }
-          warningLog(
-              'SavedCredentials isSaved $isSaved update $update', 'Main Page');
-          if (!isSaved || update) {
-            _showBottomSheet(context, saved: isSaved, update: update);
-          }
-        });
+        _checkForSavedPassword();
       }
-      setupAppRating(7 * 24).then((value) {
+      setupAppRating(3 * 24).then((value) {
         if (value) {
           rateApp();
+        }
+      });
+    });
+  }
+
+  Future<Null> _checkForSavedPassword() {
+    Fluttertoast.cancel();
+    return Future.delayed(const Duration(seconds: 5), () async {
+      await authProvider.getSavedCredentials().then((list) {
+        bool isSaved = false;
+        bool update = false;
+        if (list.isNotEmpty &&
+            list.entries
+                .any((element) => element.key == widget.loginModel!.username)) {
+          update = list.entries
+                  .firstWhere(
+                      (element) => element.key == widget.loginModel!.username)
+                  .value !=
+              widget.loginModel!.password;
+          isSaved = true;
+        }
+        warningLog(
+            'SavedCredentials isSaved $isSaved update $update', 'Main Page');
+        if (!isSaved || update) {
+          _showBottomSheet(context, saved: isSaved, update: update);
         }
       });
     });
@@ -158,6 +165,7 @@ class _MainPageState extends State<MainPage>
       {bool saved = false, bool update = false}) async {
     await showModalBottomSheet(
         context: context,
+        isDismissible: false,
         builder: (context) => Container(
               padding: const EdgeInsets.all(10),
               height: 150,
@@ -232,6 +240,7 @@ class _MainPageState extends State<MainPage>
 
   @override
   Widget build(BuildContext context) {
+    getDeviceToken();
     final size = MediaQuery.of(context).size;
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
@@ -240,7 +249,7 @@ class _MainPageState extends State<MainPage>
             return GestureDetector(
               onTap: () {
                 primaryFocus?.unfocus();
-                logOut('Main Page Tap Test for logout');
+                // logOut('Main Page Tap Test for logout');
               },
               child: Scaffold(
                 key: widget.dashScaffoldKey,
@@ -318,7 +327,6 @@ class _MainPageState extends State<MainPage>
 
   Container buildBody(BuildContext context, DashBoardProvider dashBoardProvider,
       AuthProvider authProvider, Size size) {
-    warningLog(' device token ${getDeviceToken()}');
     return Container(
       height: double.maxFinite,
       width: double.maxFinite,
@@ -351,13 +359,23 @@ class _MainPageState extends State<MainPage>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              //alerts
+                              // FilledButton(
+                              //     onPressed: () {
+                              //       // showDialog(
+                              //       //   context: context,
+                              //       //   builder: (context) =>
+                              //       //       YotiSignSuccessDialog(),
+                              //       // );
+                              //       Get.to(InAppPurchaseExample());
+                              //     },
+                              //     child: const Text('In App Purchase')),
+
+                              ///alerts
                               if (dashboardProvider.alerts
                                   .where((element) => element.status == 1)
                                   .isNotEmpty)
                                 const MainPageAlertsSlider(),
                               height10(),
-
                               AppLockAuthSuggestionWidget(
                                 showSuggestion:
                                     sl.get<SettingsRepo>().getBiometric(),
@@ -417,8 +435,9 @@ class _MainPageState extends State<MainPage>
                               */
                             ],
                           ),
-                          buildSubscriptionHistory(
-                              context, size, dashBoardProvider, authProvider),
+                          if (Platform.isAndroid)
+                            buildSubscriptionHistory(
+                                context, size, dashBoardProvider, authProvider),
                           height20(),
 
                           /// Accademic Video
@@ -737,6 +756,7 @@ class _MainPageState extends State<MainPage>
               // SizedBox(height: 10),
               Container(
                 width: Get.width * 0.5,
+                height: 50,
                 // color: redDark,
                 child: CachedNetworkImage(
                   imageUrl: dashBoardProvider.logoUrl ?? '',
@@ -1003,9 +1023,12 @@ class _MainPageState extends State<MainPage>
       children: [
         UiCategoryTitleContainer(
             child: bodyLargeText('SUBSCRIPTION HISTORY', context)),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 500),
-          height: Get.height * 0.27,
+        Container(
+          // duration: const Duration(milliseconds: 500),
+          height: dashBoardProvider.loadingDash ||
+                  dashBoardProvider.subscriptionPacks.isNotEmpty
+              ? 200
+              : 130,
           child: !dashBoardProvider.loadingDash &&
                   (!dashBoardProvider.hasSubscription ||
                       dashBoardProvider.subscriptionPacks.isEmpty)

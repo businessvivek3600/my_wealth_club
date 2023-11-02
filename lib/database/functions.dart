@@ -1,15 +1,19 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:api_cache_manager/api_cache_manager.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:intl/intl.dart';
+import 'package:mycarclub/utils/my_logger.dart';
 import 'package:mycarclub/utils/sizedbox_utils.dart';
 import 'package:mycarclub/utils/text.dart';
 import '/database/repositories/settings_repo.dart';
@@ -118,7 +122,7 @@ Future<String?> downloadAndSaveFile(String url, String filename) async {
     var response = await Dio().download(url, downloadFilePath,
         onReceiveProgress: (received, total) {
       if (total != -1) {
-        print((received / total * 100).toStringAsFixed(0) + "%");
+        print("${(received / total * 100).toStringAsFixed(0)}%");
       }
     });
     print("File is saved to $downloadFilePath");
@@ -182,12 +186,17 @@ String parseHtmlString(String htmlString) {
   return parsedString;
 }
 
-Future<void> logOut(dynamic reason, {bool showD = true}) async {
+Future<void> logOut(
+  dynamic reason, {
+  bool showD = true,
+  title = 'Session expired',
+  content = 'Your session has expired.\nPlease wait..',
+}) async {
   warningLog('logOut called  due to ${reason.toString()}');
   // show loding dialog for sesion expire
   if (showD) {
     showDialog(
-        context: MyCarClub.navigatorKey.currentContext!,
+        context: MyWealthClub.navigatorKey.currentContext!,
         barrierDismissible: true,
         barrierColor: Colors.white.withOpacity(0.1),
         builder: (context) {
@@ -196,7 +205,7 @@ Future<void> logOut(dynamic reason, {bool showD = true}) async {
                 borderRadius: BorderRadius.all(Radius.circular(30))),
             backgroundColor: bColor(1),
             title: titleLargeText(
-              'Session expired',
+              title,
               context,
               useGradient: true,
               textAlign: TextAlign.center,
@@ -206,7 +215,7 @@ Future<void> logOut(dynamic reason, {bool showD = true}) async {
               mainAxisSize: MainAxisSize.min,
               children: [
                 bodyLargeText(
-                  'Your session has expired.\nPlease wait..',
+                  content,
                   context,
                   useGradient: false,
                   color: Colors.white70,
@@ -238,10 +247,10 @@ Future<void> logOut(dynamic reason, {bool showD = true}) async {
     await APICacheManager().emptyCache();
     sl.get<SettingsRepo>().setBiometric(false);
   }).then((value) {
-    Navigator.pop(MyCarClub.navigatorKey.currentContext!);
+    Navigator.pop(MyWealthClub.navigatorKey.currentContext!);
   });
 
-  MyCarClub.navigatorKey.currentState
+  MyWealthClub.navigatorKey.currentState
       ?.pushNamedAndRemoveUntil(LoginScreen.routeName, (r) => false);
 }
 
@@ -519,4 +528,73 @@ checkForUpdate(BuildContext context) async {
   } catch (e) {
     errorLog('appcast.initialize() error $e');
   }
+}
+
+//get device info
+Future<Map<String, dynamic>> getDeviceInfo() async {
+  Map<String, dynamic> deviceInfo = {};
+  try {
+    if (Platform.isAndroid) {
+      var deviceInfoAndroid = await DeviceInfoPlugin().androidInfo;
+      deviceInfo = {
+        'device': 'android',
+        'device_id': deviceInfoAndroid.id,
+        'device_name': deviceInfoAndroid.model,
+        'device_version': deviceInfoAndroid.version.release,
+        'device_brand': deviceInfoAndroid.brand,
+        'device_manufacturer': deviceInfoAndroid.manufacturer,
+        'device_fingerprint': deviceInfoAndroid.fingerprint,
+        'device_bootloader': deviceInfoAndroid.bootloader,
+        'device_board': deviceInfoAndroid.board,
+        'device_display': deviceInfoAndroid.display,
+        'device_hardware': deviceInfoAndroid.hardware,
+        'device_host': deviceInfoAndroid.host,
+        'device_product': deviceInfoAndroid.product,
+        'device_tags': deviceInfoAndroid.tags,
+        'device_type': deviceInfoAndroid.type,
+        'device_codename': deviceInfoAndroid.version.codename,
+        'device_incremental': deviceInfoAndroid.version.incremental,
+        'device_sdk': deviceInfoAndroid.version.sdkInt,
+        'device_release': deviceInfoAndroid.version.release,
+        'device_base_os': deviceInfoAndroid.version.baseOS,
+        'device_security_patch': deviceInfoAndroid.version.securityPatch,
+        'device_supported_abis': deviceInfoAndroid.supportedAbis,
+        'device_supported_32_bit_abis': deviceInfoAndroid.supported32BitAbis,
+        'device_supported_64_bit_abis': deviceInfoAndroid.supported64BitAbis,
+        'device_system_available_features': deviceInfoAndroid.systemFeatures,
+        'device_is_physical_device': deviceInfoAndroid.isPhysicalDevice,
+        'device_is_emulator': deviceInfoAndroid.isPhysicalDevice,
+        'device_is_maybe_emulator': deviceInfoAndroid.isPhysicalDevice,
+        'device_is_maybe_physical_device': deviceInfoAndroid.isPhysicalDevice,
+        'device_is_maybe_virtual': deviceInfoAndroid.isPhysicalDevice,
+        'device_is_maybe_real_device': deviceInfoAndroid.isPhysicalDevice
+      };
+    } else if (Platform.isIOS) {
+      var deviceInfoIOS = await DeviceInfoPlugin().iosInfo;
+      deviceInfo = {
+        'device': 'ios',
+        'device_id': deviceInfoIOS.identifierForVendor,
+        'device_name': deviceInfoIOS.name,
+        'device_system_name': deviceInfoIOS.systemName,
+        'device_system_version': deviceInfoIOS.systemVersion,
+        'device_model': deviceInfoIOS.model,
+        'device_localized_model': deviceInfoIOS.localizedModel,
+        'device_is_physical_device': deviceInfoIOS.isPhysicalDevice,
+        'device_is_simulator': deviceInfoIOS.isPhysicalDevice,
+        'device_is_maybe_emulator': deviceInfoIOS.isPhysicalDevice,
+        'device_is_maybe_physical_device': deviceInfoIOS.isPhysicalDevice,
+        'device_is_maybe_virtual': deviceInfoIOS.isPhysicalDevice,
+        'device_is_maybe_real_device': deviceInfoIOS.isPhysicalDevice,
+      };
+    }
+  } catch (e) {
+    errorLog('getDeviceInfo error $e');
+  }
+  logger.t('deviceInfo $deviceInfo');
+  return deviceInfo;
+}
+
+Future<String> getDeviceName() async {
+  var deviceInfo = await getDeviceInfo();
+  return '${(deviceInfo['device'] ?? '').toString().capitalize!} (${(deviceInfo['device_name'] ?? '')})';
 }

@@ -14,17 +14,17 @@ class Toasts {
       AnimationType animationType = AnimationType.fromTop}) async {
     CherryToast.success(
             title: Text(title ?? "Success",
-                style: TextStyle(color: Colors.green, fontSize: 12)),
+                style: const TextStyle(color: Colors.green, fontSize: 12)),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
             description: Text(
               desc,
-              style: TextStyle(color: Colors.black, fontSize: 10),
+              style: const TextStyle(color: Colors.black, fontSize: 10),
             ),
             animationType: animationType,
-            animationDuration: Duration(milliseconds: 600),
+            animationDuration: const Duration(milliseconds: 600),
             autoDismiss: true)
         .show(Get.context!);
   }
@@ -33,16 +33,16 @@ class Toasts {
     CherryToast.error(
             title: Text(
               title ?? "Error",
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description:
-                Text(desc, style: TextStyle(color: Colors.black, fontSize: 10)),
+            description: Text(desc,
+                style: const TextStyle(color: Colors.black, fontSize: 10)),
             animationType: AnimationType.fromRight,
-            animationDuration: Duration(milliseconds: 900),
+            animationDuration: const Duration(milliseconds: 900),
             autoDismiss: true)
         .show(Get.context!);
   }
@@ -50,16 +50,16 @@ class Toasts {
   static showWarningNormalToast(String desc, {String? title}) async {
     CherryToast.warning(
             title: Text(title ?? "Ooops!",
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                style: const TextStyle(color: Colors.red, fontSize: 12),
                 textAlign: TextAlign.justify),
             displayTitle: true,
             displayIcon: true,
             displayCloseButton: false,
             borderRadius: 10,
-            description:
-                Text(desc, style: TextStyle(color: Colors.black, fontSize: 10)),
+            description: Text(desc,
+                style: const TextStyle(color: Colors.black, fontSize: 10)),
             animationType: AnimationType.fromRight,
-            animationDuration: Duration(milliseconds: 900),
+            animationDuration: const Duration(milliseconds: 900),
             autoDismiss: true)
         .show(Get.context!);
   }
@@ -69,16 +69,16 @@ class Toasts {
     print('is error $error');
     CherryToast(
       title: Text(title ?? "Error",
-          style: TextStyle(color: Colors.red, fontSize: 12),
+          style: const TextStyle(color: Colors.red, fontSize: 12),
           textAlign: TextAlign.justify),
       displayTitle: true,
       displayIcon: true,
       displayCloseButton: false,
       borderRadius: 10,
       description:
-          Text(desc, style: TextStyle(color: Colors.black, fontSize: 10)),
+          Text(desc, style: const TextStyle(color: Colors.black, fontSize: 10)),
       animationType: AnimationType.fromRight,
-      animationDuration: Duration(milliseconds: 900),
+      animationDuration: const Duration(milliseconds: 900),
       autoDismiss: true,
       icon: error ? Icons.error : Icons.emoji_events_outlined,
       themeColor: error ? Colors.red : Colors.green,
@@ -93,7 +93,7 @@ class Toasts {
     FToast fToast = FToast();
     fToast.init(context);
     fToast.showToast(
-      toastDuration: Duration(milliseconds: 2000),
+      toastDuration: const Duration(milliseconds: 2000),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
         child: Material(
@@ -119,7 +119,7 @@ class Toasts {
                     ],
                   ),
                 Text(text,
-                    style: TextStyle(color: Colors.white, fontSize: 16.0))
+                    style: const TextStyle(color: Colors.white, fontSize: 16.0))
               ],
             ),
           ),

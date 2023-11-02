@@ -394,9 +394,9 @@ class CashWalletProvider extends ChangeNotifier {
                 map['payment_return_url']?['stripe']?['success'] ?? '';
             stripe_paymnet_cancel_url =
                 map['payment_return_url']?['stripe']?['cancel'] ?? '';
-            successLog(
-                'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
-                'getCardPaymentFundRequest');
+            // successLog(
+            //     'tap_paymnet_return_url tap_paymnet_return_url: $tap_paymnet_return_url  stripe_paymnet_success_url: $stripe_paymnet_success_url  stripe_paymnet_cancel_url: $stripe_paymnet_cancel_url',
+            //     'getCardPaymentFundRequest');
           }
         } catch (e) {}
         try {

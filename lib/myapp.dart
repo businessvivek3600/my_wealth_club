@@ -38,18 +38,18 @@ import 'screens/drawerPages/inbox/inbox_screen.dart';
 
 final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
-class MyCarClub extends StatefulWidget {
-  MyCarClub(
+class MyWealthClub extends StatefulWidget {
+  MyWealthClub(
       {Key? key, this.notificationAppLaunchDetails, required this.initialRoute})
       : super(key: key);
   final NotificationAppLaunchDetails? notificationAppLaunchDetails;
   static final navigatorKey = new GlobalKey<NavigatorState>();
   final String initialRoute;
   @override
-  State<MyCarClub> createState() => _MyCarClubState();
+  State<MyWealthClub> createState() => _MyWealthClubState();
 }
 
-class _MyCarClubState extends State<MyCarClub> {
+class _MyWealthClubState extends State<MyWealthClub> {
   late VideoPlayerController _controller;
   String tag = 'MyWealthClub';
   getNotifiersList(List<ChangeNotifier> widgets) => widgets
@@ -128,7 +128,7 @@ class _MyCarClubState extends State<MyCarClub> {
         ],
         child: Builder(builder: (context) {
           return GetMaterialApp(
-            navigatorKey: MyCarClub.navigatorKey,
+            navigatorKey: MyWealthClub.navigatorKey,
             initialRoute: widget.initialRoute,
             debugShowCheckedModeBanner: false,
             theme: lightTheme,

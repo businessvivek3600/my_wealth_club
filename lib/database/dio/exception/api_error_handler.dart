@@ -1,10 +1,15 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mycarclub/utils/my_logger.dart';
+import 'package:mycarclub/utils/text.dart';
+import '../../../utils/toasts.dart';
 import '../../model/response/base/error_response.dart';
 import '/utils/default_logger.dart';
 
 class ApiErrorHandler {
   static String tag = 'ApiErrorHandler';
-  static dynamic getMessage(error, {String? endpoint}) {
+  static dynamic getMessage(error, {String? endpoint, bool showToast = true}) {
     dynamic errorDescription = "";
     errorLog('getMessage :${error.runtimeType}', tag);
     if (error is DioException) {
@@ -27,18 +32,20 @@ class ApiErrorHandler {
           }
           errorDescription = error.response?.data;
         } else if (DioExceptionType.values.contains(error.type)) {
+          logger.e(error.type, tag: tag, error: error);
           switch (error.type) {
             case DioExceptionType.cancel:
               errorDescription = "Request was cancelled";
               break;
             case DioExceptionType.connectionTimeout:
-              errorDescription = "Connection timeout";
+              errorDescription =
+                  "Connection timeout, please check your internet connection";
               break;
             case DioExceptionType.unknown:
               errorDescription = "Connection failed due to internet connection";
               break;
             case DioExceptionType.receiveTimeout:
-              errorDescription = "Receive timeout in connection ";
+              errorDescription = "Receive timeout in connection";
               break;
             case DioExceptionType.badCertificate:
               errorDescription =
@@ -78,16 +85,33 @@ class ApiErrorHandler {
           errorDescription = "Unexpected error occurred";
         }
       } on FormatException catch (e) {
-        errorDescription = e.toString();
+        logger.e(e.source.toString(), tag: tag, error: e);
+        errorDescription = e.message;
       }
     } else {
       errorDescription = "Unexpected error occurred";
     }
-    errorLog('getMessage : $errorDescription', tag);
     // try {
-    //   Toasts.showErrorNormalToast(errorDescription);
+    if (showToast) {
+      errorLog('getMessage last : $errorDescription', tag);
+      Get.closeAllSnackbars();
+      Get.snackbar(
+        'Error',
+        errorDescription.toString(),
+        titleText: titleLargeText('Error', Get.context!, fontSize: 12),
+        messageText: titleLargeText(errorDescription.toString(), Get.context!,
+            fontSize: 10),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        maxWidth: Get.width * 0.8,
+        margin: const EdgeInsets.all(10),
+        shouldIconPulse: true,
+        icon: const Icon(Icons.error_outline, color: Colors.white),
+        // snackPosition: SnackPosition.BOTTOM,
+      );
+    }
     // } catch (e) {
-    //   Get.snackbar('Error', errorDescription);
+    // Get.snackbar('Error', errorDescription);
     // }
     return errorDescription;
   }
