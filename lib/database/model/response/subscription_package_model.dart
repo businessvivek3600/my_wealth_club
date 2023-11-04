@@ -9,6 +9,7 @@ class SubscriptionPackage {
   String? pv;
   String? productId;
   String? joiningId;
+  String? d_joining_id;
   String? capping;
   String? status;
   String? image;
@@ -19,6 +20,7 @@ class SubscriptionPackage {
       this.name,
       this.packageId,
       this.sale_type,
+      this.d_joining_id,
       this.amount,
       this.offerPrice,
       this.joiningFee,
@@ -40,6 +42,7 @@ class SubscriptionPackage {
     pv = json['pv'];
     productId = json['product_id'];
     joiningId = json['joining_id'];
+    d_joining_id = json['d_joining_id'];
     capping = json['capping'];
     status = json['status'];
     image = json['image'];
@@ -47,21 +50,22 @@ class SubscriptionPackage {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['name'] = this.name;
-    data['package_id'] = this.packageId;
-    data['sale_type'] = this.sale_type;
-    data['amount'] = this.amount;
-    data['offer_price'] = this.offerPrice;
-    data['joining_fee'] = this.joiningFee;
-    data['pv'] = this.pv;
-    data['product_id'] = this.productId;
-    data['joining_id'] = this.joiningId;
-    data['capping'] = this.capping;
-    data['status'] = this.status;
-    data['image'] = this.image;
-    data['price_id'] = this.priceId;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['package_id'] = packageId;
+    data['sale_type'] = sale_type;
+    data['amount'] = amount;
+    data['offer_price'] = offerPrice;
+    data['joining_fee'] = joiningFee;
+    data['d_joining_id'] = d_joining_id;
+    data['pv'] = pv;
+    data['product_id'] = productId;
+    data['joining_id'] = joiningId;
+    data['capping'] = capping;
+    data['status'] = status;
+    data['image'] = image;
+    data['price_id'] = priceId;
     return data;
   }
 }

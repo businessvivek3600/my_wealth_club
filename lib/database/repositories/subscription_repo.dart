@@ -56,7 +56,19 @@ class SubscriptionRepo {
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
-      getSubscription({'page': 1});
+      getSubscription({'page': 0});
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e));
+    }
+  }
+
+  Future<ApiResponse> submitJoinigPackageIosPurchase(
+      String path, Map<String, dynamic> data) async {
+    try {
+      Response response = await dioClient.post(path, token: true, data: data);
+
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      getSubscription({'page': 0});
       return ApiResponse.withError(ApiErrorHandler.getMessage(e));
     }
   }

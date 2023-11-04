@@ -3,8 +3,12 @@ import 'dart:io';
 
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:mycarclub/utils/my_logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/utils/app_web_view_page.dart';
 import '/utils/default_logger.dart';
 import '/constants/app_constants.dart';
@@ -350,6 +354,120 @@ class SubscriptionProvider extends ChangeNotifier {
     Get.back();
   }
 
+  ///apple payment
+
+  final List<PurchaseDetails> purchases = [];
+  final List<ProductDetails> pendingPurchases = [];
+  bool cancelingPendingPurchase = false;
+
+  setPendingPurchase(ProductDetails val, {bool remove = false}) {
+    if (remove) {
+      pendingPurchases.remove(val);
+    } else {
+      pendingPurchases.add(val);
+    }
+    notifyListeners();
+  }
+
+  setPurchases(PurchaseDetails val, {bool remove = false}) {
+    if (remove) {
+      purchases.remove(val);
+    } else {
+      purchases.add(val);
+    }
+    notifyListeners();
+  }
+
+  setCancelingPendingPurchase(bool val) {
+    cancelingPendingPurchase = val;
+    notifyListeners();
+  }
+
+  ///api hit for joining package submisstion
+  Future<void> submitJoinigPackageIosPurchase(Map<String, dynamic> data) async {
+    try {
+      ApiResponse apiResponse = await subscriptionRepo
+          .submitJoinigPackageIosPurchase(AppConstants.applePayJoining, data);
+      infoLog(
+          'submitJoinigPackageIosPurchase online hit  ${apiResponse.response?.data}');
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        Map map = apiResponse.response!.data;
+        bool status = false;
+        String message = '';
+        try {
+          status = map["status"];
+          if (map['is_logged_in'] == 0) {
+            logOut('submitJoinigPackageIosPurchase');
+          }
+        } catch (e) {}
+        try {
+          message = map["message"];
+        } catch (e) {}
+        try {
+          if (status) {
+            Toasts.showSuccessNormalToast(message);
+            await mySubscriptions(false, 0);
+            Get.back();
+          } else {
+            Toasts.showErrorNormalToast(message);
+          }
+        } catch (e) {
+          errorLog('submitJoinigPackageIosPurchase online hit failed \n $e');
+        }
+      }
+    } catch (e) {
+      logger.e('submitJoinigPackageIosPurchase failed ', error: e);
+    }
+  }
+
+  ///api hit for subscription package submisstion
+  Future<void> submitSubscriptionPackageIosPurchase(
+      Map<String, dynamic> data) async {
+    try {
+      ApiResponse apiResponse =
+          await subscriptionRepo.submitJoinigPackageIosPurchase(
+              AppConstants.applePaySubscription, data);
+      infoLog(
+          'submitSubscriptionPackageIosPurchase online hit  ${apiResponse.response?.data}');
+      if (apiResponse.response != null &&
+          apiResponse.response!.statusCode == 200) {
+        Map map = apiResponse.response!.data;
+        bool status = false;
+        String message = '';
+        try {
+          status = map["status"];
+          if (map['is_logged_in'] == 0) {
+            logOut('submitSubscriptionPackageIosPurchase');
+          }
+        } catch (e) {}
+        try {
+          message = map["message"];
+        } catch (e) {}
+        try {
+          if (status) {
+            Fluttertoast.showToast(
+                msg: message,
+                gravity: ToastGravity.TOP,
+                backgroundColor: Colors.green);
+            await mySubscriptions(false, 0);
+            // Get.back();
+          } else {
+            Fluttertoast.showToast(
+                msg: message,
+                gravity: ToastGravity.TOP,
+                backgroundColor: Colors.red);
+          }
+        } catch (e) {
+          errorLog(
+              'submitSubscriptionPackageIosPurchase online hit failed \n $e');
+        }
+      }
+    } catch (e) {
+      logger.e('submitSubscriptionPackageIosPurchase failed ', error: e);
+    }
+  }
+
 // verify coupon
   bool loadingVerifyCoupon = false;
   bool? couponVerified;
@@ -469,4 +587,126 @@ class SubscriptionProvider extends ChangeNotifier {
     selectedPackage = null;
     selectedPaymentTypeKey = null;
   }
+}
+
+/// save pending purchase to local db
+Future<void> savePendingPurchase(PurchaseDetails purchaseDetails) async {
+  var prefs = await SharedPreferences.getInstance();
+  // print(
+  // 'savePendingPurchase pendingPurchases ${prefs.getStringList('pendingPurchases') ?? []} ${purchaseDetailsToJson(purchaseDetails)}');
+  try {
+    var pendingPurchases = await getPendingPurchases();
+
+    if (pendingPurchases
+        .any((element) => element.productID == purchaseDetails.productID)) {
+      updatePendingPurchase(purchaseDetails);
+      return;
+    } else {
+      pendingPurchases.add(purchaseDetails);
+      prefs.setStringList(
+          'pendingPurchases',
+          pendingPurchases
+              .map((e) => jsonEncode(purchaseDetailsToJson(e)))
+              .toList());
+    }
+    logger.w(
+        'savePendingPurchase pendingPurchases ${pendingPurchases.map((e) => e.productID).toList()}');
+  } catch (e) {
+    logger.e('savePendingPurchase failed ', error: e);
+  }
+}
+
+///get pending purchase from local db
+Future<List<PurchaseDetails>> getPendingPurchases() async {
+  var prefs = await SharedPreferences.getInstance();
+  List<PurchaseDetails> pendingPurchases = [];
+  try {
+    var pendingPurchasesJson = prefs.getStringList('pendingPurchases') ?? [];
+    for (var element in pendingPurchasesJson) {
+      pendingPurchases.add(purchaseDetailsFromJson(jsonDecode(element)));
+    }
+    logger.w(
+        'getPendingPurchases pendingPurchases ${pendingPurchases.map((e) => e.productID).toList()}');
+  } catch (e) {
+    logger.e('getPendingPurchases failed ', error: e);
+  }
+  return pendingPurchases;
+}
+
+///remove pending purchase from local db
+Future<void> removePendingPurchase(PurchaseDetails purchaseDetails) async {
+  var prefs = await SharedPreferences.getInstance();
+  try {
+    var pendingPurchases = prefs.getStringList('pendingPurchases') ?? [];
+    pendingPurchases.removeWhere((element) =>
+        purchaseDetailsFromJson(jsonDecode(element)).productID ==
+        purchaseDetails.productID);
+    prefs.setStringList('pendingPurchases', pendingPurchases);
+    logger.w(
+        'removePendingPurchase pendingPurchases ${purchaseDetails.productID}');
+  } catch (e) {
+    logger.e('removePendingPurchase failed ', error: e);
+  }
+}
+
+///update existing purchase from local db
+Future<void> updatePendingPurchase(PurchaseDetails purchaseDetails) async {
+  var prefs = await SharedPreferences.getInstance();
+  try {
+    var pendingPurchases = prefs.getStringList('pendingPurchases') ?? [];
+    pendingPurchases.removeWhere((element) =>
+        purchaseDetailsFromJson(jsonDecode(element)).productID ==
+        purchaseDetails.productID);
+    pendingPurchases.add(jsonEncode(purchaseDetailsToJson(purchaseDetails)));
+    prefs.setStringList('pendingPurchases', pendingPurchases);
+  } catch (e) {
+    logger.e('updatePendingPurchase failed ', error: e);
+  }
+}
+
+/// purchase detail to json
+Map<String, dynamic> purchaseDetailsToJson(PurchaseDetails purchaseDetails) {
+  return {
+    'productID': purchaseDetails.productID,
+    'transactionDate': purchaseDetails.transactionDate,
+    'purchaseID': purchaseDetails.purchaseID,
+    'verificationData':
+        purchaseVerificationDataToJson(purchaseDetails.verificationData),
+    'status': purchaseDetails.status.name,
+    'pendingCompletePurchase': purchaseDetails.pendingCompletePurchase,
+    'hashCode': purchaseDetails.hashCode,
+  };
+}
+
+/// json to purchase detail
+PurchaseDetails purchaseDetailsFromJson(Map<String, dynamic> json) {
+  return PurchaseDetails(
+    productID: json['productID'],
+    transactionDate: json['transactionDate'],
+    purchaseID: json['purchaseID'],
+    verificationData:
+        purchaseVerificationDataFromJson(json['verificationData']),
+    status: PurchaseStatus.values.firstWhere((e) => e.name == json['status'],
+        orElse: () => PurchaseStatus.error),
+  );
+}
+
+/// PurchaseVerificationData to json
+Map<String, dynamic> purchaseVerificationDataToJson(
+    PurchaseVerificationData purchaseVerificationData) {
+  return {
+    'localVerificationData': purchaseVerificationData.localVerificationData,
+    'serverVerificationData': purchaseVerificationData.serverVerificationData,
+    'source': purchaseVerificationData.source,
+  };
+}
+
+/// PurchaseVerificationData from json
+PurchaseVerificationData purchaseVerificationDataFromJson(
+    Map<String, dynamic> json) {
+  return PurchaseVerificationData(
+    localVerificationData: json['localVerificationData'],
+    serverVerificationData: json['serverVerificationData'],
+    source: json['source'],
+  );
 }

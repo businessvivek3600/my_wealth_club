@@ -165,21 +165,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             height10(),
 
                             // Subscription
-                            if (Platform.isAndroid)
-                              DrawerTileItem(
-                                onTap: () {
-                                  dashBoardProvider
-                                      .setDrawerTile('Subscription');
-                                  Widget page = const SubscriptionPage();
-                                  Get.to(page);
-                                },
-                                leading: Assets.subscription,
-                                title: 'Subscription',
-                                width: size.width * 0.7,
-                                selected:
-                                    dashBoardProvider.selectedDrawerTile ==
-                                        'Subscription',
-                              ),
+                            // if (Platform.isAndroid)
+                            DrawerTileItem(
+                              onTap: () {
+                                dashBoardProvider.setDrawerTile('Subscription');
+                                Widget page = const SubscriptionPage();
+                                Get.to(page);
+                              },
+                              leading: Assets.subscription,
+                              title: 'Subscription',
+                              width: size.width * 0.7,
+                              selected: dashBoardProvider.selectedDrawerTile ==
+                                  'Subscription',
+                            ),
                             height10(),
 
                             ///Gift Voucher
@@ -1212,7 +1210,7 @@ class _MasterClasses extends StatelessWidget {
                           'videoId':
                               dashboardProvider.wevinarEventVideo!.webinarId,
                           // 'videoId': 'ezdP1lzsNUg',
-                          'isLive': true,
+                          'isLive': false,
                           'rotate': true,
                           'data': dashboardProvider.wevinarEventVideo!.toJson()
                         }));

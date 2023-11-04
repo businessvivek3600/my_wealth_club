@@ -59,8 +59,11 @@ class _InAppPurchaseExampleState extends State<InAppPurchaseExample> {
         purchaseUpdated.listen((List<PurchaseDetails> purchaseDetailsList) {
       _listenToPurchaseUpdated(purchaseDetailsList);
     }, onDone: () {
+      logger.f('purchaseUpdated onDone',
+          tag: tag, error: 'purchaseUpdated onDone');
       _subscription.cancel();
     }, onError: (Object error) {
+      logger.e('purchaseUpdated onError', tag: tag, error: error);
       // handle error here.
     });
     initStoreInfo();
@@ -270,10 +273,6 @@ class _InAppPurchaseExampleState extends State<InAppPurchaseExample> {
                     late PurchaseParam purchaseParam;
 
                     if (Platform.isAndroid) {
-                      // NOTE: If you are making a subscription purchase/upgrade/downgrade, we recommend you to
-                      // verify the latest status of you your subscription by using server side receipt validation
-                      // and update the UI accordingly. The subscription purchase status shown
-                      // inside the app may not be accurate.
                       final GooglePlayPurchaseDetails? oldSubscription =
                           _getOldSubscription(productDetails, purchases);
 
@@ -288,8 +287,8 @@ class _InAppPurchaseExampleState extends State<InAppPurchaseExample> {
                               : null);
                     } else {
                       purchaseParam = PurchaseParam(
-                        productDetails: productDetails,
-                      );
+                          productDetails: productDetails,
+                          applicationUserName: 'coding mobile testing');
                     }
 
                     if (productDetails.id == _kConsumableId) {
@@ -424,16 +423,31 @@ class _InAppPurchaseExampleState extends State<InAppPurchaseExample> {
       List<PurchaseDetails> purchaseDetailsList) async {
     for (final PurchaseDetails purchaseDetails in purchaseDetailsList) {
       if (purchaseDetails.status == PurchaseStatus.pending) {
+        logger.w('purchaseDetails.status == PurchaseStatus.pending',
+            tag: tag,
+            error: 'purchaseDetails.status == PurchaseStatus.pending');
         showPendingUI();
       } else {
         if (purchaseDetails.status == PurchaseStatus.error) {
+          logger.e('purchaseDetails.status == PurchaseStatus.error',
+              tag: tag, error: purchaseDetails.error);
           handleError(purchaseDetails.error!);
         } else if (purchaseDetails.status == PurchaseStatus.purchased ||
             purchaseDetails.status == PurchaseStatus.restored) {
+          logger.f('purchaseDetails.status == PurchaseStatus.purchased',
+              tag: tag, error: purchaseDetails);
           final bool valid = await _verifyPurchase(purchaseDetails);
           if (valid) {
+            logger.w('valid == $valid', tag: tag, error: {
+              'purchaseID': purchaseDetails.purchaseID,
+              'productID': purchaseDetails.productID,
+              'status': purchaseDetails.status,
+              'source': purchaseDetails.verificationData.source,
+              'transactionDate': purchaseDetails.transactionDate,
+            });
             unawaited(deliverProduct(purchaseDetails));
           } else {
+            logger.e('valid == $valid', tag: tag);
             _handleInvalidPurchase(purchaseDetails);
             return;
           }
@@ -443,11 +457,15 @@ class _InAppPurchaseExampleState extends State<InAppPurchaseExample> {
             final InAppPurchaseAndroidPlatformAddition androidAddition =
                 _inAppPurchase.getPlatformAddition<
                     InAppPurchaseAndroidPlatformAddition>();
-            await androidAddition.consumePurchase(purchaseDetails);
+            var wrapper =
+                await androidAddition.consumePurchase(purchaseDetails);
+            logger.i('consumePurchase:', tag: tag, error: wrapper);
           }
         }
         if (purchaseDetails.pendingCompletePurchase) {
-          await _inAppPurchase.completePurchase(purchaseDetails);
+          await _inAppPurchase.completePurchase(purchaseDetails).then((value) {
+            logger.f('completePurchase:', tag: tag, error: purchaseDetails);
+          });
         }
       }
     }

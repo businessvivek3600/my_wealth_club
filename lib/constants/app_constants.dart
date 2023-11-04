@@ -54,6 +54,10 @@ class AppConstants {
   static const String verifyVoucherCode = 'customer/check-voucher-code';
   static const String verifyCouponCode = 'customer/check-coupon-code';
 
+  ///apple purchase
+  static const String applePayJoining = 'customer/apple-pay-joining';
+  static const String applePaySubscription = 'customer/apple-pay-subscription';
+
   static const String submitCardInvoice =
       'customer/stripe-payment-subscription-submit';
 

@@ -74,7 +74,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
         if (videoId != null) {
           thumbnail = NetworkImage(YoutubePlayer.getThumbnail(
               videoId: videoId!, quality: ThumbnailQuality.high));
-          provider.init(videoId: videoId!, isLive: isLive);
+          // provider.init(videoId: videoId!, isLive: isLive);
         }
       }
       if (rotate) {
@@ -96,7 +96,7 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
   void deactivate() {
     // Pauses video while navigating to next page.
 
-    provider.controller.pause();
+    // provider.controller.pause();
     super.deactivate();
   }
 
@@ -107,22 +107,44 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
   }
 
   _dispose() {
-    provider.controller.dispose();
-    provider.idController.dispose();
-    provider.seekToController.dispose();
-    provider.controlTimer?.cancel();
+    // provider.controller.dispose();
+    // provider.idController.dispose();
+    // provider.seekToController.dispose();
+    // provider.controlTimer?.cancel();
     SystemChrome.setPreferredOrientations(
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
         overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
-    provider.timer.cancel();
+    // provider.timer.cancel();
     provider.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return videoId != '' && videoId != null
-        ? _LiveYTPlayer(videoId: videoId!, data: eventData)
+        ? Stack(
+            children: [
+              _LiveYTPlayer(videoId: videoId!, data: eventData),
+              Positioned(
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  left: 0,
+                  child: Center(
+                    child: SizedBox(
+                      // height: 100,
+                      // width: 100,
+                      child: IconButton(
+                          onPressed: () {
+                            // _dispose();
+                            Get.back();
+                          },
+                          icon: const Icon(Icons.close,
+                              color: Colors.white, size: 20)),
+                    ),
+                  ))
+            ],
+          )
         : const Center(child: CircularProgressIndicator(color: Colors.white));
     DateTime? date = DateTime.tryParse(eventData?['webinar_time'] ?? '');
     // return Container();

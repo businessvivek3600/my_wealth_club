@@ -359,16 +359,17 @@ class _MainPageState extends State<MainPage>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // FilledButton(
-                              //     onPressed: () {
-                              //       // showDialog(
-                              //       //   context: context,
-                              //       //   builder: (context) =>
-                              //       //       YotiSignSuccessDialog(),
-                              //       // );
-                              //       Get.to(InAppPurchaseExample());
-                              //     },
-                              //     child: const Text('In App Purchase')),
+                              // if (Platform.)
+                              //   FilledButton(
+                              //       onPressed: () {
+                              //         // showDialog(
+                              //         //   context: context,
+                              //         //   builder: (context) =>
+                              //         //       YotiSignSuccessDialog(),
+                              //         // );
+                              //         Get.to(InAppPurchaseExample());
+                              //       },
+                              //       child: const Text('In App Purchase')),
 
                               ///alerts
                               if (dashboardProvider.alerts
@@ -435,9 +436,9 @@ class _MainPageState extends State<MainPage>
                               */
                             ],
                           ),
-                          if (Platform.isAndroid)
-                            buildSubscriptionHistory(
-                                context, size, dashBoardProvider, authProvider),
+                          // if (Platform.isAndroid)
+                          buildSubscriptionHistory(
+                              context, size, dashBoardProvider, authProvider),
                           height20(),
 
                           /// Accademic Video

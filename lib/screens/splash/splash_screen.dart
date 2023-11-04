@@ -162,9 +162,9 @@ class _SplashScreenState extends State<SplashScreen> {
       bool isLogin = authProvider.isLoggedIn();
       var user = await authProvider.getUser();
       try {
-        logger.d('listenDynamicLinks - DeepLink Data: $data');
-        logger.f(
-            'referring link is --> ${(data['~referring_link'] ?? '')}  \n  non_branch_link is --> ${(data['+non_branch_link'] ?? "")}');
+        // logger.d('listenDynamicLinks - DeepLink Data: $data');
+        // logger.f(
+        //     'referring link is --> ${(data['~referring_link'] ?? '')}  \n  non_branch_link is --> ${(data['+non_branch_link'] ?? "")}');
         if (data['~referring_link'] != null ||
             data['+non_branch_link'] != null) {
           Uri uri =

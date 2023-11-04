@@ -108,67 +108,35 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               // buildPurchaseButton()
             ],
           ),
-          bottomNavigationBar: (!provider.loadingSub &&
-                  provider.history.isNotEmpty)
-              ? Padding(
-                  padding:
-                      const EdgeInsets.only(bottom: 25.0, left: 16, right: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                            onPressed: () => checkServiceEnableORDisable(
-                                    'mobile_is_subscription', () {
-                                  showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      backgroundColor: Colors.transparent,
-                                      builder: (_) => _returnDialog());
-                                  // Get.dialog(
-                                  //     const _returnDialog());
-                                }),
-                            child: const Text('Purchase')),
-                      ),
-                    ],
-                  ),
-                )
-              : null,
+          bottomNavigationBar:
+              (!provider.loadingSub && provider.history.isNotEmpty)
+                  ? buildPurchaseButton()
+                  : null,
         );
       },
     );
   }
 
-  Positioned buildPurchaseButton() {
-    return Positioned(
-        bottom: 30,
-        left: 0,
-        right: 0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-                onPressed: () {
-                  showBottomSheet(
-                      context: context,
-                      builder: (_) => Container(
-                            height: 300,
-                            color: Colors.white,
-                          ));
-                  // Get.bottomSheet(const _returnDialog(),
-                  // enterBottomSheetDuration: const Duration(milliseconds: 200),
-                  // enableDrag: false,
-                  // isScrollControlled: true,
-                  // barrierColor: Colors.transparent
-                  // isDismissible: false,
-                  // );
-                },
-                style: ElevatedButton.styleFrom(backgroundColor: appLogoColor),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30.0),
-                  child: Text('Purchasee'),
-                )),
-          ],
-        ));
+  Widget buildPurchaseButton() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 25.0, left: 16, right: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+                onPressed: () =>
+                    checkServiceEnableORDisable('mobile_is_subscription', () {
+                      showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => _returnDialog());
+                    }),
+                child: const Text('Purchase')),
+          ),
+        ],
+      ),
+    );
   }
 
   SliverPadding buildSliverList(
@@ -436,27 +404,27 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       actions: [
         Row(
           children: [
-            if (Platform.isAndroid)
-              SizedBox(
-                height: 25,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const SubscriptionRequestsPage(),
-                    ),
+            // if (Platform.isAndroid)
+            SizedBox(
+              height: 25,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SubscriptionRequestsPage(),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    // backgroundColor: appLogoColor,
-                    backgroundColor: Colors.transparent,
-                    padding: const EdgeInsets.all(0),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: const BorderSide(color: appLogoColor)),
-                  ),
-                  child: bodyLargeText('History', context,
-                      fontWeight: FontWeight.normal),
                 ),
+                style: ElevatedButton.styleFrom(
+                  // backgroundColor: appLogoColor,
+                  backgroundColor: Colors.transparent,
+                  padding: const EdgeInsets.all(0),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: const BorderSide(color: appLogoColor)),
+                ),
+                child: bodyLargeText('History', context,
+                    fontWeight: FontWeight.normal),
               ),
+            ),
             width10(),
           ],
         ),
