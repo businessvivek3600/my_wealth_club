@@ -28,18 +28,18 @@ import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:in_app_purchase_storekit/store_kit_wrappers.dart';
 
-class SubscriptionPurchaseDialogTest extends StatefulWidget {
-  const SubscriptionPurchaseDialogTest({
+class SubscriptionPurchaseDialogIOS extends StatefulWidget {
+  const SubscriptionPurchaseDialogIOS({
     super.key,
   });
 
   @override
-  State<SubscriptionPurchaseDialogTest> createState() =>
-      _SubscriptionPurchaseDialogTestState();
+  State<SubscriptionPurchaseDialogIOS> createState() =>
+      _SubscriptionPurchaseDialogIOSState();
 }
 
-class _SubscriptionPurchaseDialogTestState
-    extends State<SubscriptionPurchaseDialogTest>
+class _SubscriptionPurchaseDialogIOSState
+    extends State<SubscriptionPurchaseDialogIOS>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController animationController;
   TextEditingController typeController = TextEditingController();
@@ -475,8 +475,8 @@ class __PacksListState extends State<_PacksList> {
     'price_1NxBB6IXIttwdQOU5NNaxleT': 'monthly_1',
     'price_1NxBA1IXIttwdQOUXvCCJJg1': 'months_3',
     'price_1NxB8oIXIttwdQOUFWT48973': 'yearly_1',
-    'price_1NvdgeIXIttwdQOUkqofczRS': 'Joining Fee',
-    'price_1NxptvIXIttwdQOUkY1B4rSC': 'D Joining Fee',
+    'price_1NvdgeIXIttwdQOUkqofczRS': 'joining_fee',
+    'price_1NxptvIXIttwdQOUkY1B4rSC': 'd_joining_fee',
   };
 
   @override
@@ -524,22 +524,24 @@ class __PacksListState extends State<_PacksList> {
         Pack? pack = await _getPack([
           {
             'package_id': e.packageId ?? '',
-            'product_id': e.joiningId ?? '',
+            'product_id': 'price_1NvdgeIXIttwdQOUkqofczRS',
+            // 'product_id': e.joiningId ?? '',
             'sale_type': e.sale_type ?? '',
             'coupon_code': '',
             'coupon_discount': '',
           },
-          // {
-          //   'package_id': e.packageId ?? '',
-          //   'sale_type': e.sale_type ?? '',
-          // 'product_id': e.productId ?? '',
-          //   'coupon_code': '',
-          //   'coupon_discount': '',
-          // },
           {
             'package_id': e.packageId ?? '',
+            'product_id': 'price_1NxptvIXIttwdQOUkY1B4rSC',
+            // 'product_id': e.d_joining_id ?? '',
             'sale_type': e.sale_type ?? '',
+            'coupon_code': '',
+            'coupon_discount': '',
+          },
+          {
+            'package_id': e.packageId ?? '',
             'product_id': e.productId ?? '',
+            'sale_type': e.sale_type ?? '',
             'coupon_code': '',
             'coupon_discount': '',
           }
@@ -1079,7 +1081,10 @@ class __PacksListState extends State<_PacksList> {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       title: bodyLargeText(myProduct.productDetails!.title, context),
-      subtitle: bodyMedText(myProduct.productDetails!.description, context),
+      subtitle: bodyMedText(
+          '${myProduct.productDetails!.description}'
+          '\n${myProduct.productType.name}',
+          context),
       trailing:
           //  previousPurchase != null && Platform.isIOS
           //     ? IconButton(

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 class AppConstants {
   // static const String authorizationToken = 'BIZZCOIN@BIZZTRADEPRO@TRANSFER';
   static const String authorizationToken = 'MyWealthClub@741852963';

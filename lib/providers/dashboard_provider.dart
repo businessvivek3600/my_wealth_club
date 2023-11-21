@@ -766,6 +766,12 @@ class DashBoardProvider extends ChangeNotifier {
   bool loadingTradeIdeas = true;
   int totalTradeIdeas = 0;
   int tradeIdeaPage = 0;
+  int tradeIdeaType = 0;
+  setTradeIdeaType(int val) {
+    tradeIdeaType = val;
+    notifyListeners();
+  }
+
   Future<List<TradeIdeaModel>> getTradeIdea([bool loading = false]) async {
     loadingTradeIdeas = loading;
     notifyListeners();
@@ -775,8 +781,8 @@ class DashBoardProvider extends ChangeNotifier {
     bool isIncomeActivityCacheExist =
         await APICacheManager().isAPICacheKeyExist(AppConstants.tradeIdeas);
     if (isOnline) {
-      ApiResponse apiResponse =
-          await dashBoardRepo.tradeIdeas({'page': tradeIdeaPage.toString()});
+      ApiResponse apiResponse = await dashBoardRepo.tradeIdeas(
+          {'page': tradeIdeaPage.toString(), 'type': tradeIdeaType.toString()});
       // logger.i('tradeIdeas ',
       //     tag: 'tradeIdeas', error: apiResponse.response!.data);
       if (apiResponse.response != null &&

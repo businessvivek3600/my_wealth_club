@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:pod_player/pod_player.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart'
     hide ProgressBar;
+import '../utils/my_logger.dart';
 import '/database/functions.dart';
 import '/constants/assets_constants.dart';
 import '/utils/picture_utils.dart';
@@ -126,14 +127,16 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
             children: [
               _LiveYTPlayer(videoId: videoId!, data: eventData),
               Positioned(
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
+                  top:
+                      MediaQuery.of(context).orientation == Orientation.portrait
+                          ? -100
+                          : 35,
                   left: 0,
-                  child: Center(
+                  child: Material(
+                    color: Colors.transparent,
                     child: SizedBox(
-                      // height: 100,
-                      // width: 100,
+                      height: 100,
+                      width: 100,
                       child: IconButton(
                           onPressed: () {
                             // _dispose();
@@ -521,13 +524,13 @@ class _YoutubePlayerPageState extends State<YoutubePlayerPage> {
                     itemBuilder: (_) =>
                         [0.25, 0.5, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0]
                             .map((e) => PopupMenuItem(
+                                  value: e,
                                   child: capText(e.toString() + 'x', context,
                                       color: provider.controller.value
                                                   .playbackRate ==
                                               e
                                           ? appLogoColor
                                           : const Color.fromRGBO(0, 0, 0, 1)),
-                                  value: e,
                                 ))
                             .toList(),
                     onSelected: (val) {
@@ -919,6 +922,7 @@ class _LiveYTPlayer extends StatefulWidget {
 class __LiveYTPlayerState extends State<_LiveYTPlayer> {
   late final PodPlayerController controller;
   Map<String, dynamic>? eventData;
+  bool isFullScreen = false;
 
   @override
   void initState() {
@@ -928,6 +932,13 @@ class __LiveYTPlayerState extends State<_LiveYTPlayer> {
             PlayVideoFrom.youtube(widget.videoId, live: widget.isLive))
       ..initialise()
       ..enableFullScreen();
+    controller.addListener(() {
+      if (controller.isFullScreen != isFullScreen) {
+        isFullScreen = controller.isFullScreen;
+        logger.i('isFullScreen $isFullScreen');
+        setState(() {});
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       setState(() {
         eventData = widget.data;
@@ -959,12 +970,74 @@ class __LiveYTPlayerState extends State<_LiveYTPlayer> {
             Expanded(
                 flex: 1,
                 // aspectRatio: 16 / 9,
-                child: PodVideoPlayer(controller: controller)),
+                child: PodVideoPlayer(
+                  controller: controller,
+                  onLoading: (context) {
+                    return Stack(
+                      children: [
+                        Container(color: Colors.transparent),
+                        const Positioned(
+                          top: 0,
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                              child: CircularProgressIndicator(
+                                  color: Colors.white)),
+                        ),
+
+                        ///back button
+                        backButton()
+                      ],
+                    );
+                  },
+                  onVideoError: () {
+                    return Stack(
+                      children: [
+                        Container(color: Colors.transparent),
+                        const Positioned(
+                          top: 0,
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Text(
+                              'Error while loading video',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+
+                        ///back button
+                        backButton()
+                      ],
+                    );
+                  },
+                )),
             _buildEvendDetails(context)
           ],
         ),
       ),
     );
+  }
+
+  Positioned backButton() {
+    return Positioned(
+        top: 0,
+        left: 0,
+        child: Material(
+          color: Colors.transparent,
+          child: SizedBox(
+            height: 100,
+            width: 100,
+            child: IconButton(
+                onPressed: () {
+                  Get.back();
+                  Get.back();
+                },
+                icon: const Icon(Icons.close, color: Colors.white, size: 20)),
+          ),
+        ));
   }
 
   Expanded _buildEvendDetails(BuildContext context) {

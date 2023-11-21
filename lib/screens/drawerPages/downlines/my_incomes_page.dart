@@ -81,7 +81,7 @@ class _MyIncomesPageState extends State<MyIncomesPage> {
                     if (provider.loadingIncomeActivity)
                       Container(
                           padding: const EdgeInsets.all(20),
-                          height: provider.incomeActivity.length == 0
+                          height: provider.incomeActivity.isEmpty
                               ? Get.height -
                                   kToolbarHeight -
                                   kBottomNavigationBarHeight
@@ -109,14 +109,13 @@ class _MyIncomeActivityHistoryList extends StatelessWidget {
       style: const TextStyle(color: Color(0xff9b9b9b), fontSize: 12.5),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: activities.length == 0
+        child: activities.isEmpty
             ? Center(
-                child: Container(
+                child: SizedBox(
                 height: Get.height * 0.6,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    //TODO: dataNotFound
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30.0),
                       child: assetLottie(Assets.dataNotFound),
@@ -149,7 +148,9 @@ class _MyIncomeActivityHistoryList extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 bodyLargeText(
-                                    '${DateFormat('MMM dd yyyy').format(DateTime.parse(activity.createdAt ?? ''))}',
+                                    DateFormat('MMM dd yyyy').format(
+                                        DateTime.parse(
+                                            activity.createdAt ?? '')),
                                     context,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
@@ -193,7 +194,8 @@ class _MyIncomeActivityHistoryList extends StatelessWidget {
                                     context),
                                 height10(),
                                 capText(
-                                    '${DateFormat().add_jm().format(DateTime.parse(activities[index].createdAt ?? ''))}',
+                                    DateFormat().add_jm().format(DateTime.parse(
+                                        activities[index].createdAt ?? '')),
                                     context,
                                     fontSize: 8,
                                     color: Colors.white),
@@ -213,7 +215,7 @@ class _MyIncomeActivityHistoryList extends StatelessWidget {
                     //     // child: Icon(Icons.check, color: Colors.white, size: 12.0),
                     //   );
                     // } else {
-                    return OutlinedDotIndicator(
+                    return const OutlinedDotIndicator(
                       color: Color.fromARGB(255, 255, 255, 255),
                       // child: Icon(Icons.check, color: Colors.white, size: 12.0),
                     );
@@ -222,7 +224,7 @@ class _MyIncomeActivityHistoryList extends StatelessWidget {
                   connectorBuilder: (_, index, ___) {
                     // bool credited = double.parse(activities[index].credit ?? '0') >
                     //     double.parse(activities[index].debit ?? '0');
-                    return SolidLineConnector(
+                    return const SolidLineConnector(
                       color: Colors.white,
                       thickness: 1,
                       // color: credited

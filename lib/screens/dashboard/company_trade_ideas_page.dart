@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:mycarclub/screens/dashboard/main_page.dart';
 import 'package:mycarclub/utils/my_logger.dart';
@@ -43,6 +42,8 @@ class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
       userActive = authProvider.userData.salesActive == '1';
       warningLog('isActive: $userActive');
       if (userActive) {
+        provider.tradeIdeaPage = 0;
+        provider.tradeIdeaType = 1;
         provider.getTradeIdea(true);
         //timer
         timer = Timer.periodic(const Duration(seconds: 30), (Timer t) {
@@ -79,102 +80,127 @@ class _CompanyTradeIdeasPageState extends State<CompanyTradeIdeasPage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<DashBoardProvider>(builder: (context, provider, _) {
-      return Scaffold(
-          appBar: AppBar(
-            title: titleLargeText('Company Trade Ideas', context,
-                color: Colors.white, useGradient: true),
-            actions: [assetImages(Assets.appLogo_S, width: 30), width10()],
-          ),
-          body: Container(
-            height: double.maxFinite,
-            width: double.maxFinite,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                  image: userAppBgImageProvider(context),
-                  fit: BoxFit.cover,
-                  opacity: 1),
-            ),
-            child: LoadMoreContainer(
-                // height: 200,
-                finishWhen:
-                    provider.tradeIdeas.length == provider.totalTradeIdeas,
-                onLoadMore: _loadMore,
-                onRefresh: _refresh,
-                builder: (scrollController, status) {
-                  if (status == LoadMoreStatus.error) {
-                    return SizedBox(
-                      height: 50,
-                      child: Center(
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                                color: appLogoColor,
-                                width: 1,
-                                style: BorderStyle.solid),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5)),
-                          ),
-                          onPressed: () => _refresh(true),
-                          child: bodyLargeText('Retry', context),
-                        ),
-                      ),
-                    );
+      return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+            appBar: AppBar(
+              title: titleLargeText('Company Trade Ideas', context,
+                  color: Colors.white, useGradient: true),
+              bottom: TabBar(
+                onTap: (index) {
+                  var tab = index == 0 ? 1 : 0;
+
+                  if (tab != provider.tradeIdeaType) {
+                    logger.i('index: $index');
+                    provider.setTradeIdeaType(tab);
+                    provider.tradeIdeaPage = 0;
+                    provider.tradeIdeas.clear();
+                    provider.getTradeIdea(true);
                   }
-                  return ListView(
-                    controller: scrollController,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                    children: [
-                      ...provider.tradeIdeas
-                          .map((trade) => _TradeTile(trade: trade)),
-                      if (provider.tradeIdeas.isEmpty &&
-                          !provider.loadingTradeIdeas)
-                        SizedBox(
-                          height: Get.height -
-                              kToolbarHeight -
-                              kBottomNavigationBarHeight,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                assetImages(Assets.appWebLogo, height: 50),
-                                height10(),
-                                bodyLargeText(
-                                    'No trade ideas available at the moment.',
-                                    context),
-                                height10(),
-                                OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(
-                                        color: appLogoColor,
-                                        width: 1,
-                                        style: BorderStyle.solid),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5)),
-                                  ),
-                                  onPressed: () => _refresh(true),
-                                  child: bodyLargeText('Refresh', context),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      if (provider.loadingTradeIdeas)
-                        Container(
-                            padding: const EdgeInsets.all(20),
-                            height: provider.tradeIdeas.isEmpty
-                                ? Get.height -
-                                    kToolbarHeight -
-                                    kBottomNavigationBarHeight
-                                : 100,
-                            child: const Center(
-                                child: CircularProgressIndicator(
-                                    color: Colors.white))),
-                    ],
-                  );
-                }),
-          ));
+                },
+                tabs: const [
+                  Tab(text: 'High Risk'),
+                  Tab(text: 'Low Risk'),
+                ],
+              ),
+              actions: [assetImages(Assets.appLogo_S, width: 30), width10()],
+            ),
+            body: Container(
+              height: double.maxFinite,
+              width: double.maxFinite,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                    image: userAppBgImageProvider(context),
+                    fit: BoxFit.cover,
+                    opacity: 1),
+              ),
+              child: TabBarView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    _buildLoadMoreContainer(provider, context),
+                    _buildLoadMoreContainer(provider, context),
+                  ]),
+            )),
+      );
     });
+  }
+
+  LoadMoreContainer _buildLoadMoreContainer(
+      DashBoardProvider provider, BuildContext context) {
+    return LoadMoreContainer(
+        // height: 200,
+        finishWhen: provider.tradeIdeas.length == provider.totalTradeIdeas,
+        onLoadMore: _loadMore,
+        onRefresh: _refresh,
+        builder: (scrollController, status) {
+          if (status == LoadMoreStatus.error) {
+            return SizedBox(
+              height: 50,
+              child: Center(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(
+                        color: appLogoColor,
+                        width: 1,
+                        style: BorderStyle.solid),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5)),
+                  ),
+                  onPressed: () => _refresh(true),
+                  child: bodyLargeText('Retry', context),
+                ),
+              ),
+            );
+          }
+          return _buildList(scrollController, provider, context);
+        });
+  }
+
+  ListView _buildList(ScrollController scrollController,
+      DashBoardProvider provider, BuildContext context) {
+    return ListView(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      children: [
+        ...provider.tradeIdeas.map((trade) => _TradeTile(trade: trade)),
+        if (provider.tradeIdeas.isEmpty && !provider.loadingTradeIdeas)
+          SizedBox(
+            height: Get.height - kToolbarHeight - kBottomNavigationBarHeight,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  assetImages(Assets.appWebLogo, height: 50),
+                  height10(),
+                  bodyLargeText(
+                      'No trade ideas available at the moment.', context),
+                  height10(),
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(
+                          color: appLogoColor,
+                          width: 1,
+                          style: BorderStyle.solid),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5)),
+                    ),
+                    onPressed: () => _refresh(true),
+                    child: bodyLargeText('Refresh', context),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        if (provider.loadingTradeIdeas)
+          Container(
+              padding: const EdgeInsets.all(20),
+              height: provider.tradeIdeas.isEmpty
+                  ? Get.height - kToolbarHeight - kBottomNavigationBarHeight
+                  : 100,
+              child: const Center(
+                  child: CircularProgressIndicator(color: Colors.white))),
+      ],
+    );
   }
 
   Future<void> _loadMore() async {

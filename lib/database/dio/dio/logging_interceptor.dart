@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:mycarclub/utils/my_logger.dart';
-import '/utils/default_logger.dart';
 
 class LoggingInterceptor extends InterceptorsWrapper {
   int maxCharactersPerLine = 200;

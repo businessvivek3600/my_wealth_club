@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mycarclub/widgets/SubscriptionPurchaseDialog_test.dart';
+import 'package:mycarclub/widgets/SubscriptionPurchaseDialog_IOS.dart';
 import '../../../widgets/load_more_container.dart';
 import '/database/functions.dart';
 import '/database/model/response/subscription_history_model.dart';
@@ -50,7 +50,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   Widget _returnDialog() {
     return Platform.isIOS
-        ? const SubscriptionPurchaseDialogTest()
+        ? const SubscriptionPurchaseDialogIOS()
         : const SubscriptionPurchaseDialog();
   }
 
