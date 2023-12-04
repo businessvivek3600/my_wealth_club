@@ -349,6 +349,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(hintText: 'Username'),
                       textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.emailAddress,
                       validator: (val) {
                         if (val == null || val.isEmpty) {
                           return 'Please enter username';
@@ -371,6 +372,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     cursorColor: Colors.white,
                     style: const TextStyle(color: Colors.white),
                     obscureText: !showPassword,
+                    keyboardType: TextInputType.visiblePassword,
+                    textInputAction: TextInputAction.done,
                     decoration: InputDecoration(
                         hintText: 'Password',
                         suffixIcon: GestureDetector(
@@ -390,6 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       }
                       return null;
                     },
+                    onFieldSubmitted: (val) => _login(context),
                   ),
                 ),
               ],

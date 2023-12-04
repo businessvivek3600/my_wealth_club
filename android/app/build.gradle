@@ -54,8 +54,8 @@ android {
         applicationId "com.mywealthclub"
         minSdkVersion 21
         targetSdkVersion flutter.targetSdkVersion
-        versionCode 30
-        versionName "1.0.3"
+        versionCode 33
+        versionName "1.0.3+3"
     }
 
     signingConfigs {

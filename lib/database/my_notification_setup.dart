@@ -11,6 +11,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart' hide Response;
+import 'package:permission_handler/permission_handler.dart';
+import '../utils/my_logger.dart';
 import '/screens/dashboard/company_trade_ideas_page.dart';
 import '/screens/youtube_video_play_widget.dart';
 import '/constants/app_constants.dart';
@@ -92,12 +94,11 @@ class MyNotification {
         badge: true,
         carPlay: false,
         criticalAlert: false,
-        provisional: false,
         sound: true);
 
     ///flp initialisation
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/launcher_icon');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     final List<DarwinNotificationCategory> darwinNotificationCategories =
         <DarwinNotificationCategory>[
       DarwinNotificationCategory(darwinNotificationCategoryText,
@@ -191,25 +192,65 @@ class MyNotification {
     selectNotificationStream.add(parseHtmlString(jsonEncode(message.data)));
   }
 
-  // routing
-  static Future<void> isAndroidPermissionGranted() async {
-    if (Platform.isAndroid) {
-      final bool granted = await flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                  AndroidFlutterLocalNotificationsPlugin>()
-              ?.areNotificationsEnabled() ??
-          false;
-      _notificationsEnabled = granted;
-    }
+  // static Future<void> requestPermissions() async {
+  //   if (Platform.isIOS || Platform.isMacOS) {
+  //     _notificationsEnabled = await flutterLocalNotificationsPlugin
+  //             .resolvePlatformSpecificImplementation<
+  //                 IOSFlutterLocalNotificationsPlugin>()
+  //             ?.requestPermissions(alert: true, badge: true, sound: true) ??
+  //         false;
+  //     _notificationsEnabled = await flutterLocalNotificationsPlugin
+  //             .resolvePlatformSpecificImplementation<
+  //                 MacOSFlutterLocalNotificationsPlugin>()
+  //             ?.requestPermissions(alert: true, badge: true, sound: true) ??
+  //         false;
+  //   } else if (Platform.isAndroid) {
+  //     final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
+  //         flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+  //             AndroidFlutterLocalNotificationsPlugin>();
+  //     final bool? granted = await androidImplementation?.requestPermission();
+  //     _notificationsEnabled = granted ?? false;
+  //   }
+  // }
+
+  ///request permission
+  static Future<void> requestPermissions() async {
+    ///check request permission
+    await Permission.notification
+        .onDeniedCallback(() {
+          logger.w('Permission.notification.onDeniedCallback');
+          _permissionForNotification();
+        })
+        .onGrantedCallback(() {
+          logger.w('Permission.notification.onGrantedCallback');
+          // _permission();
+        })
+        .onPermanentlyDeniedCallback(() {
+          logger.w('Permission.notification.onPermanentlyDeniedCallback');
+          _permissionForNotification();
+        })
+        .onRestrictedCallback(() {
+          logger.w('Permission.notification.onRestrictedCallback');
+          _permissionForNotification();
+        })
+        .onLimitedCallback(() {
+          logger.w('Permission.notification.onLimitedCallback');
+          _permissionForNotification();
+        })
+        .onProvisionalCallback(() {
+          logger.w('Permission.notification.onProvisionalCallback');
+          _permissionForNotification();
+        })
+        .request()
+        .then((value) => logger.i('Permission.notification.request: $value'));
   }
 
-  static Future<void> requestPermissions() async {
+  static void _permissionForNotification() async {
     if (Platform.isIOS || Platform.isMacOS) {
-      _notificationsEnabled = await flutterLocalNotificationsPlugin
-              .resolvePlatformSpecificImplementation<
-                  IOSFlutterLocalNotificationsPlugin>()
-              ?.requestPermissions(alert: true, badge: true, sound: true) ??
-          false;
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
       _notificationsEnabled = await flutterLocalNotificationsPlugin
               .resolvePlatformSpecificImplementation<
                   MacOSFlutterLocalNotificationsPlugin>()
@@ -272,7 +313,7 @@ class MyNotification {
         String? _type = data['type'];
         String? routeName;
         infoLog(
-            'notification type is ${_type} localUser : ${localUser != ''} and it has match with ${_matchType(_type, notificationType.inbox)}',
+            'notification type is $_type localUser : ${localUser != ''} and it has match with ${_matchType(_type, notificationType.inbox)}',
             MyNotification.tag);
 
         ///if user is logged in
@@ -369,7 +410,7 @@ Future<void> _handleNotificationData(
       /// store
       ///check for type
       infoLog(
-          'notification type is ${type}  and it has match with ${_matchType(type, notificationType.inbox)}',
+          'notification type is $type  and it has match with ${_matchType(type, notificationType.inbox)}',
           MyNotification.tag);
       if (!_matchType(type, notificationType.inbox)) {
         ///store notifications
@@ -408,7 +449,7 @@ Future<void> _handleNotificationData(
     ///   if notification user is blank
     else {
       var user = localUser != '' ? localUser : topic;
-      infoLog('this is topic notification : ${topic}, user:$user',
+      infoLog('this is topic notification : $topic, user:$user',
           MyNotification.tag);
 
       /// 8. store notification if not match
@@ -504,11 +545,11 @@ _saveNotification(String? title, String? notificationUser, String? localUser,
   await _storeNotification(title, notificationUser, data: jsonEncode(data))
       .then((value) async {
     infoLog(
-        'notification createItem to local db successfully!👏 for user ${notificationUser}',
+        'notification createItem to local db successfully!👏 for user $notificationUser',
         MyNotification.tag);
     _addToNotificationStream();
     infoLog(
-        'notification added to controller successfully!👏 for user ${localUser}',
+        'notification added to controller successfully!👏 for user $localUser',
         MyNotification.tag);
   }).then((value) => sl.get<NotificationProvider>().getUnRead());
 }

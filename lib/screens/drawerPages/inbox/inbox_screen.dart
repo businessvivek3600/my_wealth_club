@@ -561,7 +561,7 @@ class _InboxScreenState extends State<InboxScreen> {
               enablePullDown: true,
               enablePullUp: false,
               controller: _refreshController,
-              header: MaterialClassicHeader(),
+              header: const MaterialClassicHeader(),
               onRefresh: _onRefresh,
               child: CustomScrollView(
                 controller: _scrollController,
@@ -657,14 +657,14 @@ class _InboxMessageTileState extends State<_InboxMessageTile> {
           child: Container(
             // duration: Duration(seconds: 2),
             // height: showFull ? 600 : 100,
-            margin: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-            padding: EdgeInsets.all(8),
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            padding: const EdgeInsets.all(8),
             width: double.maxFinite,
             decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.black26,
                 boxShadow: [
-                  BoxShadow(
+                  const BoxShadow(
                       color: Colors.white10,
                       blurRadius: 2,
                       spreadRadius: 2,
@@ -802,9 +802,9 @@ class HtmlPreviewPageState extends State<HtmlPreviewPage> {
     // print(widget.message);
     return Scaffold(
       // backgroundColor: Color(0xFF082E8F),
-      backgroundColor: Color(0xFFEBEEF6),
+      backgroundColor: const Color(0xFFEBEEF6),
       appBar: AppBar(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(25),
                 bottomRight: Radius.circular(25))),
@@ -815,7 +815,7 @@ class HtmlPreviewPageState extends State<HtmlPreviewPage> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Html(
                 data: removeTableTags(widget.message),
                 extensions: [
@@ -832,10 +832,12 @@ class HtmlPreviewPageState extends State<HtmlPreviewPage> {
                       width: Width(300, Unit.px),
                       fontWeight: FontWeight.bold),
                   "table": Style(
-                    backgroundColor: Color.fromARGB(0x50, 0xe5, 0x15, 0x15),
+                    backgroundColor:
+                        const Color.fromARGB(0x50, 0xe5, 0x15, 0x15),
                   ),
                   "tr": Style(
-                    border: Border(bottom: BorderSide(color: Colors.grey)),
+                    border:
+                        const Border(bottom: BorderSide(color: Colors.grey)),
                   ),
                   "th": Style(
                       padding: HtmlPaddings.all(6),
@@ -871,10 +873,10 @@ class HtmlPreviewPageState extends State<HtmlPreviewPage> {
               // margin: EdgeInsets.all(10),
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10), color: Colors.white),
-              padding: EdgeInsets.symmetric(horizontal: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Row(
                 children: [
-                  Icon(CupertinoIcons.link,
+                  const Icon(CupertinoIcons.link,
                       size: 13, color: Colors.black, weight: 2),
                   Expanded(
                       child: bodyLargeText('Attachment (1)', context,

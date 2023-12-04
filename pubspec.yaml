@@ -127,6 +127,7 @@ dependencies:
   firebase_crashlytics: ^3.4.1
   logger: ^2.0.2+1
   in_app_purchase: ^3.1.11
+  permission_handler: ^11.0.1
 
 
 

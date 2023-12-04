@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:api_cache_manager/api_cache_manager.dart';
 import 'package:api_cache_manager/models/cache_db_model.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:mycarclub/utils/my_logger.dart';
 import '/utils/default_logger.dart';
@@ -294,8 +295,8 @@ class AuthProvider with ChangeNotifier {
           message = map["message"];
           loginToken = map["login_token"];
         } catch (e) {}
-        try {
-          if (status) {
+        if (status) {
+          try {
             _userData = UserData.fromJson(map['userData']);
             var cacheModel = APICacheDBModel(
                 key: SPConstants.user, syncData: jsonEncode(map['userData']));
@@ -308,11 +309,16 @@ class AuthProvider with ChangeNotifier {
               authRepo.saveUserToken(loginToken);
               authRepo.saveUser(userData);
             }
+          } catch (e) {
+            print('user could not be generated ${_userData?.toJson()} \n $e');
           }
-        } catch (e) {
-          // print('user could not be generated ${_userData?.toJson()} \n $e');
         }
-        if (!status) Toasts.showErrorNormalToast(message.split('.').first);
+
+        Get.back();
+        print('login response $map status $status');
+        if (status == false) {
+          Fluttertoast.showToast(msg: message, backgroundColor: Colors.red);
+        }
         loggedIn = status;
       } else {
         if (apiResponse.error is String) {

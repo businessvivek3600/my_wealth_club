@@ -73,7 +73,6 @@ class _MyWealthClubState extends State<MyWealthClub> {
 
   @override
   void initState() {
-    MyNotification.isAndroidPermissionGranted();
     MyNotification.requestPermissions();
     MyNotification.configureDidReceiveLocalNotificationSubject();
     MyNotification.configureSelectNotificationSubject();
